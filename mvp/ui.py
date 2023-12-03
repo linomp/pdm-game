@@ -1,5 +1,5 @@
-# create streamlit app with a button to do a request to the api
 import base64
+import time
 from typing import Any
 
 import requests
@@ -27,11 +27,15 @@ st.title("The Predictive Maintenance Game")
 button = st.button("Check Remaining Useful Life (RUL)")
 gif = show_gif("media/healthy.gif")
 
+start_time = 0
+
 if button:
+    start_time = time.time()
     machine = MachineStats.from_json(
         requests.get(f"{api_base}{MACHINE_STATS_ENDPOINT}").json())
     if machine.is_broken():
         gif.empty()
-        st.warning("The machine broke down")
+        elapsed_time = time.time() - start_time
+        st.warning(f"The machine broke down after lasting {elapsed_time:.2f} seconds")
     else:
         st.success(f"The machine will break down in {machine.rul} cycles")
