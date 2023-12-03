@@ -5,8 +5,8 @@ from typing import Any
 import requests
 import streamlit as st
 
-from mvp.constants import MACHINE_STATS_ENDPOINT
-from mvp.data_models import MachineStats
+from mvp.constants import DEFAULT_SESSION_ID
+from mvp.data_models import GameSessionDTO
 
 api_base = "http://localhost:8000"
 
@@ -24,18 +24,35 @@ def show_gif(path) -> Any:
 
 
 st.title("The Predictive Maintenance Game")
-button = st.button("Check Remaining Useful Life (RUL)")
-gif = show_gif("media/healthy.gif")
 
-start_time = 0
+with st.container(border=False):
+    gif = show_gif("media/healthy.gif")
 
-if button:
-    start_time = time.time()
-    machine = MachineStats.from_json(
-        requests.get(f"{api_base}{MACHINE_STATS_ENDPOINT}").json())
-    if machine.is_broken():
-        gif.empty()
-        elapsed_time = time.time() - start_time
-        st.warning(f"The machine broke down after lasting {elapsed_time:.2f} seconds")
-    else:
-        st.success(f"The machine will break down in {machine.rul} cycles")
+previous_placeholder = None
+
+while True:
+    placeholder = st.empty()
+    with placeholder.container(border=True):
+        response = requests.get(f"{api_base}/session?session_id={DEFAULT_SESSION_ID}").json()
+        session = GameSessionDTO.from_json(response)
+
+        if previous_placeholder is not None:
+            previous_placeholder.empty()
+
+        st.info(f"Current step: {session.current_step}")
+        st.info(f"Session id: {session.id}")
+
+        if session.machine_stats.is_broken():
+            gif.empty()
+            st.warning(f"The machine health is {session.machine_stats.health_percentage:.2f}")
+            st.warning(f"The machine broke after {session.current_step} cycles")
+            break
+        else:
+            st.info(f"The machine health is {session.machine_stats.health_percentage:.2f}")
+            if session.machine_stats.rul is None:
+                st.warning("RUL prediction is not available")
+            else:
+                st.info(f"It will break down in {session.machine_stats.rul} cycles")
+
+        time.sleep(1)
+        previous_placeholder = placeholder

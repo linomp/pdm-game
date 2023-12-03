@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse, JSONResponse
 
-from mvp.constants import MACHINE_STATS_ENDPOINT
-from mvp.data_models import MachineStats, GameSession
+from mvp.constants import DEFAULT_SESSION_ID
+from mvp.data_models import GameSession, GameSessionDTO
 
 app = FastAPI()
 
@@ -16,8 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-default_session_id = "test"
-sessions: dict[str, GameSession] = {default_session_id: GameSession(id=default_session_id)}
+sessions: dict[str, GameSession] = {DEFAULT_SESSION_ID: GameSession(id=DEFAULT_SESSION_ID)}
 
 
 @app.on_event("shutdown")
@@ -33,20 +32,22 @@ async def root():
     return RedirectResponse(url="/docs")
 
 
-@app.post("/session", response_model=GameSession, tags=["Sessions"])
-async def start_session() -> GameSession:
+@app.post("/session", response_model=GameSessionDTO, tags=["Sessions"])
+async def start_session() -> GameSessionDTO:
     new_session_id = uuid.uuid4().hex
+
     if new_session_id not in sessions:
         session = GameSession(id=new_session_id)
         sessions[new_session_id] = session
-    return sessions[new_session_id]
+
+    return GameSessionDTO.from_session(sessions[new_session_id])
 
 
-@app.get(MACHINE_STATS_ENDPOINT, tags=["Machine stats"], response_model=MachineStats)
-async def get_machine_stats(session_id: str = default_session_id) -> JSONResponse | MachineStats:
+@app.get("/session", response_model=GameSessionDTO, tags=["Sessions"])
+async def get_session(session_id: str) -> GameSessionDTO | JSONResponse:
     if session_id not in sessions:
         return JSONResponse(status_code=404, content={"message": "Session not found"})
 
-    session: GameSession = sessions[session_id]
+    session = sessions[session_id]
 
-    return session.machine_stats
+    return GameSessionDTO.from_session(session)

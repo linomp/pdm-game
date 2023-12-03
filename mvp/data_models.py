@@ -4,6 +4,7 @@ from typing import Any, Callable
 from pydantic import BaseModel
 
 from mvp.analysis import get_health_percentage, default_rul_prediction_fn
+from mvp.constants import GAME_TICK_INTERVAL
 
 
 class MachineStats(BaseModel):
@@ -48,14 +49,20 @@ class GameSession(BaseModel):
         self._timer = None
         self._start_incrementing()
 
+    def _update_machine_stats(self):
+        self.machine_stats.health_percentage = get_health_percentage(self.current_step)
+        self.machine_stats.rul = self.rul_predictor(self.current_step)
+
+    def _log(self, multiple=5):
+        if self.current_step % multiple == 0:
+            print(f"GameSession '{self.id}' - step: {self.current_step} - {self.machine_stats}")
+
     def _start_incrementing(self):
         if not self._stop_event:
             # increment game counter (app tick)
             self.current_step += 1
 
-            # update machine stats
-            self.machine_stats.health_percentage = get_health_percentage(self.current_step)
-            self.machine_stats.rul = self.rul_predictor(self.current_step)
+            self._update_machine_stats()
 
             # check if game over
             if self.machine_stats.is_broken():
@@ -63,14 +70,34 @@ class GameSession(BaseModel):
                 self.stop_incrementing()
                 return
 
-            # log every 5 steps
-            if self.current_step % 5 == 0:
-                print(f"GameSession '{self.id}' - step: {self.current_step} - {self.machine_stats}")
+            self._log()
 
-            self._timer = Timer(0.1, self._start_incrementing)
+            self._timer = Timer(GAME_TICK_INTERVAL, self._start_incrementing)
             self._timer.start()
 
     def stop_incrementing(self):
         self._stop_event = True
         if self._timer:
             self._timer.cancel()
+
+
+class GameSessionDTO(BaseModel):
+    id: str
+    current_step: int
+    machine_stats: MachineStats | None = None
+
+    @staticmethod
+    def from_session(session: 'GameSession'):
+        return GameSessionDTO(
+            id=session.id,
+            current_step=session.current_step,
+            machine_stats=session.machine_stats
+        )
+
+    @staticmethod
+    def from_json(json: dict[str, Any]):
+        return GameSessionDTO(
+            id=json.get("id", ""),
+            current_step=json.get("current_step", 0),
+            machine_stats=MachineStats.from_json(json.get("machine_stats", {}))
+        )
