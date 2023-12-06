@@ -1,4 +1,5 @@
 import base64
+import sys
 import time
 from typing import Any
 
@@ -8,7 +9,10 @@ import streamlit as st
 from mvp.constants import DEFAULT_SESSION_ID
 from mvp.data_models import GameSessionDTO
 
-api_base = "http://localhost:8000"
+api_base = "https://the-pdm-game.xmp.systems"
+
+if '--dev' in sys.argv:
+    api_base = "http://localhost:8000/mvp/api"
 
 
 def show_gif(path) -> Any:
