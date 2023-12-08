@@ -9,10 +9,10 @@ import streamlit as st
 from mvp.constants import DEFAULT_SESSION_ID
 from mvp.data_models import GameSessionDTO
 
-api_base = "https://the-pdm-game.xmp.systems/mvp/api"
+api_base = "https://api.pdmgame.xmp.systems"
 
 if '--dev' in sys.argv:
-    api_base = "http://localhost:8000/mvp/api"
+    api_base = "http://localhost:8000"
 
 
 def show_gif(path) -> Any:
