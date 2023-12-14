@@ -3,3 +3,4 @@ __pychache__
 .idea
 *.xml
 *.iml
+*.pyc
