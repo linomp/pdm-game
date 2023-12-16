@@ -1,56 +1,37 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
+	import { SessionsService, type GameSessionDTO } from '../generated';
 
-	let sessionId: string | undefined;
-	// TODO import game session type from generated openapi client
-	let gameSession: any = null;
+	let gameSession: GameSessionDTO | null;
 	let validationError: any;
 	let intervalId: number | undefined;
 
-	// TODO move this to .env file
-	const api = 'http://localhost:8000';
-
-	// TODO replace this with generated openapi client
 	const startSession = async () => {
-		try {
-			const response = await fetch(`${api}/session`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({})
-			});
-			if (response.ok) {
-				const data = await response.json();
-				sessionId = data.id;
-				validationError = null;
-				await fetchSession();
-				intervalId = setInterval(fetchSession, 2000);
-			} else {
-				validationError = await response.json();
-			}
-		} catch (error) {
-			console.error('Error starting session:', error);
+		const response = await SessionsService.startSessionSessionPost();
+		if (response?.id) {
+			gameSession = response;
+			validationError = null;
+			intervalId = setInterval(fetchSession, 2000);
+		} else {
+			validationError = response;
 		}
 	};
 
-	// TODO replace this with generated openapi client
 	const fetchSession = async () => {
-		if (gameSession && gameSession.machine_stats.health_percentage <= 0) {
+		if (!gameSession) {
+			return;
+		}
+
+		if (gameSession?.machine_stats && gameSession.machine_stats.health_percentage <= 0) {
 			clearInterval(intervalId);
 			return;
 		}
+
 		try {
-			const response = await fetch(`${api}/session?session_id=${sessionId}`);
-			if (response.ok) {
-				gameSession = await response.json();
-				validationError = null;
-			} else {
-				validationError = await response.json();
-				gameSession = null;
-			}
+			gameSession = await SessionsService.getSessionSessionGet(gameSession?.id);
 		} catch (error) {
 			console.error('Error fetching session:', error);
+			validationError = error;
 		}
 	};
 
