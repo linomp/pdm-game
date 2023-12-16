@@ -10,12 +10,12 @@ from mvp.server.data_models import GameSession, GameSessionDTO
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173/","http://localhost:4173/","https://pdmgame.xmp.systems"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-sessions: dict[str, GameSession] = {DEFAULT_SESSION_ID: GameSession(id=DEFAULT_SESSION_ID)}
+sessions: dict[str, GameSession] = {}
 
 
 @app.on_event("shutdown")

@@ -1,13 +1,16 @@
-<script>
+<script lang="ts">
 	import { onDestroy } from 'svelte';
 
-	let sessionId = null;
-	let gameSession = null;
-	let validationError = null;
-	let intervalId = null;
+	let sessionId: string | undefined;
+	// TODO import game session type from generated openapi client
+	let gameSession: any = null;
+	let validationError: any;
+	let intervalId: number | undefined;
 
+	// TODO move this to .env file
 	const api = 'http://localhost:8000';
 
+	// TODO replace this with generated openapi client
 	const startSession = async () => {
 		try {
 			const response = await fetch(`${api}/session`, {
@@ -31,6 +34,7 @@
 		}
 	};
 
+	// TODO replace this with generated openapi client
 	const fetchSession = async () => {
 		if (gameSession && gameSession.machine_stats.health_percentage <= 0) {
 			clearInterval(intervalId);
@@ -51,7 +55,6 @@
 	};
 
 	onDestroy(() => {
-		// Clear interval on component destruction to prevent memory leaks
 		if (intervalId) {
 			clearInterval(intervalId);
 		}
@@ -62,6 +65,8 @@
 	<h2>The Predictive Maintenance Game</h2>
 
 	<button on:click={startSession}>Start Session</button>
+
+	<!-- TODO show healthy machine gif, and stop the animation on machine breakdown -->
 
 	{#if gameSession}
 		<div>
