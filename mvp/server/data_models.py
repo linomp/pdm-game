@@ -3,8 +3,8 @@ from typing import Any, Callable
 
 from pydantic import BaseModel
 
-from mvp.analysis import get_health_percentage, default_rul_prediction_fn
-from mvp.constants import GAME_TICK_INTERVAL
+from mvp.server.analysis import get_health_percentage, default_rul_prediction_fn
+from mvp.server.constants import GAME_TICK_INTERVAL
 
 
 class MachineStats(BaseModel):

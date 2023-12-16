@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse, JSONResponse
 
-from mvp.constants import DEFAULT_SESSION_ID
-from mvp.data_models import GameSession, GameSessionDTO
+from mvp.server.constants import DEFAULT_SESSION_ID
+from mvp.server.data_models import GameSession, GameSessionDTO
 
 app = FastAPI()
 app.add_middleware(

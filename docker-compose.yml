@@ -2,7 +2,7 @@ services:
   mvp-api:
     build:
       context: .
-      dockerfile: DockerfileMvp
+      dockerfile: DockerfileMvpApi
     ports:
       - "8000:8000"
     restart: always
