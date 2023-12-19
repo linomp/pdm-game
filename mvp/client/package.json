@@ -11,7 +11,7 @@
 		"test": "vitest",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
-		"gen-client": "openapi --input http://127.0.0.1:8000/openapi.json --output ./src/generated"
+		"generate": "openapi --input http://127.0.0.1:8000/openapi.json --output ./src/generated"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",

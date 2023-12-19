@@ -6,7 +6,7 @@ def exponential_decay(t: int, start: int, decay_speed: float) -> float:
 
 
 def get_health_percentage(current_step: int) -> int:
-    raw_val = round(exponential_decay(current_step, start=100, decay_speed=1e-1))
+    raw_val = round(exponential_decay(current_step, start=100, decay_speed=0.2))
     return min(100, max(0, raw_val))
 
 
