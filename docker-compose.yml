@@ -1,8 +1,9 @@
 services:
   mvp-api:
     build:
-      context: .
-      dockerfile: DockerfileMvpApi
+      context: ./mvp/server
+      dockerfile: DockerfileBE
     ports:
       - "8000:8000"
-    restart: always
+
+  # TODO: Create FE dockerfile & add frontend service
