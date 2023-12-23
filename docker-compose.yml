@@ -1,9 +1,23 @@
+version: "3.8"
+
+networks:
+  my-network:
+
 services:
   mvp-api:
     build:
       context: ./mvp/server
-      dockerfile: DockerfileBE
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    networks:
+      - my-network
 
-  # TODO: Create FE dockerfile & add frontend service
+  mvp-client:
+    build:
+      context: ./mvp/client
+      dockerfile: Dockerfile
+    ports:
+      - "4173:4173"
+    networks:
+      - my-network
