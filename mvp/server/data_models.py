@@ -1,10 +1,10 @@
-from threading import Timer
+import asyncio
 from typing import Any, Callable
 
 from pydantic import BaseModel
 
-from mvp.analysis import get_health_percentage, default_rul_prediction_fn
-from mvp.constants import GAME_TICK_INTERVAL
+from mvp.server.analysis import get_health_percentage, default_rul_prediction_fn
+from mvp.server.constants import STEPS_PER_MOVE
 
 
 class MachineStats(BaseModel):
@@ -45,9 +45,25 @@ class GameSession(BaseModel):
             health_percentage=get_health_percentage(self.current_step)
         )
 
-        self._stop_event = False
-        self._timer = None
-        self._start_incrementing()
+    async def advance_one_turn(self) -> list[MachineStats]:
+        collected_machine_stats_during_turn = []
+
+        for _ in range(STEPS_PER_MOVE):
+            # collect stats
+            collected_machine_stats_during_turn.append(self.machine_stats)
+
+            # check if game over
+            if self.machine_stats.is_broken():
+                print(f"GameSession '{self.id}' - machine failed at step {self.current_step} - {self.machine_stats}")
+                break
+
+            self.current_step += 1
+            self._update_machine_stats()
+            self._log()
+
+            await asyncio.sleep(0.5)
+
+        return collected_machine_stats_during_turn
 
     def _update_machine_stats(self):
         self.machine_stats.health_percentage = get_health_percentage(self.current_step)
@@ -56,29 +72,6 @@ class GameSession(BaseModel):
     def _log(self, multiple=5):
         if self.current_step % multiple == 0:
             print(f"GameSession '{self.id}' - step: {self.current_step} - {self.machine_stats}")
-
-    def _start_incrementing(self):
-        if not self._stop_event:
-            # increment game counter (app tick)
-            self.current_step += 1
-
-            self._update_machine_stats()
-
-            # check if game over
-            if self.machine_stats.is_broken():
-                print(f"GameSession '{self.id}' - machine failed at step {self.current_step} - {self.machine_stats}")
-                self.stop_incrementing()
-                return
-
-            self._log()
-
-            self._timer = Timer(GAME_TICK_INTERVAL, self._start_incrementing)
-            self._timer.start()
-
-    def stop_incrementing(self):
-        self._stop_event = True
-        if self._timer:
-            self._timer.cancel()
 
 
 class GameSessionDTO(BaseModel):

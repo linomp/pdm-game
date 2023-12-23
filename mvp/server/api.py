@@ -4,8 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse, JSONResponse
 
-from mvp.constants import DEFAULT_SESSION_ID
-from mvp.data_models import GameSession, GameSessionDTO
+from mvp.server.data_models import GameSession, GameSessionDTO
 
 app = FastAPI()
 app.add_middleware(
@@ -15,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-sessions: dict[str, GameSession] = {DEFAULT_SESSION_ID: GameSession(id=DEFAULT_SESSION_ID)}
+sessions: dict[str, GameSession] = {}
 
 
 @app.on_event("shutdown")
@@ -32,7 +31,7 @@ async def root():
 
 
 @app.post("/session", response_model=GameSessionDTO, tags=["Sessions"])
-async def start_session() -> GameSessionDTO:
+async def create_session() -> GameSessionDTO:
     new_session_id = uuid.uuid4().hex
 
     if new_session_id not in sessions:
@@ -48,5 +47,18 @@ async def get_session(session_id: str) -> GameSessionDTO | JSONResponse:
         return JSONResponse(status_code=404, content={"message": "Session not found"})
 
     session = sessions[session_id]
+
+    return GameSessionDTO.from_session(session)
+
+
+@app.put("/session/turns", response_model=GameSessionDTO, tags=["Sessions"])
+async def advance(session_id: str) -> GameSessionDTO | JSONResponse:
+    if session_id not in sessions:
+        return JSONResponse(status_code=404, content={"message": "Session not found"})
+
+    session = sessions[session_id]
+
+    # TODO: do something with the returned list of MachineStats
+    await session.advance_one_turn()
 
     return GameSessionDTO.from_session(session)
