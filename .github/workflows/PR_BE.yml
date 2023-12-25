@@ -1,4 +1,4 @@
-name: Python Tests
+name: MVP Python Tests
 
 on:
   pull_request:
