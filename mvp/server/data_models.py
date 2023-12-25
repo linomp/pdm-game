@@ -13,7 +13,7 @@ class OperationalParameters(BaseModel):
     mechanical_wear: float
 
     @staticmethod
-    def from_dict(json: dict[str, Any]):
+    def from_dict(json: dict[str, float]) -> 'OperationalParameters':
         return OperationalParameters(
             temperature=json.get("temperature", 0),
             oil_age=json.get("oil_age", 0),
@@ -41,14 +41,14 @@ class MachineStats(BaseModel):
         return False
 
     def __str__(self):
-        return f"MachineStats(predicted_rul={self.predicted_rul}, health_percentage={self.health_percentage})"
+        return (f"MachineStats(predicted_rul={self.predicted_rul}, health_percentage={self.health_percentage}), "
+                f"operational_parameters={self.operational_parameters})")
 
 
 class GameSession(BaseModel):
     id: str
     current_step: int = 0
     machine_stats: MachineStats | None = None
-    operational_parameters: OperationalParameters | None = None
 
     # This function can be updated in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
@@ -84,11 +84,12 @@ class GameSession(BaseModel):
         return collected_machine_stats_during_turn
 
     def _update_machine_stats(self):
-        self.machine_stats.health_percentage = get_health_percentage(self.current_step)
+        self.machine_stats.health_percentage = get_health_percentage(self.current_step,
+                                                                     initial_value=self.machine_stats.health_percentage)
         self.machine_stats.operational_parameters = get_parameter_values(self.current_step)
         self.machine_stats.predicted_rul = self.rul_predictor(self.current_step)
 
-    def _log(self, multiple=5):
+    def _log(self, multiple=1):
         if self.current_step % multiple == 0:
             print(f"GameSession '{self.id}' - step: {self.current_step} - {self.machine_stats}")
 
@@ -103,7 +104,7 @@ class GameSessionDTO(BaseModel):
         return GameSessionDTO(
             id=session.id,
             current_step=session.current_step,
-            machine_stats=session.machine_stats
+            machine_stats=session.machine_stats,
         )
 
     @staticmethod

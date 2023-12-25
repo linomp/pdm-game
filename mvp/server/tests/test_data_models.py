@@ -13,7 +13,7 @@ def test_game_session_initialization(game_session):
     assert game_session.id == "test_session"
     assert game_session.current_step == 0
     assert game_session.machine_stats is not None
-    assert game_session.operational_parameters is None
+    assert game_session.machine_stats.operational_parameters is not None
 
 
 @pytest.mark.asyncio

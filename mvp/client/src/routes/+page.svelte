@@ -46,21 +46,19 @@
 		if (!gameSession || gameOver) {
 			return;
 		}
+		// TODO: migrate this polling strategy to a websocket connection
+		// start fetching machine health every second while the day is advancing
+		const intervalId = setInterval(fetchExistingSession, 700);
+		advanceButtonDisabled = true;
 
 		try {
-			// start fetching machine health every second while the day is advancing
-			const intervalId = setInterval(fetchExistingSession, 700);
-
-			advanceButtonDisabled = true;
-			gameSession = await SessionsService.advanceSessionTurnSessionTurnsPut(gameSession?.id);
-			advanceButtonDisabled = false;
-
-			// stop fetching machine health until the player advances to next day again
-			clearInterval(intervalId);
-
-			// TODO: migrate this polling strategy to a websocket connection
+			gameSession = await SessionsService.advanceSessionTurnsPut(gameSession?.id);
 		} catch (error) {
 			console.error('Error advancing day:', error);
+		} finally {
+			// stop fetching machine health until the player advances to next day again
+			clearInterval(intervalId);
+			advanceButtonDisabled = false;
 		}
 	};
 </script>
