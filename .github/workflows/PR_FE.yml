@@ -1,0 +1,29 @@
+name: Frontend Build
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Replace with your Node.js version
+
+      - name: Install dependencies
+        run: |
+          cd mvp/client
+          npm install
+
+      - name: Build frontend
+        run: |
+          cd mvp/client
+          npm run build
