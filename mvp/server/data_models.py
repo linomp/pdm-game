@@ -3,35 +3,52 @@ from typing import Any, Callable
 
 from pydantic import BaseModel
 
-from mvp.server.analysis import get_health_percentage, default_rul_prediction_fn
-from mvp.server.constants import STEPS_PER_MOVE
+from mvp.server.analysis import get_health_percentage, default_rul_prediction_fn, get_parameter_values
+from mvp.server.constants import TIMESTEPS_PER_MOVE
+
+
+class OperationalParameters(BaseModel):
+    temperature: float
+    oil_age: float
+    mechanical_wear: float
+
+    @staticmethod
+    def from_dict(json: dict[str, Any]):
+        return OperationalParameters(
+            temperature=json.get("temperature", 0),
+            oil_age=json.get("oil_age", 0),
+            mechanical_wear=json.get("mechanical_wear", 0)
+        )
 
 
 class MachineStats(BaseModel):
-    rul: int | None = None
+    predicted_rul: int | None = None
     health_percentage: int
+    operational_parameters: OperationalParameters | None = None
 
     @staticmethod
-    def from_json(json: dict[str, Any]):
-        return MachineStats(rul=json.get("rul", None), health_percentage=json.get("health_percentage", 0))
+    def from_dict(json: dict[str, Any]):
+        return MachineStats(predicted_rul=json.get("predicted_rul", None),
+                            health_percentage=json.get("health_percentage", 0))
 
     def is_broken(self) -> bool:
         if self.health_percentage <= 0:
             return True
 
-        if self.rul is not None and self.rul <= 0:
+        if self.predicted_rul is not None and self.predicted_rul <= 0:
             return True
 
         return False
 
     def __str__(self):
-        return f"MachineStats(rul={self.rul}, health_percentage={self.health_percentage})"
+        return f"MachineStats(predicted_rul={self.predicted_rul}, health_percentage={self.health_percentage})"
 
 
 class GameSession(BaseModel):
     id: str
     current_step: int = 0
     machine_stats: MachineStats | None = None
+    operational_parameters: OperationalParameters | None = None
 
     # This function can be updated in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
@@ -41,14 +58,15 @@ class GameSession(BaseModel):
 
         # init player's machine
         self.machine_stats = MachineStats(
-            rul=None,
-            health_percentage=get_health_percentage(self.current_step)
+            predicted_rul=None,
+            health_percentage=get_health_percentage(self.current_step),
+            operational_parameters=OperationalParameters.from_dict(get_parameter_values(self.current_step))
         )
 
     async def advance_one_turn(self) -> list[MachineStats]:
         collected_machine_stats_during_turn = []
 
-        for _ in range(STEPS_PER_MOVE):
+        for _ in range(TIMESTEPS_PER_MOVE):
             # collect stats
             collected_machine_stats_during_turn.append(self.machine_stats)
 
@@ -67,7 +85,8 @@ class GameSession(BaseModel):
 
     def _update_machine_stats(self):
         self.machine_stats.health_percentage = get_health_percentage(self.current_step)
-        self.machine_stats.rul = self.rul_predictor(self.current_step)
+        self.machine_stats.operational_parameters = get_parameter_values(self.current_step)
+        self.machine_stats.predicted_rul = self.rul_predictor(self.current_step)
 
     def _log(self, multiple=5):
         if self.current_step % multiple == 0:
@@ -88,9 +107,9 @@ class GameSessionDTO(BaseModel):
         )
 
     @staticmethod
-    def from_json(json: dict[str, Any]):
+    def from_dict(json: dict[str, Any]):
         return GameSessionDTO(
             id=json.get("id", ""),
             current_step=json.get("current_step", 0),
-            machine_stats=MachineStats.from_json(json.get("machine_stats", {}))
+            machine_stats=MachineStats.from_dict(json.get("machine_stats", {}))
         )
