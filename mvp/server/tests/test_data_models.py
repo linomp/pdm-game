@@ -6,7 +6,7 @@ from mvp.server.data_models import GameSession
 
 @pytest.fixture
 def game_session():
-    return GameSession(id="test_session")
+    return GameSession.new_game_session(id="test_session", current_step=0)
 
 
 def test_game_session_initialization(game_session):

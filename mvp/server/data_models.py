@@ -24,12 +24,7 @@ class OperationalParameters(BaseModel):
 class MachineStats(BaseModel):
     predicted_rul: int | None = None
     health_percentage: int
-    operational_parameters: OperationalParameters | None = None
-
-    @staticmethod
-    def from_dict(json: dict[str, Any]):
-        return MachineStats(predicted_rul=json.get("predicted_rul", None),
-                            health_percentage=json.get("health_percentage", 0))
+    operational_parameters: OperationalParameters
 
     def is_broken(self) -> bool:
         if self.health_percentage <= 0:
@@ -40,6 +35,16 @@ class MachineStats(BaseModel):
 
         return False
 
+    @staticmethod
+    def from_dict(json: dict[str, Any]):
+        return MachineStats(
+            predicted_rul=json.get("predicted_rul", None),
+            health_percentage=json.get("health_percentage", 0),
+            operational_parameters=OperationalParameters.from_dict(
+                json.get("operational_parameters", {})
+            )
+        )
+
     def __str__(self):
         return (f"MachineStats(predicted_rul={self.predicted_rul}, health_percentage={self.health_percentage}), "
                 f"operational_parameters={self.operational_parameters})")
@@ -48,19 +53,21 @@ class MachineStats(BaseModel):
 class GameSession(BaseModel):
     id: str
     current_step: int = 0
-    machine_stats: MachineStats | None = None
+    machine_stats: MachineStats
 
-    # This function can be updated in-game, to simulate a change in the model (an "upgrade" for the player)
+    # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
 
-    def __init__(self, id: str, current_step: int = 0):
-        super().__init__(id=id, current_step=current_step)
-
-        # init player's machine
-        self.machine_stats = MachineStats(
-            predicted_rul=None,
-            health_percentage=get_health_percentage(self.current_step),
-            operational_parameters=OperationalParameters.from_dict(get_parameter_values(self.current_step))
+    @staticmethod
+    def new_game_session(id: str, current_step: int = 0):
+        return GameSession(
+            id=id,
+            current_step=0,
+            machine_stats=MachineStats(
+                predicted_rul=None,
+                health_percentage=get_health_percentage(current_step),
+                operational_parameters=OperationalParameters.from_dict(get_parameter_values(current_step))
+            )
         )
 
     async def advance_one_turn(self) -> list[MachineStats]:

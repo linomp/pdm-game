@@ -35,7 +35,7 @@ async def create_session() -> GameSessionDTO:
     new_session_id = uuid.uuid4().hex
 
     if new_session_id not in sessions:
-        session = GameSession(id=new_session_id)
+        session = GameSession.new_game_session(id=new_session_id)
         sessions[new_session_id] = session
 
     return GameSessionDTO.from_session(sessions[new_session_id])
