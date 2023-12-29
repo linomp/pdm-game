@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse, JSONResponse
 
-from mvp.server.data_models import GameSession, GameSessionDTO
+from mvp.server.data_models.GameSession import GameSession, GameSessionDTO
 
 app = FastAPI()
 app.add_middleware(
@@ -19,9 +19,6 @@ sessions: dict[str, GameSession] = {}
 
 @app.on_event("shutdown")
 async def cleanup_sessions():
-    for session in sessions.values():
-        session.stop_incrementing()
-
     sessions.clear()
 
 
@@ -58,7 +55,7 @@ async def advance(session_id: str) -> GameSessionDTO | JSONResponse:
 
     session = sessions[session_id]
 
-    # TODO: do something with the returned list of MachineStats
+    # TODO: do something with the returned list of MachineStats. May be useful for prediction functionality.
     await session.advance_one_turn()
 
     return GameSessionDTO.from_session(session)

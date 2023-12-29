@@ -1,7 +1,7 @@
 import pytest
 
 from mvp.server.constants import TIMESTEPS_PER_MOVE
-from mvp.server.data_models import GameSession
+from mvp.server.data_models.GameSession import GameSession
 
 
 @pytest.fixture

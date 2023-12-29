@@ -1,48 +1,24 @@
-from mvp.server.constants import TIMESTEPS_PER_MOVE
-from mvp.server.math_utils import exponential_decay, linear_growth_with_reset
+from mvp.server.constants import OIL_AGE_MAPPING_MAX, TEMPERATURE_MAPPING_MAX, \
+    MECHANICAL_WEAR_MAPPING_MAX
+from mvp.server.math_utils import map_value
 
 
-def get_health_percentage(current_timestep: int, initial_value=100) -> int:
-    health_decay_speed = compute_decay_speed(current_timestep)
-    raw_val = round(exponential_decay(current_timestep, initial_value=initial_value, decay_speed=health_decay_speed))
-    return min(100, max(0, raw_val))
-
-
-def compute_decay_speed(current_timestep: int) -> float:
-    # Made-up calculation involving operational parameters:  temperature, oil age, mechanical wear
-    # - temperature grows linearly over the 8 hours of a shift (resets every 8 hours)
-    # - oil age grows monotonically, directly proportional to temperature and resets only after every maintenance routine
-    # - mechanical wear grows monotonically, directly proportional to oil age, for now it never resets (such that at some point, the machine will definitely break and game over)
-
-    parameter_values = get_parameter_values(current_timestep)
-
+def compute_decay_speed(parameter_values: 'OperationalParameters') -> float:
     # TODO: calibrate these weights
-    computed = parameter_values["temperature"] * 0.01 + parameter_values["oil_age"] * 0.01 + parameter_values[
-        "mechanical_wear"] * 0.01
+    temperature_weight = 0.01
+    oil_age_weight = 0.01
+    mechanical_wear_weight = 0.01
 
-    # decay speed will always bet between 0.1 and 0.2
-    return min(computed / 3, 0.3)
+    # Made-up calculation involving operational parameters:  temperature, oil age, mechanical wear
+    computed = parameter_values.temperature * temperature_weight + \
+               parameter_values.oil_age * oil_age_weight + \
+               parameter_values.mechanical_wear * mechanical_wear_weight
 
+    mapping_max = TEMPERATURE_MAPPING_MAX * temperature_weight + \
+                  OIL_AGE_MAPPING_MAX * oil_age_weight + \
+                  MECHANICAL_WEAR_MAPPING_MAX * mechanical_wear_weight
 
-def get_parameter_values(current_timestep: int) -> dict[str, float]:
-    return {
-        "temperature": get_machine_temperature(current_timestep),
-        "oil_age": get_oil_age(current_timestep),
-        "mechanical_wear": get_mechanical_wear(current_timestep)
-    }
-
-
-def get_machine_temperature(current_timestep: int) -> float:
-    # return max(0, current_timestep - 1) % TIMESTEPS_PER_MOVE
-    return linear_growth_with_reset(initial_value=0, period=TIMESTEPS_PER_MOVE, time=current_timestep)
-
-
-def get_oil_age(current_timestep: int) -> float:
-    return 0.
-
-
-def get_mechanical_wear(current_timestep: int) -> float:
-    return 0.
+    return map_value(computed, from_low=0, from_high=mapping_max, to_low=0, to_high=0.3)
 
 
 def default_rul_prediction_fn(current_timestep: int) -> int | None:
