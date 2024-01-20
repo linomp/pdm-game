@@ -10,6 +10,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 export type { GameSessionDTO } from './models/GameSessionDTO';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { MachineStats } from './models/MachineStats';
+export type { OperationalParameters } from './models/OperationalParameters';
 export type { ValidationError } from './models/ValidationError';
 
 export { DefaultService } from './services/DefaultService';

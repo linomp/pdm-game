@@ -3,7 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { OperationalParameters } from './OperationalParameters';
+
 export type MachineStats = {
-    rul?: (number | null);
+    predicted_rul?: (number | null);
     health_percentage: number;
+    operational_parameters?: (OperationalParameters | null);
 };

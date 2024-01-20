@@ -1,0 +1,27 @@
+name: MVP Frontend Build
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+
+      - name: Install dependencies
+        run: |
+          cd mvp/client
+          npm install
+
+      - name: Build frontend
+        run: |
+          cd mvp/client
+          npm run build

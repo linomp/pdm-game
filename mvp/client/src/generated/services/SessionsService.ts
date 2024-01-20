@@ -44,12 +44,12 @@ sessionId: string,
     }
 
     /**
-     * Advance Session Turn
+     * Advance
      * @param sessionId 
      * @returns GameSessionDTO Successful Response
      * @throws ApiError
      */
-    public static advanceSessionTurnSessionTurnsPut(
+    public static advanceSessionTurnsPut(
 sessionId: string,
 ): CancelablePromise<GameSessionDTO> {
         return __request(OpenAPI, {
