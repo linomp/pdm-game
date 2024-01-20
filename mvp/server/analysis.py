@@ -5,8 +5,8 @@ from mvp.server.math_utils import map_value
 
 def compute_decay_speed(parameter_values: 'OperationalParameters') -> float:
     # TODO: calibrate these weights
-    temperature_weight = 0.01
-    oil_age_weight = 0.01
+    temperature_weight = 0.001
+    oil_age_weight = 0.001
     mechanical_wear_weight = 0.01
 
     # Made-up calculation involving operational parameters:  temperature, oil age, mechanical wear

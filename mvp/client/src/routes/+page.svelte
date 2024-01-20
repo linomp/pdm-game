@@ -53,6 +53,7 @@
 		} catch (error) {
 			console.error('Error advancing day:', error);
 		} finally {
+			await fetchExistingSession();
 			// stop fetching machine health until the player advances to next day again
 			clearInterval(intervalId);
 			advanceButtonDisabled = false;

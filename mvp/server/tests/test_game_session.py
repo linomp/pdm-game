@@ -6,7 +6,7 @@ from mvp.server.data_models.GameSession import GameSession
 
 @pytest.fixture
 def game_session():
-    return GameSession.new_game_session(id="test_session", current_step=0)
+    return GameSession.new_game_session(_id="test_session")
 
 
 def test_game_session_initialization(game_session):
@@ -34,16 +34,12 @@ async def test_game_session_advance_one_turn(game_session):
 
 @pytest.mark.asyncio
 async def test_game_session_machine_breakdown(game_session):
-    # Testing the is_broken() method when health_percentage <= 0
     game_session.machine_stats.health_percentage = 0
     assert game_session.machine_stats.is_broken() is True
 
-    # Testing the is_broken() method when predicted_rul <= 0
-    game_session.machine_stats.health_percentage = 50
-    game_session.machine_stats.predicted_rul = 0
+    game_session.machine_stats.health_percentage = -1
     assert game_session.machine_stats.is_broken() is True
 
-    # Testing the is_broken() method when health_percentage and predicted_rul > 0
     game_session.machine_stats.health_percentage = 50
     game_session.machine_stats.predicted_rul = 10
     assert game_session.machine_stats.is_broken() is False

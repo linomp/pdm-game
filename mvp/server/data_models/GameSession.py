@@ -17,11 +17,11 @@ class GameSession(BaseModel):
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
 
     @staticmethod
-    def new_game_session(id: str, current_step: int = 0):
+    def new_game_session(_id: str):
         return GameSession(
-            id=id,
+            id=_id,
             current_step=0,
-            machine_stats=MachineStats.new_machine_stats(current_step)
+            machine_stats=MachineStats.new_machine_stats()
         )
 
     async def advance_one_turn(self) -> list[MachineStats]:
@@ -43,6 +43,9 @@ class GameSession(BaseModel):
             await asyncio.sleep(0.5)
 
         return collected_machine_stats_during_turn
+
+    def do_maintenance(self):
+        self.machine_stats.simulate_maintenance()
 
     def _log(self, multiple=5):
         if self.current_step % multiple == 0:
