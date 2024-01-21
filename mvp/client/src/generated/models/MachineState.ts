@@ -5,8 +5,8 @@
 
 import type { OperationalParameters } from './OperationalParameters';
 
-export type MachineStats = {
+export type MachineState = {
     predicted_rul?: (number | null);
     health_percentage: number;
-    operational_parameters?: (OperationalParameters | null);
+    operational_parameters: OperationalParameters;
 };

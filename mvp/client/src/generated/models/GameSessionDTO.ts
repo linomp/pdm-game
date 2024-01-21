@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MachineStats } from './MachineStats';
+import type { MachineState } from './MachineState';
 
 export type GameSessionDTO = {
     id: string;
     current_step: number;
-    machine_stats?: (MachineStats | null);
+    machine_state?: (MachineState | null);
 };
