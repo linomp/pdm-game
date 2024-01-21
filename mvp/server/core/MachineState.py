@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from mvp.server.analysis import compute_decay_speed
 from mvp.server.constants import TEMPERATURE_STARTING_POINT
-from mvp.server.data_models.OperationalParameters import OperationalParameters
+from mvp.server.core.OperationalParameters import OperationalParameters
 from mvp.server.math_utils import exponential_decay
 
 
@@ -14,7 +14,7 @@ class MachineState(BaseModel):
     operational_parameters: OperationalParameters
 
     @staticmethod
-    def new_machine_stats():
+    def new_machine_state():
         return MachineState(
             health_percentage=100,
             operational_parameters=OperationalParameters(
@@ -31,11 +31,11 @@ class MachineState(BaseModel):
         self.operational_parameters = OperationalParameters(
             temperature=TEMPERATURE_STARTING_POINT,
             oil_age=0,
-            mechanical_wear=self.operational_parameters.mechanical_wear / 2
+            mechanical_wear=self.operational_parameters.mechanical_wear / 10
         )
-        # TODO: confirm if it makes sense to reset the health percentage; maybe should be kept as is,
+        # TODO: decide if it makes sense to restore some health percentage; maybe should be kept as is,
         #  maintenance does not mean  "new" machine, only slows down the decay
-        # self.health_percentage = 100
+        self.health_percentage = min(100, max(0, round(self.health_percentage * 1.05)))
 
     def update_stats_and_parameters(self, timestep: int, rul_predictor: Callable[[int], int | None] = None):
         self.operational_parameters.update(timestep)

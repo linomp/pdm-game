@@ -1,5 +1,5 @@
 from mvp.server.constants import TIMESTEPS_PER_MOVE
-from mvp.server.data_models.MachineState import OperationalParameters
+from mvp.server.core.MachineState import OperationalParameters
 
 
 def test_temperature_grows_monotonically():

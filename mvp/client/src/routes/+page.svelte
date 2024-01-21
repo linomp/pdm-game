@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { SessionsService, type GameSessionDTO, OpenAPI } from '../generated';
+	import {
+		SessionsService,
+		type GameSessionDTO,
+		OpenAPI,
+		MachineInterventionsService
+	} from '../generated';
 	import runningMachineSrc from '$lib/assets/healthy.gif';
 
 	const stoppedMachineSrc = new URL('../lib/assets/stopped.PNG', import.meta.url).href;
@@ -7,6 +12,7 @@
 	let gameSession: GameSessionDTO | null;
 	let gameOver = false;
 	let advanceButtonDisabled = false;
+	let maintenanceButtonDisabled = false;
 
 	let stopAnimation = false;
 
@@ -47,6 +53,7 @@
 		// start fetching machine health every second while the day is advancing
 		const intervalId = setInterval(fetchExistingSession, 500);
 		advanceButtonDisabled = true;
+		maintenanceButtonDisabled = true;
 
 		try {
 			gameSession = await SessionsService.advanceSessionTurnsPut(gameSession?.id);
@@ -57,6 +64,24 @@
 			// stop fetching machine health until the player advances to next day again
 			clearInterval(intervalId);
 			advanceButtonDisabled = false;
+			maintenanceButtonDisabled = false;
+		}
+	};
+
+	const doMaintenance = async () => {
+		if (!gameSession || gameOver) {
+			return;
+		}
+
+		try {
+			maintenanceButtonDisabled = true;
+			gameSession =
+				await MachineInterventionsService.doMaintenanceSessionMachineInterventionsMaintenancePost(
+					gameSession?.id
+				);
+		} catch (error) {
+			console.error('Error performing maintenance:', error);
+			maintenanceButtonDisabled = false;
 		}
 	};
 
@@ -65,7 +90,7 @@
 			return;
 		}
 
-		if (gameSession?.machine_stats && gameSession.machine_stats.health_percentage <= 0) {
+		if (gameSession?.machine_state && gameSession.machine_state.health_percentage <= 0) {
 			gameOver = true;
 		}
 	};
@@ -93,6 +118,9 @@
 			</div>
 			<button on:click={advanceToNextDay} disabled={advanceButtonDisabled}
 				>Advance to next day</button
+			>
+			<button on:click={doMaintenance} disabled={maintenanceButtonDisabled}
+				>Perform Maintenance</button
 			>
 		{/if}
 	{:else}

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse, JSONResponse
 
-from mvp.server.data_models.GameSession import GameSession, GameSessionDTO
+from mvp.server.core.GameSession import GameSession, GameSessionDTO
 
 app = FastAPI()
 app.add_middleware(
@@ -57,5 +57,17 @@ async def advance(session_id: str) -> GameSessionDTO | JSONResponse:
 
     # TODO: do something with the returned list of MachineState. May be useful for prediction functionality.
     await session.advance_one_turn()
+
+    return GameSessionDTO.from_session(session)
+
+
+@app.post("/session/machine/interventions/maintenance", response_model=GameSessionDTO, tags=["Machine Interventions"])
+async def do_maintenance(session_id: str) -> GameSessionDTO | JSONResponse:
+    if session_id not in sessions:
+        return JSONResponse(status_code=404, content={"message": "Session not found"})
+
+    session = sessions[session_id]
+
+    session.do_maintenance()
 
     return GameSessionDTO.from_session(session)
