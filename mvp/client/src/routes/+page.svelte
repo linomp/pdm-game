@@ -11,6 +11,7 @@
 
 	let gameSession: GameSessionDTO | null;
 	let gameOver = false;
+	let gameOverReason: string | null = null;
 	let advanceButtonDisabled = false;
 	let maintenanceButtonDisabled = false;
 
@@ -90,9 +91,8 @@
 			return;
 		}
 
-		if (gameSession?.machine_state && gameSession.machine_state.health_percentage <= 0) {
-			gameOver = true;
-		}
+		gameOver = gameSession.is_game_over ?? false;
+		gameOverReason = gameSession.game_over_reason ?? null;
 	};
 </script>
 
@@ -110,7 +110,7 @@
 		{#if gameOver}
 			<h3>Game Over</h3>
 			<pre>{JSON.stringify(gameSession, null, 2)}</pre>
-			<p>Machine health has reached 0%.</p>
+			<p>{gameOverReason}</p>
 		{:else}
 			<div>
 				<h3>Game Session Details</h3>

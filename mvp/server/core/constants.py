@@ -1,7 +1,16 @@
+# Gameplay
 DEFAULT_SESSION_ID = 'test'
 GAME_TICK_INTERVAL = 0.5
 TIMESTEPS_PER_MOVE = 8  # we conceptualize every player move as a full working day, or "8 hours"
+
+# Machine Simulation
 TEMPERATURE_STARTING_POINT = 20
 OIL_AGE_MAPPING_MAX = 365
 TEMPERATURE_MAPPING_MAX = 200
 MECHANICAL_WEAR_MAPPING_MAX = 100
+
+# Financials
+INITIAL_CASH = 0
+REVENUE_PER_DAY = 20
+MAINTENANCE_COST = 50
+SENSOR_COST = 100

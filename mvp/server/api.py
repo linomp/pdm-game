@@ -68,6 +68,9 @@ async def do_maintenance(session_id: str) -> GameSessionDTO | JSONResponse:
 
     session = sessions[session_id]
 
-    session.do_maintenance()
+    success = session.do_maintenance()
+
+    if not success:
+        return JSONResponse(status_code=400, content={"message": "Not enough funds to do maintenance"})
 
     return GameSessionDTO.from_session(session)
