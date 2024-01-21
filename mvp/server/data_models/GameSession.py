@@ -5,13 +5,13 @@ from pydantic import BaseModel
 
 from mvp.server.analysis import default_rul_prediction_fn
 from mvp.server.constants import TIMESTEPS_PER_MOVE
-from mvp.server.data_models.MachineStats import MachineStats
+from mvp.server.data_models.MachineState import MachineState
 
 
 class GameSession(BaseModel):
     id: str
     current_step: int = 0
-    machine_stats: MachineStats
+    machine_stats: MachineState
 
     # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
@@ -21,10 +21,10 @@ class GameSession(BaseModel):
         return GameSession(
             id=_id,
             current_step=0,
-            machine_stats=MachineStats.new_machine_stats()
+            machine_stats=MachineState.new_machine_stats()
         )
 
-    async def advance_one_turn(self) -> list[MachineStats]:
+    async def advance_one_turn(self) -> list[MachineState]:
         collected_machine_stats_during_turn = []
 
         for _ in range(TIMESTEPS_PER_MOVE):
@@ -55,7 +55,7 @@ class GameSession(BaseModel):
 class GameSessionDTO(BaseModel):
     id: str
     current_step: int
-    machine_stats: MachineStats | None = None
+    machine_stats: MachineState | None = None
 
     @staticmethod
     def from_session(session: 'GameSession'):
@@ -70,5 +70,5 @@ class GameSessionDTO(BaseModel):
         return GameSessionDTO(
             id=json.get("id", ""),
             current_step=json.get("current_step", 0),
-            machine_stats=MachineStats.from_dict(json.get("machine_stats", {}))
+            machine_stats=MachineState.from_dict(json.get("machine_stats", {}))
         )

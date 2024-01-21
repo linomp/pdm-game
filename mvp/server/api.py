@@ -55,7 +55,7 @@ async def advance(session_id: str) -> GameSessionDTO | JSONResponse:
 
     session = sessions[session_id]
 
-    # TODO: do something with the returned list of MachineStats. May be useful for prediction functionality.
+    # TODO: do something with the returned list of MachineState. May be useful for prediction functionality.
     await session.advance_one_turn()
 
     return GameSessionDTO.from_session(session)
