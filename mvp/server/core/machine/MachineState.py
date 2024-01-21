@@ -2,10 +2,9 @@ from typing import Any, Callable
 
 from pydantic import BaseModel
 
-from mvp.server.analysis import compute_decay_speed
-from mvp.server.constants import TEMPERATURE_STARTING_POINT
-from mvp.server.core.OperationalParameters import OperationalParameters
-from mvp.server.math_utils import exponential_decay
+from mvp.server.core.constants import TEMPERATURE_STARTING_POINT
+from mvp.server.core.machine.OperationalParameters import OperationalParameters
+from mvp.server.core.math_utils import exponential_decay
 
 
 class MachineState(BaseModel):
@@ -24,10 +23,22 @@ class MachineState(BaseModel):
             )
         )
 
-    def is_broken(self) -> bool:
-        return self.health_percentage <= 0
+    def update(self, timestep: int, rul_predictor: Callable[[int], int | None] = None):
+        self.operational_parameters.update(timestep)
+        self.health_percentage = self.compute_health_percentage(timestep)
+        self.predicted_rul = rul_predictor(timestep)
 
-    def simulate_maintenance(self):
+    def compute_health_percentage(self, current_timestep: int) -> int:
+        raw_value = round(
+            exponential_decay(
+                current_timestep,
+                initial_value=self.health_percentage,
+                decay_speed=self.operational_parameters.compute_decay_speed()
+            )
+        )
+        return min(100, max(0, raw_value))
+
+    def do_maintenance(self):
         self.operational_parameters = OperationalParameters(
             temperature=TEMPERATURE_STARTING_POINT,
             oil_age=0,
@@ -37,21 +48,8 @@ class MachineState(BaseModel):
         #  maintenance does not mean  "new" machine, only slows down the decay
         self.health_percentage = min(100, max(0, round(self.health_percentage * 1.05)))
 
-    def update_stats_and_parameters(self, timestep: int, rul_predictor: Callable[[int], int | None] = None):
-        self.operational_parameters.update(timestep)
-        self.health_percentage = self.get_health_percentage(timestep)
-        self.predicted_rul = rul_predictor(timestep)
-
-    def get_health_percentage(self, current_timestep: int) -> int:
-        health_decay_speed = compute_decay_speed(self.operational_parameters)
-        raw_value = round(
-            exponential_decay(
-                current_timestep,
-                initial_value=self.health_percentage,
-                decay_speed=health_decay_speed
-            )
-        )
-        return min(100, max(0, raw_value))
+    def is_broken(self) -> bool:
+        return self.health_percentage <= 0
 
     @staticmethod
     def from_dict(json: dict[str, Any]):

@@ -3,9 +3,9 @@ from typing import Any, Callable
 
 from pydantic import BaseModel
 
-from mvp.server.analysis import default_rul_prediction_fn
-from mvp.server.constants import TIMESTEPS_PER_MOVE
-from mvp.server.core.MachineState import MachineState
+from mvp.server.core.analysis.rul_prediction import default_rul_prediction_fn
+from mvp.server.core.constants import TIMESTEPS_PER_MOVE
+from mvp.server.core.machine.MachineState import MachineState
 
 
 class GameSession(BaseModel):
@@ -32,26 +32,26 @@ class GameSession(BaseModel):
         return False
 
     async def advance_one_turn(self) -> list[MachineState]:
-        collected_machine_state_during_turn = []
+        collected_machine_states_during_turn = []
 
         for _ in range(TIMESTEPS_PER_MOVE):
             # collect stats
-            collected_machine_state_during_turn.append(self.machine_state)
+            collected_machine_states_during_turn.append(self.machine_state)
 
             if self.is_game_over():
                 break
 
             self.current_step += 1
-            self.machine_state.update_stats_and_parameters(self.current_step, self.rul_predictor)
+            self.machine_state.update(self.current_step, self.rul_predictor)
             self._log()
 
             await asyncio.sleep(0.5)
 
-        return collected_machine_state_during_turn
+        return collected_machine_states_during_turn
 
     def do_maintenance(self):
         # TODO - add a cost for maintenance, reject if player doesn't have enough money
-        self.machine_state.simulate_maintenance()
+        self.machine_state.do_maintenance()
 
     def _log(self, multiple=5):
         if self.current_step % multiple == 0:

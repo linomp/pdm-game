@@ -2,9 +2,8 @@ import math
 
 from pydantic import BaseModel
 
-from mvp.server.constants import TIMESTEPS_PER_MOVE, TEMPERATURE_STARTING_POINT, TEMPERATURE_MAPPING_MAX, \
-    OIL_AGE_MAPPING_MAX, MECHANICAL_WEAR_MAPPING_MAX
-from mvp.server.math_utils import linear_growth_with_reset, map_value
+from mvp.server.core.constants import *
+from mvp.server.core.math_utils import linear_growth_with_reset, map_value
 
 
 class OperationalParameters(BaseModel):
@@ -16,6 +15,25 @@ class OperationalParameters(BaseModel):
         self.temperature = self.compute_machine_temperature(current_timestep)
         self.oil_age = self.compute_oil_age(current_timestep)
         self.mechanical_wear = self.compute_mechanical_wear(current_timestep)
+
+    def compute_decay_speed(self) -> float:
+        # TODO: calibrate these weights
+        temperature_weight = 0.0005
+        oil_age_weight = 0.001
+        mechanical_wear_weight = 0.005
+
+        # Made-up calculation involving operational parameters:  temperature, oil age, mechanical wear
+        computed = self.temperature * temperature_weight + \
+                   self.oil_age * oil_age_weight + \
+                   self.mechanical_wear * mechanical_wear_weight
+
+        mapping_max = TEMPERATURE_MAPPING_MAX * temperature_weight + \
+                      OIL_AGE_MAPPING_MAX * oil_age_weight + \
+                      MECHANICAL_WEAR_MAPPING_MAX * mechanical_wear_weight
+
+        computed = min(mapping_max, computed)
+
+        return map_value(computed, from_low=0, from_high=mapping_max, to_low=0, to_high=0.1)
 
     def compute_machine_temperature(self, current_timestep: int) -> float:
         # temperature grows linearly over the 8 hours of a shift (resets every 8 hours)
