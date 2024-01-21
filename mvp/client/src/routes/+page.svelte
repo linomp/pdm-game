@@ -15,6 +15,9 @@
 	let advanceButtonDisabled = false;
 	let maintenanceButtonDisabled = false;
 
+	// TODO: add logic to disable maintenance button when player can't afford it
+	// TODO: show cost of maintenance in the button
+
 	let stopAnimation = false;
 
 	$: {
