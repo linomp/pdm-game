@@ -83,8 +83,12 @@
 				await MachineInterventionsService.doMaintenanceSessionMachineInterventionsMaintenancePost(
 					gameSession?.id
 				);
-		} catch (error) {
-			console.error('Error performing maintenance:', error);
+		} catch (error: any) {
+			if (error.status === 400) {
+				alert('Not enough funds to perform maintenance!');
+			} else {
+				console.error('Error performing maintenance:', error);
+			}
 			maintenanceButtonDisabled = false;
 		}
 	};
@@ -123,7 +127,7 @@
 				>Advance to next day</button
 			>
 			<button on:click={doMaintenance} disabled={maintenanceButtonDisabled}
-				>Perform Maintenance</button
+				>Perform Maintenance ($50)</button
 			>
 		{/if}
 	{:else}
