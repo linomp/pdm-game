@@ -28,18 +28,18 @@ class GameSession(BaseModel):
         )
 
     def check_if_game_over(self):
+        self.is_game_over = True
+
         if self.machine_state.is_broken():
             print(f"GameSession '{self.id}' - machine failed at step {self.current_step} - {self.machine_state}")
-            self.is_game_over = True
-            return
-
-        if self.available_funds <= 0:
+        # TODO: decide if to allow for slightly negative overshoot (player debt)
+        elif self.available_funds <= 0:
             print(
                 f"GameSession '{self.id}' - player ran out of money at step {self.current_step} - {self.machine_state}")
-            self.is_game_over = True
-            return
+        else:
+            self.is_game_over = False
 
-        self.is_game_over = False
+        return self.is_game_over
 
     async def advance_one_turn(self) -> list[MachineState]:
         collected_machine_states_during_turn = []
