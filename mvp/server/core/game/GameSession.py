@@ -4,7 +4,7 @@ from typing import Any, Callable
 from pydantic import BaseModel
 
 from mvp.server.core.analysis.rul_prediction import default_rul_prediction_fn
-from mvp.server.core.constants import TIMESTEPS_PER_MOVE, INITIAL_CASH, MAINTENANCE_COST, REVENUE_PER_DAY
+from mvp.server.core.constants import *
 from mvp.server.core.machine.MachineState import MachineState
 
 
@@ -33,8 +33,7 @@ class GameSession(BaseModel):
             self.is_game_over = True
             return
 
-        # TODO: decide if < 0 or <= 0
-        if self.available_funds < 0:
+        if self.available_funds <= 0:
             print(
                 f"GameSession '{self.id}' - player ran out of money at step {self.current_step} - {self.machine_state}")
             self.is_game_over = True
@@ -97,7 +96,7 @@ class GameSessionDTO(BaseModel):
         )
 
         if session.is_game_over:
-            dto.game_over_reason = "Machine health has reached 0%" if session.machine_state.is_broken() else "Player ran out of money"
+            dto.game_over_reason = GAME_OVER_MESSAGE_MACHINE_BREAKDOWN if session.machine_state.is_broken() else GAME_OVER_MESSAGE_NO_MONEY
 
         return dto
 

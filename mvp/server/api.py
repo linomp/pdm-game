@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse, JSONResponse
 
 from mvp.server.core.game.GameSession import GameSession, GameSessionDTO
+from mvp.server.core.game.GlobalSettings import GlobalSettings
 
 app = FastAPI()
 app.add_middleware(
@@ -25,6 +26,11 @@ async def cleanup_sessions():
 @app.get("/")
 async def root():
     return RedirectResponse(url="/docs")
+
+
+@app.get("/global-settings", tags=["Global Settings"])
+async def get_settings() -> GlobalSettings:
+    return GlobalSettings()
 
 
 @app.post("/session", response_model=GameSessionDTO, tags=["Sessions"])
