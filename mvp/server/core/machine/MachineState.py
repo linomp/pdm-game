@@ -42,11 +42,11 @@ class MachineState(BaseModel):
         self.operational_parameters = OperationalParameters(
             temperature=TEMPERATURE_STARTING_POINT,
             oil_age=0,
-            mechanical_wear=self.operational_parameters.mechanical_wear / 10
+            mechanical_wear=self.operational_parameters.mechanical_wear / 100
         )
         # TODO: decide if it makes sense to restore some health percentage; maybe should be kept as is,
         #  maintenance does not mean  "new" machine, only slows down the decay
-        self.health_percentage = min(100, max(0, round(self.health_percentage * 1.05)))
+        self.health_percentage = min(100, max(0, round(self.health_percentage * 1.1)))
 
     def is_broken(self) -> bool:
         return self.health_percentage <= 0

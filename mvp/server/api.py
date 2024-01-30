@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse, JSONResponse
 
 from mvp.server.core.game.GameSession import GameSession, GameSessionDTO
+from mvp.server.core.game.GlobalSettings import GlobalSettings
 
 app = FastAPI()
 app.add_middleware(
@@ -25,6 +26,11 @@ async def cleanup_sessions():
 @app.get("/")
 async def root():
     return RedirectResponse(url="/docs")
+
+
+@app.get("/global-settings", tags=["Global Settings"])
+async def get_settings() -> GlobalSettings:
+    return GlobalSettings()
 
 
 @app.post("/session", response_model=GameSessionDTO, tags=["Sessions"])
@@ -68,6 +74,9 @@ async def do_maintenance(session_id: str) -> GameSessionDTO | JSONResponse:
 
     session = sessions[session_id]
 
-    session.do_maintenance()
+    success = session.do_maintenance()
+
+    if not success:
+        return JSONResponse(status_code=400, content={"message": "Not enough funds to do maintenance"})
 
     return GameSessionDTO.from_session(session)

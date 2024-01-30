@@ -33,7 +33,7 @@ class OperationalParameters(BaseModel):
 
         computed = min(mapping_max, computed)
 
-        return map_value(computed, from_low=0, from_high=mapping_max, to_low=0, to_high=0.1)
+        return map_value(computed, from_low=0, from_high=mapping_max, to_low=0, to_high=0.05)
 
     def compute_machine_temperature(self, current_timestep: int) -> float:
         # temperature grows linearly over the 8 hours of a shift (resets every 8 hours)
@@ -64,7 +64,7 @@ class OperationalParameters(BaseModel):
     def compute_mechanical_wear(self, current_timestep: int) -> float:
         # mechanical wear grows monotonically, directly proportional to oil ag.
         # for now it never resets (such that at some point, the machine will definitely break and game over)
-        raw_value = min(1e6, math.exp(current_timestep) * self.oil_age / 1e16)
+        raw_value = min(1e6, math.exp(current_timestep % TIMESTEPS_PER_MOVE) * self.oil_age / 1e16)
         return map_value(
             raw_value,
             from_low=0,

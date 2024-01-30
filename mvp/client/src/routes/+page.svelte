@@ -3,25 +3,39 @@
 		SessionsService,
 		type GameSessionDTO,
 		OpenAPI,
-		MachineInterventionsService
+		MachineInterventionsService,
+		type GlobalSettings,
+		GlobalSettingsService
 	} from '../generated';
 	import runningMachineSrc from '$lib/assets/healthy.gif';
+	import { onMount } from 'svelte';
 
 	const stoppedMachineSrc = new URL('../lib/assets/stopped.PNG', import.meta.url).href;
 
-	let gameSession: GameSessionDTO | null;
-	let gameOver = false;
-	let advanceButtonDisabled = false;
-	let maintenanceButtonDisabled = false;
-
-	let stopAnimation = false;
-
-	$: {
-		stopAnimation = gameOver || !advanceButtonDisabled;
-	}
-
 	// TODO remove this from here, find out where to put it (fucking sveltekit...)
 	OpenAPI.BASE = import.meta.env.VITE_API_BASE;
+
+	let gameSession: GameSessionDTO | null;
+	let gameOver = false;
+	let gameOverReason: string | null = null;
+	let maintenanceButtonDisabled = false;
+	let dayInProgress = false;
+	let stopAnimation = false;
+	let globalSettings: GlobalSettings;
+
+	$: {
+		stopAnimation = gameOver || !dayInProgress;
+		maintenanceButtonDisabled =
+			(gameSession?.available_funds ?? 0) < (globalSettings?.maintenance_cost ?? Infinity);
+	}
+
+	onMount(async () => {
+		try {
+			globalSettings = await GlobalSettingsService.getSettingsGlobalSettingsGet();
+		} catch (error) {
+			console.error('Error fetching global settings:', error);
+		}
+	});
 
 	const startSession = async () => {
 		try {
@@ -52,8 +66,7 @@
 		// TODO: migrate this polling strategy to a websocket connection
 		// start fetching machine health every second while the day is advancing
 		const intervalId = setInterval(fetchExistingSession, 500);
-		advanceButtonDisabled = true;
-		maintenanceButtonDisabled = true;
+		dayInProgress = true;
 
 		try {
 			gameSession = await SessionsService.advanceSessionTurnsPut(gameSession?.id);
@@ -63,8 +76,7 @@
 			await fetchExistingSession();
 			// stop fetching machine health until the player advances to next day again
 			clearInterval(intervalId);
-			advanceButtonDisabled = false;
-			maintenanceButtonDisabled = false;
+			dayInProgress = false;
 		}
 	};
 
@@ -74,14 +86,17 @@
 		}
 
 		try {
-			maintenanceButtonDisabled = true;
 			gameSession =
 				await MachineInterventionsService.doMaintenanceSessionMachineInterventionsMaintenancePost(
 					gameSession?.id
 				);
-		} catch (error) {
-			console.error('Error performing maintenance:', error);
-			maintenanceButtonDisabled = false;
+			await advanceToNextDay();
+		} catch (error: any) {
+			if (error.status === 400) {
+				alert('Not enough funds to perform maintenance!');
+			} else {
+				console.error('Error performing maintenance:', error);
+			}
 		}
 	};
 
@@ -90,9 +105,8 @@
 			return;
 		}
 
-		if (gameSession?.machine_state && gameSession.machine_state.health_percentage <= 0) {
-			gameOver = true;
-		}
+		gameOver = gameSession.is_game_over ?? false;
+		gameOverReason = gameSession.game_over_reason ?? null;
 	};
 </script>
 
@@ -110,18 +124,16 @@
 		{#if gameOver}
 			<h3>Game Over</h3>
 			<pre>{JSON.stringify(gameSession, null, 2)}</pre>
-			<p>Machine health has reached 0%.</p>
+			<p>{gameOverReason}</p>
 		{:else}
 			<div>
 				<h3>Game Session Details</h3>
 				<pre>{JSON.stringify(gameSession, null, 2)}</pre>
 			</div>
-			<button on:click={advanceToNextDay} disabled={advanceButtonDisabled}
-				>Advance to next day</button
-			>
-			<button on:click={doMaintenance} disabled={maintenanceButtonDisabled}
-				>Perform Maintenance</button
-			>
+			<button on:click={advanceToNextDay} disabled={dayInProgress}> Advance to next day </button>
+			<button on:click={doMaintenance} disabled={dayInProgress || maintenanceButtonDisabled}>
+				Perform Maintenance (${globalSettings?.maintenance_cost ?? 0})
+			</button>
 		{/if}
 	{:else}
 		<button on:click={startSession}>Start Session</button>
