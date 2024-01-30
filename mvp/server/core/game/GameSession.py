@@ -33,9 +33,10 @@ class GameSession(BaseModel):
         if self.machine_state.is_broken():
             print(f"GameSession '{self.id}' - machine failed at step {self.current_step} - {self.machine_state}")
         # TODO: decide if to allow for slightly negative overshoot (player debt)
-        elif self.available_funds <= 0:
-            print(
-                f"GameSession '{self.id}' - player ran out of money at step {self.current_step} - {self.machine_state}")
+        # TODO: decide if to bring back this rule. While testing it turned out frustrating for the player.
+        # elif self.available_funds <= 0:
+        #     print(
+        #         f"GameSession '{self.id}' - player ran out of money at step {self.current_step} - {self.machine_state}")
         else:
             self.is_game_over = False
 
