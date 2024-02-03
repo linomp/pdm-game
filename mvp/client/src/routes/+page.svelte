@@ -3,9 +3,9 @@
 		SessionsService,
 		type GameSessionDTO,
 		OpenAPI,
-		MachineInterventionsService,
-		type GlobalSettings,
-		GlobalSettingsService
+		PlayerActionsService,
+		type GameParameters,
+		GameParametersService
 	} from '../generated';
 	import runningMachineSrc from '$lib/assets/healthy.gif';
 	import { onMount } from 'svelte';
@@ -21,7 +21,7 @@
 	let maintenanceButtonDisabled = false;
 	let dayInProgress = false;
 	let stopAnimation = false;
-	let globalSettings: GlobalSettings;
+	let globalSettings: GameParameters;
 
 	$: {
 		stopAnimation = gameOver || !dayInProgress;
@@ -31,7 +31,7 @@
 
 	onMount(async () => {
 		try {
-			globalSettings = await GlobalSettingsService.getSettingsGlobalSettingsGet();
+			globalSettings = await GameParametersService.getParametersGameParametersGet();
 		} catch (error) {
 			console.error('Error fetching global settings:', error);
 		}
@@ -39,7 +39,7 @@
 
 	const startSession = async () => {
 		try {
-			gameSession = await SessionsService.createSessionSessionPost();
+			gameSession = await SessionsService.createSessionSessionsPost();
 		} catch (error) {
 			console.error('Error fetching session:', error);
 		}
@@ -51,7 +51,7 @@
 		}
 
 		try {
-			gameSession = await SessionsService.getSessionSessionGet(gameSession?.id);
+			gameSession = await SessionsService.getSessionSessionsGet(gameSession?.id);
 			checkForGameOver();
 		} catch (error) {
 			console.error('Error fetching session:', error);
@@ -69,7 +69,7 @@
 		dayInProgress = true;
 
 		try {
-			gameSession = await SessionsService.advanceSessionTurnsPut(gameSession?.id);
+			gameSession = await SessionsService.advanceSessionsTurnsPut(gameSession?.id);
 		} catch (error) {
 			console.error('Error advancing day:', error);
 		} finally {
@@ -87,7 +87,7 @@
 
 		try {
 			gameSession =
-				await MachineInterventionsService.doMaintenanceSessionMachineInterventionsMaintenancePost(
+				await PlayerActionsService.doMaintenancePlayerActionsMaintenanceInterventionsPost(
 					gameSession?.id
 				);
 			await advanceToNextDay();

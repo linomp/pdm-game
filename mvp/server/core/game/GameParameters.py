@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from mvp.server.core.constants import *
 
 
-class GlobalSettings(BaseModel):
+class GameParameters(BaseModel):
     initial_cash: float = INITIAL_CASH
     revenue_per_day: float = REVENUE_PER_DAY
     maintenance_cost: float = MAINTENANCE_COST

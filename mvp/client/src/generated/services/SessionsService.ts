@@ -15,10 +15,13 @@ export class SessionsService {
      * @returns GameSessionDTO Successful Response
      * @throws ApiError
      */
-    public static createSessionSessionPost(): CancelablePromise<GameSessionDTO> {
+    public static createSessionSessionsPost(): CancelablePromise<GameSessionDTO> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/session',
+            url: '/sessions/',
+            errors: {
+                404: `Not found`,
+            },
         });
     }
 
@@ -28,16 +31,17 @@ export class SessionsService {
      * @returns GameSessionDTO Successful Response
      * @throws ApiError
      */
-    public static getSessionSessionGet(
+    public static getSessionSessionsGet(
 sessionId: string,
 ): CancelablePromise<GameSessionDTO> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/session',
+            url: '/sessions/',
             query: {
                 'session_id': sessionId,
             },
             errors: {
+                404: `Not found`,
                 422: `Validation Error`,
             },
         });
@@ -49,16 +53,17 @@ sessionId: string,
      * @returns GameSessionDTO Successful Response
      * @throws ApiError
      */
-    public static advanceSessionTurnsPut(
+    public static advanceSessionsTurnsPut(
 sessionId: string,
 ): CancelablePromise<GameSessionDTO> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/session/turns',
+            url: '/sessions/turns',
             query: {
                 'session_id': sessionId,
             },
             errors: {
+                404: `Not found`,
                 422: `Validation Error`,
             },
         });

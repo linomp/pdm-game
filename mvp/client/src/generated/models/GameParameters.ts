@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type GlobalSettings = {
+export type GameParameters = {
     initial_cash?: number;
     revenue_per_day?: number;
     maintenance_cost?: number;
