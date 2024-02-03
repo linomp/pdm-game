@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from mvp.server.core.analysis.rul_prediction import default_rul_prediction_fn
 from mvp.server.core.constants import *
-from mvp.server.core.machine.MachineState import MachineState
+from mvp.server.core.machine.MachineState import MachineState, MachineStateDTO
 
 
 class GameSession(BaseModel):
@@ -14,18 +14,24 @@ class GameSession(BaseModel):
     machine_state: MachineState
     available_funds: float = 0.
     is_game_over: bool = False
+    purchased_sensors: dict[str, bool] = None
+    purchased_predictions: dict[str, bool] = None
 
     # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
 
     @staticmethod
     def new_game_session(_id: str):
-        return GameSession(
+        session = GameSession(
             id=_id,
             current_step=0,
             machine_state=MachineState.new_machine_state(),
-            available_funds=INITIAL_CASH,
+            available_funds=INITIAL_CASH
         )
+        session.purchased_sensors = {sensor: False for sensor in session.machine_state.get_available_sensors()}
+        session.purchased_predictions = {prediction: False for prediction in
+                                         session.machine_state.get_available_predictions()}
+        return session
 
     def check_if_game_over(self):
         self.is_game_over = True
@@ -79,7 +85,7 @@ class GameSession(BaseModel):
 class GameSessionDTO(BaseModel):
     id: str
     current_step: int
-    machine_state: MachineState | None = None
+    machine_state: MachineStateDTO | None = None
     available_funds: float = 0.
     is_game_over: bool = False
     game_over_reason: str | None = None
@@ -91,13 +97,23 @@ class GameSessionDTO(BaseModel):
         dto = GameSessionDTO(
             id=session.id,
             current_step=session.current_step,
-            machine_state=session.machine_state,
             available_funds=session.available_funds,
             is_game_over=session.is_game_over,
         )
 
         if session.is_game_over:
             dto.game_over_reason = GAME_OVER_MESSAGE_MACHINE_BREAKDOWN if session.machine_state.is_broken() else GAME_OVER_MESSAGE_NO_MONEY
+
+        # Filter out sensor data & predictions that the player has not purchased
+        dto.machine_state = MachineStateDTO.from_machine_state(session.machine_state)
+
+        for sensor, purchased in session.purchased_sensors.items():
+            if not purchased:
+                dto.machine_state.hide_field(sensor)
+
+        for prediction, purchased in session.purchased_predictions.items():
+            if not purchased:
+                dto.machine_state.hide_field(prediction)
 
         return dto
 

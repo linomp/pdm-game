@@ -23,6 +23,12 @@ class MachineState(BaseModel):
             )
         )
 
+    def get_available_sensors(self) -> set[str]:
+        return self.operational_parameters.get_available_sensors()
+
+    def get_available_predictions(self) -> set[str]:
+        return {"rul"}
+
     def update(self, timestep: int, rul_predictor: Callable[[int], int | None] = None):
         self.operational_parameters.update(timestep)
         self.health_percentage = self.compute_health_percentage(timestep)
@@ -64,3 +70,32 @@ class MachineState(BaseModel):
     def __str__(self):
         return (f"MachineState(predicted_rul={self.predicted_rul}, health_percentage={self.health_percentage}, "
                 f"operational_parameters={self.operational_parameters})")
+
+
+class MachineStateDTO(BaseModel):
+    temperature: float | None
+    oil_age: float | None
+    mechanical_wear: float | None
+    predicted_rul: int | None
+
+    def hide_field(self, sensor_name):
+        if hasattr(self, sensor_name):
+            setattr(self, sensor_name, None)
+
+    @staticmethod
+    def from_machine_state(machine_state: MachineState):
+        return MachineStateDTO(
+            temperature=machine_state.operational_parameters.temperature,
+            oil_age=machine_state.operational_parameters.oil_age,
+            mechanical_wear=machine_state.operational_parameters.mechanical_wear,
+            predicted_rul=machine_state.predicted_rul,
+        )
+
+    @staticmethod
+    def from_dict(json: dict[str, Any]):
+        return MachineStateDTO(
+            temperature=json.get("temperature", None),
+            oil_age=json.get("oil_age", None),
+            mechanical_wear=json.get("mechanical_wear", None),
+            predicted_rul=json.get("predicted_rul", None),
+        )

@@ -1,14 +1,13 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import JSONResponse
 
 from mvp.server.core.game.GameSession import GameSessionDTO, GameSession
 
 sessions: dict[str, GameSession] = {}
 
 
-def get_session_dependency(session_id: str) -> GameSession | JSONResponse:
+def get_session_dependency(session_id: str) -> GameSession:
     session = sessions.get(session_id)
 
     if session is None:
