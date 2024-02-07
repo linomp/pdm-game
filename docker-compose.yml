@@ -21,3 +21,4 @@ services:
       - "8080:4173"
     networks:
       - my-network
+    restart: always

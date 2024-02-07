@@ -29,9 +29,12 @@ class MachineState(BaseModel):
     def get_available_predictions(self) -> set[str]:
         return {"rul"}
 
-    def update(self, timestep: int, rul_predictor: Callable[[int], int | None] = None):
+    def update_parameters(self, timestep: int):
         self.operational_parameters.update(timestep)
         self.health_percentage = self.compute_health_percentage(timestep)
+
+    def update_prediction(self, timestep: int, rul_predictor: Callable[[int], int | None] = None,
+                          latest_states=list['MachineState']):
         self.predicted_rul = rul_predictor(timestep)
 
     def compute_health_percentage(self, current_timestep: int) -> int:
@@ -73,29 +76,29 @@ class MachineState(BaseModel):
 
 
 class MachineStateDTO(BaseModel):
-    temperature: float | None
-    oil_age: float | None
-    mechanical_wear: float | None
+    operational_parameters: OperationalParameters
     predicted_rul: int | None
 
-    def hide_field(self, sensor_name):
-        if hasattr(self, sensor_name):
-            setattr(self, sensor_name, None)
+    def hide_sensor_data(self, sensor_name):
+        if hasattr(self.operational_parameters, sensor_name):
+            setattr(self.operational_parameters, sensor_name, None)
+
+    def hide_prediction(self, prediction_name):
+        if hasattr(self, prediction_name):
+            setattr(self, prediction_name, None)
 
     @staticmethod
     def from_machine_state(machine_state: MachineState):
         return MachineStateDTO(
-            temperature=machine_state.operational_parameters.temperature,
-            oil_age=machine_state.operational_parameters.oil_age,
-            mechanical_wear=machine_state.operational_parameters.mechanical_wear,
+            operational_parameters=OperationalParameters(**machine_state.operational_parameters.to_dict()),
             predicted_rul=machine_state.predicted_rul,
         )
 
     @staticmethod
     def from_dict(json: dict[str, Any]):
         return MachineStateDTO(
-            temperature=json.get("temperature", None),
-            oil_age=json.get("oil_age", None),
-            mechanical_wear=json.get("mechanical_wear", None),
+            operational_parameters=OperationalParameters.from_dict(
+                json.get("operational_parameters", {})
+            ),
             predicted_rul=json.get("predicted_rul", None),
         )

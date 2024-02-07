@@ -8,4 +8,5 @@ class GameParameters(BaseModel):
     revenue_per_day: float = REVENUE_PER_DAY
     maintenance_cost: float = MAINTENANCE_COST
     sensor_cost: float = SENSOR_COST
+    predictions_cost: float = PREDICTIONS_COST
     game_tick_interval: float = GAME_TICK_INTERVAL

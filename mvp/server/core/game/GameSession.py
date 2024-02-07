@@ -29,7 +29,7 @@ class GameSession(BaseModel):
             available_funds=INITIAL_CASH
         )
         session.purchased_sensors = {sensor: False for sensor in session.machine_state.get_available_sensors()}
-        session.purchased_predictions = {prediction: False for prediction in
+        session.purchased_predictions = {prediction: True for prediction in
                                          session.machine_state.get_available_predictions()}
         return session
 
@@ -60,12 +60,18 @@ class GameSession(BaseModel):
                 break
 
             self.current_step += 1
-            self.machine_state.update(self.current_step, self.rul_predictor)
+            self.machine_state.update_parameters(self.current_step)
             # Player earns money for the production at every timestep
             self.available_funds += REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
             self._log()
 
             await asyncio.sleep(0.5)
+
+        self.machine_state.update_prediction(
+            self.current_step,
+            self.rul_predictor,
+            collected_machine_states_during_turn
+        )
 
         return collected_machine_states_during_turn
 
@@ -90,8 +96,6 @@ class GameSessionDTO(BaseModel):
     is_game_over: bool = False
     game_over_reason: str | None = None
 
-    # TODO: define MachineStateDTO to hide some fields from the player, e.g. health_percentage
-
     @staticmethod
     def from_session(session: 'GameSession'):
         dto = GameSessionDTO(
@@ -109,11 +113,11 @@ class GameSessionDTO(BaseModel):
 
         for sensor, purchased in session.purchased_sensors.items():
             if not purchased:
-                dto.machine_state.hide_field(sensor)
+                dto.machine_state.hide_sensor_data(sensor)
 
         for prediction, purchased in session.purchased_predictions.items():
             if not purchased:
-                dto.machine_state.hide_field(prediction)
+                dto.machine_state.hide_prediction(prediction)
 
         return dto
 

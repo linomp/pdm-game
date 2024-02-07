@@ -8,5 +8,6 @@ export type GameParameters = {
     revenue_per_day?: number;
     maintenance_cost?: number;
     sensor_cost?: number;
+    predictions_cost?: number;
     game_tick_interval?: number;
 };
