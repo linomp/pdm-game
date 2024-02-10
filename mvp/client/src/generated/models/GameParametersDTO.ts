@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type GameParameters = {
+export type GameParametersDTO = {
     initial_cash?: number;
     revenue_per_day?: number;
     maintenance_cost?: number;
     sensor_cost?: number;
-    predictions_cost?: number;
+    prediction_model_cost?: number;
     game_tick_interval?: number;
 };

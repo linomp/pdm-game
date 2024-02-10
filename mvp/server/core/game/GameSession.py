@@ -1,11 +1,11 @@
 import asyncio
-from typing import Any, Callable
+from typing import Callable
 
 from pydantic import BaseModel
 
 from mvp.server.core.analysis.rul_prediction import default_rul_prediction_fn
 from mvp.server.core.constants import *
-from mvp.server.core.machine.MachineState import MachineState, MachineStateDTO
+from mvp.server.core.machine.MachineState import MachineState
 
 
 class GameSession(BaseModel):
@@ -14,8 +14,8 @@ class GameSession(BaseModel):
     machine_state: MachineState
     available_funds: float = 0.
     is_game_over: bool = False
-    purchased_sensors: dict[str, bool] = None
-    purchased_predictions: dict[str, bool] = None
+    available_sensors: dict[str, bool] = None
+    available_predictions: dict[str, bool] = None
 
     # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
@@ -28,9 +28,9 @@ class GameSession(BaseModel):
             machine_state=MachineState.new_machine_state(),
             available_funds=INITIAL_CASH
         )
-        session.purchased_sensors = {sensor: False for sensor in session.machine_state.get_available_sensors()}
-        session.purchased_predictions = {prediction: True for prediction in
-                                         session.machine_state.get_available_predictions()}
+        session.available_sensors = {sensor: False for sensor in session.machine_state.get_purchasable_sensors()}
+        session.available_predictions = {prediction: False for prediction in
+                                         session.machine_state.get_purchasable_predictions()}
         return session
 
     def check_if_game_over(self):
@@ -83,50 +83,22 @@ class GameSession(BaseModel):
         self.machine_state.do_maintenance()
         return True
 
+    def purchase_sensor(self, sensor: str) -> bool:
+        if self.available_funds < SENSOR_COST:
+            return False
+
+        self.available_funds -= SENSOR_COST
+        self.available_sensors[sensor] = True
+        return True
+
+    def purchase_prediction(self, prediction: str) -> bool:
+        if self.available_funds < PREDICTION_MODEL_COST:
+            return False
+
+        self.available_funds -= PREDICTION_MODEL_COST
+        self.available_predictions[prediction] = True
+        return True
+
     def _log(self, multiple=5):
         if self.current_step % multiple == 0:
             print(f"GameSession '{self.id}' - step: {self.current_step} - {self.machine_state}")
-
-
-class GameSessionDTO(BaseModel):
-    id: str
-    current_step: int
-    machine_state: MachineStateDTO | None = None
-    available_funds: float = 0.
-    is_game_over: bool = False
-    game_over_reason: str | None = None
-
-    @staticmethod
-    def from_session(session: 'GameSession'):
-        dto = GameSessionDTO(
-            id=session.id,
-            current_step=session.current_step,
-            available_funds=session.available_funds,
-            is_game_over=session.is_game_over,
-        )
-
-        if session.is_game_over:
-            dto.game_over_reason = GAME_OVER_MESSAGE_MACHINE_BREAKDOWN if session.machine_state.is_broken() else GAME_OVER_MESSAGE_NO_MONEY
-
-        # Filter out sensor data & predictions that the player has not purchased
-        dto.machine_state = MachineStateDTO.from_machine_state(session.machine_state)
-
-        for sensor, purchased in session.purchased_sensors.items():
-            if not purchased:
-                dto.machine_state.hide_sensor_data(sensor)
-
-        for prediction, purchased in session.purchased_predictions.items():
-            if not purchased:
-                dto.machine_state.hide_prediction(prediction)
-
-        return dto
-
-    @staticmethod
-    def from_dict(json: dict[str, Any]):
-        return GameSessionDTO(
-            id=json.get("id", ""),
-            current_step=json.get("current_step", 0),
-            machine_state=MachineState.from_dict(json.get("machine_state", {})),
-            available_funds=json.get("available_funds", 0.),
-            is_game_over=json.get("is_game_over", False),
-        )

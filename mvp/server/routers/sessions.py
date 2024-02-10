@@ -2,7 +2,8 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from mvp.server.core.game.GameSession import GameSessionDTO, GameSession
+from mvp.server.core.game.GameSession import GameSession
+from mvp.server.core.game.GameSessionDTO import GameSessionDTO
 
 sessions: dict[str, GameSession] = {}
 

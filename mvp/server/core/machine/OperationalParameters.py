@@ -11,7 +11,7 @@ class OperationalParameters(BaseModel):
     oil_age: float
     mechanical_wear: float
 
-    def get_available_sensors(self) -> set[str]:
+    def get_purchasable_sensors(self) -> set[str]:
         return self.model_fields_set
 
     def update(self, current_timestep: int) -> None:

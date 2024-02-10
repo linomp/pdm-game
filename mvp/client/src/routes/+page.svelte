@@ -4,7 +4,7 @@
 		type GameSessionDTO,
 		OpenAPI,
 		PlayerActionsService,
-		type GameParameters,
+		type GameParametersDTO,
 		GameParametersService
 	} from '../generated';
 	import runningMachineSrc from '$lib/assets/healthy.gif';
@@ -23,7 +23,7 @@
 	let predictionPurchaseButtonDisabled = false;
 	let dayInProgress = false;
 	let stopAnimation = false;
-	let globalSettings: GameParameters;
+	let globalSettings: GameParametersDTO;
 
 	$: {
 		stopAnimation = gameOver || !dayInProgress;
@@ -35,7 +35,7 @@
 			(gameSession?.available_funds ?? 0) < (globalSettings?.sensor_cost ?? Infinity);
 		predictionPurchaseButtonDisabled =
 			dayInProgress ||
-			(gameSession?.available_funds ?? 0) < (globalSettings?.predictions_cost ?? Infinity);
+			(gameSession?.available_funds ?? 0) < (globalSettings?.prediction_model_cost ?? Infinity);
 	}
 
 	onMount(async () => {
@@ -176,7 +176,7 @@
 							<span hidden={gameSession.machine_state?.predicted_rul != null}>
 								&nbsp;-&nbsp;
 								<button disabled={predictionPurchaseButtonDisabled}>
-									Buy (${globalSettings?.predictions_cost})
+									Buy (${globalSettings?.prediction_model_cost})
 								</button>
 							</span>
 						</p>

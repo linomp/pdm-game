@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
 
-from mvp.server.core.game.GameParameters import GameParameters
+from mvp.server.core.game.GameParametersDTO import GameParametersDTO
 from mvp.server.routers.player_actions import router as player_actions_router
 from mvp.server.routers.sessions import router as sessions_router, sessions
 
@@ -34,5 +34,5 @@ async def root():
 
 
 @app.get("/game-parameters", tags=["Game Parameters"])
-async def get_parameters() -> GameParameters:
-    return GameParameters()
+async def get_parameters() -> GameParametersDTO:
+    return GameParametersDTO()
