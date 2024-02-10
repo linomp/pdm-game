@@ -109,6 +109,45 @@
 		}
 	};
 
+	const purchaseSensor = async (sensorName: string) => {
+		if (!gameSession || gameOver) {
+			return;
+		}
+
+		try {
+			gameSession = await PlayerActionsService.purchaseSensorPlayerActionsPurchasesSensorsPost(
+				sensorName,
+				gameSession?.id
+			);
+		} catch (error: any) {
+			if (error.status === 400) {
+				alert('Not enough funds to buy the sensor!');
+			} else {
+				console.error('Error buying sensor:', error);
+			}
+		}
+	};
+
+	const purchaseRulPredictionModel = async () => {
+		if (!gameSession || gameOver) {
+			return;
+		}
+
+		try {
+			gameSession =
+				await PlayerActionsService.purchasePredictionPlayerActionsPurchasesPredictionModelsPost(
+					'predicted_rul',
+					gameSession?.id
+				);
+		} catch (error: any) {
+			if (error.status === 400) {
+				alert('Not enough funds to buy the prediction model!');
+			} else {
+				console.error('Error buying prediction model:', error);
+			}
+		}
+	};
+
 	const checkForGameOver = () => {
 		if (!gameSession) {
 			return;
@@ -161,7 +200,10 @@
 								{formatParameterName(parameter)}: {value ?? '???'}
 								<span hidden={value != null}>
 									&nbsp;-&nbsp;
-									<button disabled={sensorPurchaseButtonDisabled}>
+									<button
+										disabled={sensorPurchaseButtonDisabled}
+										on:click={() => purchaseSensor(parameter)}
+									>
 										Buy (${globalSettings?.sensor_cost})
 									</button>
 								</span>
@@ -175,7 +217,10 @@
 								: '???'}
 							<span hidden={gameSession.machine_state?.predicted_rul != null}>
 								&nbsp;-&nbsp;
-								<button disabled={predictionPurchaseButtonDisabled}>
+								<button
+									disabled={predictionPurchaseButtonDisabled}
+									on:click={() => purchaseRulPredictionModel()}
+								>
 									Buy (${globalSettings?.prediction_model_cost})
 								</button>
 							</span>
