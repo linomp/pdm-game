@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Callable
+from typing import Callable
 
 from pydantic import BaseModel
 
@@ -14,18 +14,24 @@ class GameSession(BaseModel):
     machine_state: MachineState
     available_funds: float = 0.
     is_game_over: bool = False
+    available_sensors: dict[str, bool] = None
+    available_predictions: dict[str, bool] = None
 
     # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
 
     @staticmethod
     def new_game_session(_id: str):
-        return GameSession(
+        session = GameSession(
             id=_id,
             current_step=0,
             machine_state=MachineState.new_machine_state(),
-            available_funds=INITIAL_CASH,
+            available_funds=INITIAL_CASH
         )
+        session.available_sensors = {sensor: False for sensor in session.machine_state.get_purchasable_sensors()}
+        session.available_predictions = {prediction: False for prediction in
+                                         session.machine_state.get_purchasable_predictions()}
+        return session
 
     def check_if_game_over(self):
         self.is_game_over = True
@@ -54,12 +60,18 @@ class GameSession(BaseModel):
                 break
 
             self.current_step += 1
-            self.machine_state.update(self.current_step, self.rul_predictor)
+            self.machine_state.update_parameters(self.current_step)
             # Player earns money for the production at every timestep
             self.available_funds += REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
             self._log()
 
             await asyncio.sleep(0.5)
+
+        self.machine_state.update_prediction(
+            self.current_step,
+            self.rul_predictor,
+            collected_machine_states_during_turn
+        )
 
         return collected_machine_states_during_turn
 
@@ -71,42 +83,22 @@ class GameSession(BaseModel):
         self.machine_state.do_maintenance()
         return True
 
+    def purchase_sensor(self, sensor: str) -> bool:
+        if self.available_funds < SENSOR_COST:
+            return False
+
+        self.available_funds -= SENSOR_COST
+        self.available_sensors[sensor] = True
+        return True
+
+    def purchase_prediction(self, prediction: str) -> bool:
+        if self.available_funds < PREDICTION_MODEL_COST:
+            return False
+
+        self.available_funds -= PREDICTION_MODEL_COST
+        self.available_predictions[prediction] = True
+        return True
+
     def _log(self, multiple=5):
         if self.current_step % multiple == 0:
             print(f"GameSession '{self.id}' - step: {self.current_step} - {self.machine_state}")
-
-
-class GameSessionDTO(BaseModel):
-    id: str
-    current_step: int
-    machine_state: MachineState | None = None
-    available_funds: float = 0.
-    is_game_over: bool = False
-    game_over_reason: str | None = None
-
-    # TODO: define MachineStateDTO to hide some fields from the player, e.g. health_percentage
-
-    @staticmethod
-    def from_session(session: 'GameSession'):
-        dto = GameSessionDTO(
-            id=session.id,
-            current_step=session.current_step,
-            machine_state=session.machine_state,
-            available_funds=session.available_funds,
-            is_game_over=session.is_game_over,
-        )
-
-        if session.is_game_over:
-            dto.game_over_reason = GAME_OVER_MESSAGE_MACHINE_BREAKDOWN if session.machine_state.is_broken() else GAME_OVER_MESSAGE_NO_MONEY
-
-        return dto
-
-    @staticmethod
-    def from_dict(json: dict[str, Any]):
-        return GameSessionDTO(
-            id=json.get("id", ""),
-            current_step=json.get("current_step", 0),
-            machine_state=MachineState.from_dict(json.get("machine_state", {})),
-            available_funds=json.get("available_funds", 0.),
-            is_game_over=json.get("is_game_over", False),
-        )

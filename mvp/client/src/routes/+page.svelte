@@ -4,7 +4,7 @@
 		type GameSessionDTO,
 		OpenAPI,
 		PlayerActionsService,
-		type GameParameters,
+		type GameParametersDTO,
 		GameParametersService
 	} from '../generated';
 	import runningMachineSrc from '$lib/assets/healthy.gif';
@@ -19,14 +19,23 @@
 	let gameOver = false;
 	let gameOverReason: string | null = null;
 	let maintenanceButtonDisabled = false;
+	let sensorPurchaseButtonDisabled = false;
+	let predictionPurchaseButtonDisabled = false;
 	let dayInProgress = false;
 	let stopAnimation = false;
-	let globalSettings: GameParameters;
+	let globalSettings: GameParametersDTO;
 
 	$: {
 		stopAnimation = gameOver || !dayInProgress;
 		maintenanceButtonDisabled =
+			dayInProgress ||
 			(gameSession?.available_funds ?? 0) < (globalSettings?.maintenance_cost ?? Infinity);
+		sensorPurchaseButtonDisabled =
+			dayInProgress ||
+			(gameSession?.available_funds ?? 0) < (globalSettings?.sensor_cost ?? Infinity);
+		predictionPurchaseButtonDisabled =
+			dayInProgress ||
+			(gameSession?.available_funds ?? 0) < (globalSettings?.prediction_model_cost ?? Infinity);
 	}
 
 	onMount(async () => {
@@ -100,6 +109,45 @@
 		}
 	};
 
+	const purchaseSensor = async (sensorName: string) => {
+		if (!gameSession || gameOver) {
+			return;
+		}
+
+		try {
+			gameSession = await PlayerActionsService.purchaseSensorPlayerActionsPurchasesSensorsPost(
+				sensorName,
+				gameSession?.id
+			);
+		} catch (error: any) {
+			if (error.status === 400) {
+				alert('Not enough funds to buy the sensor!');
+			} else {
+				console.error('Error buying sensor:', error);
+			}
+		}
+	};
+
+	const purchaseRulPredictionModel = async () => {
+		if (!gameSession || gameOver) {
+			return;
+		}
+
+		try {
+			gameSession =
+				await PlayerActionsService.purchasePredictionPlayerActionsPurchasesPredictionModelsPost(
+					'predicted_rul',
+					gameSession?.id
+				);
+		} catch (error: any) {
+			if (error.status === 400) {
+				alert('Not enough funds to buy the prediction model!');
+			} else {
+				console.error('Error buying prediction model:', error);
+			}
+		}
+	};
+
 	const checkForGameOver = () => {
 		if (!gameSession) {
 			return;
@@ -107,6 +155,13 @@
 
 		gameOver = gameSession.is_game_over ?? false;
 		gameOverReason = gameSession.game_over_reason ?? null;
+	};
+
+	const formatParameterName = (parameter: string) => {
+		return parameter
+			.split('_')
+			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(' ');
 	};
 </script>
 
@@ -130,10 +185,49 @@
 				<h3>Game Session Details</h3>
 				<pre>{JSON.stringify(gameSession, null, 2)}</pre>
 			</div>
-			<button on:click={advanceToNextDay} disabled={dayInProgress}> Advance to next day </button>
-			<button on:click={doMaintenance} disabled={dayInProgress || maintenanceButtonDisabled}>
-				Perform Maintenance (${globalSettings?.maintenance_cost ?? 0})
-			</button>
+			<div>
+				<button on:click={advanceToNextDay} disabled={dayInProgress}> Advance to next day </button>
+				<button on:click={doMaintenance} disabled={maintenanceButtonDisabled}>
+					Perform Maintenance (${globalSettings?.maintenance_cost ?? 0})
+				</button>
+			</div>
+			<div>
+				<h4>Operational Parameters</h4>
+				<ul>
+					{#each Object.entries(gameSession.machine_state?.operational_parameters ?? {}) as [parameter, value]}
+						<li>
+							<p>
+								{formatParameterName(parameter)}: {value ?? '???'}
+								<span hidden={value != null}>
+									&nbsp;-&nbsp;
+									<button
+										disabled={sensorPurchaseButtonDisabled}
+										on:click={() => purchaseSensor(parameter)}
+									>
+										Buy (${globalSettings?.sensor_cost})
+									</button>
+								</span>
+							</p>
+						</li>
+					{/each}
+					<li>
+						<p>
+							{'Remaining Useful Life'}: {gameSession.machine_state?.predicted_rul
+								? `${gameSession.machine_state?.predicted_rul} steps`
+								: '???'}
+							<span hidden={gameSession.machine_state?.predicted_rul != null}>
+								&nbsp;-&nbsp;
+								<button
+									disabled={predictionPurchaseButtonDisabled}
+									on:click={() => purchaseRulPredictionModel()}
+								>
+									Buy (${globalSettings?.prediction_model_cost})
+								</button>
+							</span>
+						</p>
+					</li>
+				</ul>
+			</div>
 		{/if}
 	{:else}
 		<button on:click={startSession}>Start Session</button>

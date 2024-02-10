@@ -32,4 +32,54 @@ sessionId: string,
         });
     }
 
+    /**
+     * Purchase Sensor
+     * @param sensor 
+     * @param sessionId 
+     * @returns GameSessionDTO Successful Response
+     * @throws ApiError
+     */
+    public static purchaseSensorPlayerActionsPurchasesSensorsPost(
+sensor: string,
+sessionId: string,
+): CancelablePromise<GameSessionDTO> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/player-actions/purchases/sensors',
+            query: {
+                'sensor': sensor,
+                'session_id': sessionId,
+            },
+            errors: {
+                404: `Not found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Purchase Prediction
+     * @param prediction 
+     * @param sessionId 
+     * @returns GameSessionDTO Successful Response
+     * @throws ApiError
+     */
+    public static purchasePredictionPlayerActionsPurchasesPredictionModelsPost(
+prediction: string,
+sessionId: string,
+): CancelablePromise<GameSessionDTO> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/player-actions/purchases/prediction-models',
+            query: {
+                'prediction': prediction,
+                'session_id': sessionId,
+            },
+            errors: {
+                404: `Not found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
 }

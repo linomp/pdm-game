@@ -23,9 +23,18 @@ class MachineState(BaseModel):
             )
         )
 
-    def update(self, timestep: int, rul_predictor: Callable[[int], int | None] = None):
+    def get_purchasable_sensors(self) -> set[str]:
+        return self.operational_parameters.get_purchasable_sensors()
+
+    def get_purchasable_predictions(self) -> set[str]:
+        return {"predicted_rul"}
+
+    def update_parameters(self, timestep: int):
         self.operational_parameters.update(timestep)
         self.health_percentage = self.compute_health_percentage(timestep)
+
+    def update_prediction(self, timestep: int, rul_predictor: Callable[[int], int | None] = None,
+                          latest_states=list['MachineState']):
         self.predicted_rul = rul_predictor(timestep)
 
     def compute_health_percentage(self, current_timestep: int) -> int:
