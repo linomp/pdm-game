@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
-import {defineConfig} from 'vite'
-import {svelte} from '@sveltejs/vite-plugin-svelte'
+import { defineConfig } from 'vite'
+import { svelte } from '@sveltejs/vite-plugin-svelte'
 import { run } from 'vite-plugin-run';
 import * as path from 'path'
 
@@ -16,7 +16,7 @@ export default defineConfig({
     conditions: isTest ? ['browser'] : []
   },
   plugins: [
-    svelte({hot: !process.env.VITEST}),
+    svelte({ hot: !process.env.VITEST }),
     run({
       silent: !!process.env.VITEST,
       input: [
@@ -29,10 +29,10 @@ export default defineConfig({
     })
   ],
   server: {
-    port: isTest ? 8678 : 8000,
+    port: isTest ? 8678 : 5173,
     proxy: isTest ? undefined : {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8000',
         changeOrigin: false
       }
     }
