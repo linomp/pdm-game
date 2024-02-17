@@ -1,5 +1,4 @@
 import './shared/ArrayExtensions'
-import './global.css'
 import { initErrorHandlers } from './errorHandlers'
 import App from './App.svelte'
 
