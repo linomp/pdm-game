@@ -18,7 +18,7 @@ services:
       context: ./mvp/client
       dockerfile: Dockerfile
     ports:
-      - "8080:4173"
+      - "8080:80"
     networks:
       - my-network
     restart: always
