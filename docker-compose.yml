@@ -12,6 +12,7 @@ services:
       - "8000:8000"
     networks:
       - my-network
+    restart: always
 
   mvp-client:
     build:
