@@ -10,8 +10,7 @@ const isTest = process.env.NODE_ENV === 'test'
 export default defineConfig({
   resolve: {
     alias: {
-      src: path.resolve(__dirname, './src'),
-      i18n: path.resolve(__dirname, './i18n')
+      src: path.resolve(__dirname, './src')
     },
     conditions: isTest ? ['browser'] : []
   },
