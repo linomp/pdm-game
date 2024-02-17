@@ -1,17 +1,22 @@
-FROM node:latest
-
+FROM node:20-alpine as build-ui
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY ui/*.json ui/.npmrc ./
+RUN npm ci
 
-RUN npm install
-
-COPY . .
-
+COPY ui ./
 RUN npm run build
+RUN npm run check
 
-EXPOSE 4173
 
-CMD ["npm", "run", "preview", "--", "--host"]
+FROM nginx:alpine-slim as final
 
-# TODO replace this, find out how to actually serve the production build
+ARG VERSION=dev
+ENV VERSION=$VERSION
+
+WORKDIR /app
+COPY --from=build-ui /app/build ./
+COPY nginx.conf /etc/nginx/nginx.conf
+
+RUN echo "Setting built version to $VERSION" &&  \
+    sed -Ei "s/\\\$VERSION/$VERSION/" index.html
