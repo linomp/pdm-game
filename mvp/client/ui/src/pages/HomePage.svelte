@@ -205,39 +205,32 @@
         </div>
         <div class="machine-data">
           <h3>Operational Parameters</h3>
-          <ul>
-            {#each Object.entries(gameSession.machine_state?.operational_parameters ?? {}) as [parameter, value]}
-              <li>
-                <p>
-                  {formatParameterName(parameter)}: {value ?? "???"}
-                  <span hidden={value != null}>
-                    <button
-                      disabled={sensorPurchaseButtonDisabled}
-                      on:click={() => purchaseSensor(parameter)}
-                    >
-                      Buy (${globalSettings?.sensor_cost})
-                    </button>
-                  </span>
-                </p>
-              </li>
-            {/each}
-            <li>
-              <p>
-                {"Remaining Useful Life"}: {gameSession.machine_state
-                  ?.predicted_rul
-                  ? `${gameSession.machine_state?.predicted_rul} steps`
-                  : "???"}
-                <span hidden={gameSession.machine_state?.predicted_rul != null}>
-                  <button
-                    disabled={predictionPurchaseButtonDisabled}
-                    on:click={() => purchaseRulPredictionModel()}
-                  >
-                    Buy (${globalSettings?.prediction_model_cost})
-                  </button>
-                </span>
-              </p>
-            </li>
-          </ul>
+          {#each Object.entries(gameSession.machine_state?.operational_parameters ?? {}) as [parameter, value]}
+            <p>
+              {formatParameterName(parameter)}: {value ?? "???"}
+              <span hidden={value != null}>
+                <button
+                  disabled={sensorPurchaseButtonDisabled}
+                  on:click={() => purchaseSensor(parameter)}
+                >
+                  Buy (${globalSettings?.sensor_cost})
+                </button>
+              </span>
+            </p>
+          {/each}
+          <p>
+            {"Remaining Useful Life"}: {gameSession.machine_state?.predicted_rul
+              ? `${gameSession.machine_state?.predicted_rul} steps`
+              : "???"}
+            <span hidden={gameSession.machine_state?.predicted_rul != null}>
+              <button
+                disabled={predictionPurchaseButtonDisabled}
+                on:click={() => purchaseRulPredictionModel()}
+              >
+                Buy (${globalSettings?.prediction_model_cost})
+              </button>
+            </span>
+          </p>
         </div>
       </div>
     {:else}
@@ -266,11 +259,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-  }
-
-  ul {
-    list-style-type: none;
-    padding: 0;
   }
 
   .start-session-btn {
