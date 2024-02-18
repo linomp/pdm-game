@@ -1,0 +1,15 @@
+* {
+    font-family: "Roboto Mono";
+}
+
+html {
+    margin: 1em;
+}
+
+button:disabled {
+    background-color: lightgray;
+}
+
+button:disabled:hover {
+    cursor: not-allowed;
+}

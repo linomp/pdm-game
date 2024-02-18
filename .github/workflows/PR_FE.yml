@@ -18,10 +18,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd mvp/client
+          cd mvp/client/ui
           npm install
 
       - name: Build frontend
         run: |
-          cd mvp/client
+          cd mvp/client/ui
           npm run build
