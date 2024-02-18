@@ -172,72 +172,109 @@
 
 <div>
   <h2>The Predictive Maintenance Game</h2>
-
-  {#if gameSession}
+  <div class="game-area">
     <img
+      class="machine-view"
       src={stopAnimation ? stoppedMachineSrc : runningMachineSrc}
-      alt="Machine"
+      alt="..."
       width="369"
       height="276"
+      hidden={!gameSession}
     />
-
     {#if gameOver}
       <h3>Game Over</h3>
       <pre>{JSON.stringify(gameSession, null, 2)}</pre>
       <p>{gameOverReason}</p>
-    {:else}
-      <div>
-        <h3>Game Session Details</h3>
-        <pre>{JSON.stringify(gameSession, null, 2)}</pre>
-      </div>
-      <div>
-        <button on:click={advanceToNextDay} disabled={dayInProgress}>
-          Advance to next day
-        </button>
-        <button on:click={doMaintenance} disabled={maintenanceButtonDisabled}>
-          Perform Maintenance (${globalSettings?.maintenance_cost ?? 0})
-        </button>
-      </div>
-      <div>
-        <h4>Operational Parameters</h4>
-        <ul>
-          {#each Object.entries(gameSession.machine_state?.operational_parameters ?? {}) as [parameter, value]}
+    {:else if gameSession}
+      <div class="game-data">
+        <div class="session-data">
+          <h3>Game Session Details</h3>
+          <p>Current Step: {gameSession.current_step}</p>
+          <p>Available Funds: {gameSession.available_funds}</p>
+          <div class="session-commands">
+            <button on:click={advanceToNextDay} disabled={dayInProgress}>
+              Advance to next day
+            </button>
+            <button
+              on:click={doMaintenance}
+              disabled={maintenanceButtonDisabled}
+            >
+              Perform Maintenance (${globalSettings?.maintenance_cost ?? 0})
+            </button>
+          </div>
+        </div>
+        <div class="machine-data">
+          <h3>Operational Parameters</h3>
+          <ul>
+            {#each Object.entries(gameSession.machine_state?.operational_parameters ?? {}) as [parameter, value]}
+              <li>
+                <p>
+                  {formatParameterName(parameter)}: {value ?? "???"}
+                  <span hidden={value != null}>
+                    <button
+                      disabled={sensorPurchaseButtonDisabled}
+                      on:click={() => purchaseSensor(parameter)}
+                    >
+                      Buy (${globalSettings?.sensor_cost})
+                    </button>
+                  </span>
+                </p>
+              </li>
+            {/each}
             <li>
               <p>
-                {formatParameterName(parameter)}: {value ?? "???"}
-                <span hidden={value != null}>
-                  &nbsp;-&nbsp;
+                {"Remaining Useful Life"}: {gameSession.machine_state
+                  ?.predicted_rul
+                  ? `${gameSession.machine_state?.predicted_rul} steps`
+                  : "???"}
+                <span hidden={gameSession.machine_state?.predicted_rul != null}>
                   <button
-                    disabled={sensorPurchaseButtonDisabled}
-                    on:click={() => purchaseSensor(parameter)}
+                    disabled={predictionPurchaseButtonDisabled}
+                    on:click={() => purchaseRulPredictionModel()}
                   >
-                    Buy (${globalSettings?.sensor_cost})
+                    Buy (${globalSettings?.prediction_model_cost})
                   </button>
                 </span>
               </p>
             </li>
-          {/each}
-          <li>
-            <p>
-              {"Remaining Useful Life"}: {gameSession.machine_state
-                ?.predicted_rul
-                ? `${gameSession.machine_state?.predicted_rul} steps`
-                : "???"}
-              <span hidden={gameSession.machine_state?.predicted_rul != null}>
-                &nbsp;-&nbsp;
-                <button
-                  disabled={predictionPurchaseButtonDisabled}
-                  on:click={() => purchaseRulPredictionModel()}
-                >
-                  Buy (${globalSettings?.prediction_model_cost})
-                </button>
-              </span>
-            </p>
-          </li>
-        </ul>
+          </ul>
+        </div>
       </div>
+    {:else}
+      <button class="start-session-btn" on:click={startSession}
+        >Start Session</button
+      >
     {/if}
-  {:else}
-    <button on:click={startSession}>Start Session</button>
-  {/if}
+  </div>
 </div>
+
+<style>
+  .game-area {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .game-data {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    row-gap: 1rem;
+    column-gap: 3rem;
+  }
+
+  .session-commands {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  .start-session-btn {
+    align-self: flex-start;
+    max-width: fit-content;
+  }
+</style>
