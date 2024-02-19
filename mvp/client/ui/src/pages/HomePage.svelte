@@ -3,7 +3,6 @@
     type GameSessionDTO,
     type GameParametersDTO,
     SessionsService,
-    PlayerActionsService,
   } from "../api/generated";
   import { isUndefinedOrNull } from "src/shared/utils";
   import GameOver from "src/components/GameOver.svelte";
@@ -21,10 +20,12 @@
   let predictionPurchaseButtonDisabled = false;
   let dayInProgress = false;
   let stopAnimation = false;
+  let performedMaintenanceInThisTurn = false;
 
   $: {
     stopAnimation = gameOver || !dayInProgress;
     maintenanceButtonDisabled =
+      performedMaintenanceInThisTurn ||
       dayInProgress ||
       (gameSession?.available_funds ?? 0) <
         (globalSettings.maintenance_cost ?? Infinity);
@@ -41,21 +42,6 @@
   const startSession = async () => {
     try {
       gameSession = await SessionsService.createSessionSessionsPost();
-    } catch (error) {
-      console.error("Error fetching session:", error);
-    }
-  };
-
-  const fetchExistingSession = async () => {
-    if (!gameSession || gameOver) {
-      return;
-    }
-
-    try {
-      gameSession = await SessionsService.getSessionSessionsGet(
-        gameSession?.id,
-      );
-      checkForGameOver();
     } catch (error) {
       console.error("Error fetching session:", error);
     }
@@ -82,66 +68,22 @@
       // stop fetching machine health until the player advances to next day again
       clearInterval(intervalId);
       dayInProgress = false;
+      performedMaintenanceInThisTurn = false;
     }
   };
 
-  const doMaintenance = async () => {
+  const fetchExistingSession = async () => {
     if (!gameSession || gameOver) {
       return;
     }
 
     try {
-      gameSession =
-        await PlayerActionsService.doMaintenancePlayerActionsMaintenanceInterventionsPost(
-          gameSession?.id,
-        );
-      await advanceToNextDay();
-    } catch (error: any) {
-      if (error.status === 400) {
-        alert("Not enough funds to perform maintenance!");
-      } else {
-        console.error("Error performing maintenance:", error);
-      }
-    }
-  };
-
-  const purchaseSensor = async (sensorName: string) => {
-    if (!gameSession || gameOver) {
-      return;
-    }
-
-    try {
-      gameSession =
-        await PlayerActionsService.purchaseSensorPlayerActionsPurchasesSensorsPost(
-          sensorName,
-          gameSession?.id,
-        );
-    } catch (error: any) {
-      if (error.status === 400) {
-        alert("Not enough funds to buy the sensor!");
-      } else {
-        console.error("Error buying sensor:", error);
-      }
-    }
-  };
-
-  const purchaseRulPredictionModel = async () => {
-    if (!gameSession || gameOver) {
-      return;
-    }
-
-    try {
-      gameSession =
-        await PlayerActionsService.purchasePredictionPlayerActionsPurchasesPredictionModelsPost(
-          "predicted_rul",
-          gameSession?.id,
-        );
-    } catch (error: any) {
-      if (error.status === 400) {
-        alert("Not enough funds to buy the prediction model!");
-      } else {
-        console.error("Error buying prediction model:", error);
-      }
+      gameSession = await SessionsService.getSessionSessionsGet(
+        gameSession?.id,
+      );
+      checkForGameOver();
+    } catch (error) {
+      console.error("Error fetching session:", error);
     }
   };
 
@@ -152,6 +94,14 @@
 
     gameOver = gameSession.is_game_over ?? false;
     gameOverReason = gameSession.game_over_reason ?? null;
+  };
+
+  const updateGameSession = (newObj: GameSessionDTO) => {
+    gameSession = { ...newObj };
+  };
+
+  const setPerformedMaintenanceFlag = () => {
+    performedMaintenanceInThisTurn = true;
   };
 </script>
 
@@ -164,21 +114,22 @@
     {:else if !isUndefinedOrNull(gameSession)}
       <div class="game-data">
         <SessionData
-          currentStep={gameSession.current_step}
-          availableFunds={gameSession.available_funds ?? 0}
           maintenanceCost={globalSettings.maintenance_cost ?? 0}
           {dayInProgress}
           {maintenanceButtonDisabled}
           {advanceToNextDay}
-          {doMaintenance}
+          {setPerformedMaintenanceFlag}
+          {gameOver}
+          {gameSession}
+          {updateGameSession}
         />
         <MachineData
           {globalSettings}
           {gameSession}
           {sensorPurchaseButtonDisabled}
           {predictionPurchaseButtonDisabled}
-          {purchaseSensor}
-          {purchaseRulPredictionModel}
+          {gameOver}
+          {updateGameSession}
         />
       </div>
     {:else}
