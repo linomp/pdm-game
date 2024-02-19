@@ -1,18 +1,19 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import {
     type GameSessionDTO,
     type GameParametersDTO,
     SessionsService,
     PlayerActionsService,
-    GameParametersService,
   } from "../api/generated";
-  import runningMachineSrc from "/img/healthy.gif";
+  import { isUndefinedOrNull } from "src/shared/utils";
+  import GameOver from "src/components/GameOver.svelte";
+  import MachineView from "src/components/MachineView.svelte";
+  import SessionData from "src/components/SessionData.svelte";
+  import MachineData from "src/components/MachineData.svelte";
 
-  // TODO: move this to top component
-  const stoppedMachineSrc = new URL("/img/stopped.PNG", import.meta.url).href;
+  export let globalSettings: GameParametersDTO;
 
-  let gameSession: GameSessionDTO | null;
+  let gameSession: GameSessionDTO;
   let gameOver = false;
   let gameOverReason: string | null = null;
   let maintenanceButtonDisabled = false;
@@ -20,32 +21,22 @@
   let predictionPurchaseButtonDisabled = false;
   let dayInProgress = false;
   let stopAnimation = false;
-  let globalSettings: GameParametersDTO;
 
   $: {
     stopAnimation = gameOver || !dayInProgress;
     maintenanceButtonDisabled =
       dayInProgress ||
       (gameSession?.available_funds ?? 0) <
-        (globalSettings?.maintenance_cost ?? Infinity);
+        (globalSettings.maintenance_cost ?? Infinity);
     sensorPurchaseButtonDisabled =
       dayInProgress ||
       (gameSession?.available_funds ?? 0) <
-        (globalSettings?.sensor_cost ?? Infinity);
+        (globalSettings.sensor_cost ?? Infinity);
     predictionPurchaseButtonDisabled =
       dayInProgress ||
       (gameSession?.available_funds ?? 0) <
-        (globalSettings?.prediction_model_cost ?? Infinity);
+        (globalSettings.prediction_model_cost ?? Infinity);
   }
-
-  onMount(async () => {
-    try {
-      globalSettings =
-        await GameParametersService.getParametersGameParametersGet();
-    } catch (error) {
-      console.error("Error fetching global settings:", error);
-    }
-  });
 
   const startSession = async () => {
     try {
@@ -162,82 +153,38 @@
     gameOver = gameSession.is_game_over ?? false;
     gameOverReason = gameSession.game_over_reason ?? null;
   };
-
-  const formatParameterName = (parameter: string) => {
-    return parameter
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
 </script>
 
 <div>
   <h2>The Predictive Maintenance Game</h2>
   <div class="game-area">
-    <img
-      class="machine-view"
-      src={stopAnimation ? stoppedMachineSrc : runningMachineSrc}
-      alt="..."
-      width="369"
-      height="276"
-      hidden={!gameSession}
-    />
+    <MachineView hidden={isUndefinedOrNull(gameSession)} {stopAnimation} />
     {#if gameOver}
-      <h3>Game Over</h3>
-      <pre>{JSON.stringify(gameSession, null, 2)}</pre>
-      <p>{gameOverReason}</p>
-    {:else if gameSession}
+      <GameOver gameOverReason={gameOverReason ?? ""} {gameSession} />
+    {:else if !isUndefinedOrNull(gameSession)}
       <div class="game-data">
-        <div class="session-data">
-          <h3>Game Session Details</h3>
-          <p>Current Step: {gameSession.current_step}</p>
-          <p>Available Funds: {gameSession.available_funds}</p>
-          <div class="session-commands">
-            <button on:click={advanceToNextDay} disabled={dayInProgress}>
-              Advance to next day
-            </button>
-            <button
-              on:click={doMaintenance}
-              disabled={maintenanceButtonDisabled}
-            >
-              Perform Maintenance (${globalSettings?.maintenance_cost ?? 0})
-            </button>
-          </div>
-        </div>
-        <div class="machine-data">
-          <h3>Operational Parameters</h3>
-          {#each Object.entries(gameSession.machine_state?.operational_parameters ?? {}) as [parameter, value]}
-            <p>
-              {formatParameterName(parameter)}: {value ?? "???"}
-              <span hidden={value != null}>
-                <button
-                  disabled={sensorPurchaseButtonDisabled}
-                  on:click={() => purchaseSensor(parameter)}
-                >
-                  Buy (${globalSettings?.sensor_cost})
-                </button>
-              </span>
-            </p>
-          {/each}
-          <p>
-            {"Remaining Useful Life"}: {gameSession.machine_state?.predicted_rul
-              ? `${gameSession.machine_state?.predicted_rul} steps`
-              : "???"}
-            <span hidden={gameSession.machine_state?.predicted_rul != null}>
-              <button
-                disabled={predictionPurchaseButtonDisabled}
-                on:click={() => purchaseRulPredictionModel()}
-              >
-                Buy (${globalSettings?.prediction_model_cost})
-              </button>
-            </span>
-          </p>
-        </div>
+        <SessionData
+          currentStep={gameSession.current_step}
+          availableFunds={gameSession.available_funds ?? 0}
+          maintenanceCost={globalSettings.maintenance_cost ?? 0}
+          {dayInProgress}
+          {maintenanceButtonDisabled}
+          {advanceToNextDay}
+          {doMaintenance}
+        />
+        <MachineData
+          {globalSettings}
+          {gameSession}
+          {sensorPurchaseButtonDisabled}
+          {predictionPurchaseButtonDisabled}
+          {purchaseSensor}
+          {purchaseRulPredictionModel}
+        />
       </div>
     {:else}
-      <button class="start-session-btn" on:click={startSession}
-        >Start Session</button
-      >
+      <button class="start-session-btn" on:click={startSession}>
+        Start Session
+      </button>
     {/if}
   </div>
 </div>
@@ -254,12 +201,6 @@
     flex-wrap: wrap;
     row-gap: 1rem;
     column-gap: 3rem;
-  }
-
-  .session-commands {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
   }
 
   .start-session-btn {
