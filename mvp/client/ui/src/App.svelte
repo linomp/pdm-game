@@ -23,7 +23,7 @@
 </svelte:head>
 
 <Router primary={false}>
-  <div class="App min-h-screen flex flex-col">
+  <div>
     <Route path="/" component={HomePage} />
   </div>
 </Router>

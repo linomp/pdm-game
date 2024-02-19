@@ -9,6 +9,7 @@
   } from "../api/generated";
   import runningMachineSrc from "/img/healthy.gif";
 
+  // TODO: move this to top component
   const stoppedMachineSrc = new URL("/img/stopped.PNG", import.meta.url).href;
 
   let gameSession: GameSessionDTO | null;
