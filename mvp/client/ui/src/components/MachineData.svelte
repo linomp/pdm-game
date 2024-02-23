@@ -1,21 +1,32 @@
 <script lang="ts">
   import { isUndefinedOrNull } from "src/shared/utils";
-  import Sensor from "src/components/Sensor.svelte";
+  import { PlayerActionsService } from "src/api/generated";
   import {
-    PlayerActionsService,
-    type GameParametersDTO,
-    type GameSessionDTO,
-  } from "src/api/generated";
+    dayInProgress,
+    gameOver,
+    gameSession,
+    globalSettings,
+    predictionPurchaseButtonDisabled,
+    sensorPurchaseButtonDisabled,
+  } from "src/stores/stores";
+  import Sensor from "src/components/Sensor.svelte";
 
-  export let globalSettings: GameParametersDTO;
-  export let gameSession: GameSessionDTO;
-  export let sensorPurchaseButtonDisabled: boolean;
-  export let predictionPurchaseButtonDisabled: boolean;
-  export let gameOver: boolean;
-  export let updateGameSession: (newObj: GameSessionDTO) => void;
+  $: {
+    sensorPurchaseButtonDisabled.set(
+      $dayInProgress ||
+        ($gameSession?.available_funds ?? 0) <
+          ($globalSettings?.sensor_cost ?? Infinity),
+    );
+
+    predictionPurchaseButtonDisabled.set(
+      $dayInProgress ||
+        ($gameSession?.available_funds ?? 0) <
+          ($globalSettings?.prediction_model_cost ?? Infinity),
+    );
+  }
 
   const purchaseSensor = async (sensorName: string) => {
-    if (gameOver) {
+    if ($gameOver) {
       return;
     }
 
@@ -23,9 +34,9 @@
       const result =
         await PlayerActionsService.purchaseSensorPlayerActionsPurchasesSensorsPost(
           sensorName,
-          gameSession?.id,
+          $gameSession?.id!,
         );
-      updateGameSession(result);
+      gameSession.set(result);
     } catch (error: any) {
       if (error.status === 400) {
         alert("Not enough funds to buy the sensor!");
@@ -36,16 +47,17 @@
   };
 
   const purchaseRulPredictionModel = async () => {
-    if (gameOver) {
+    if ($gameOver) {
       return;
     }
 
     try {
-      gameSession =
+      const result =
         await PlayerActionsService.purchasePredictionPlayerActionsPurchasesPredictionModelsPost(
           "predicted_rul",
-          gameSession?.id,
+          $gameSession?.id!,
         );
+      gameSession.set(result);
     } catch (error: any) {
       if (error.status === 400) {
         alert("Not enough funds to buy the prediction model!");
@@ -56,28 +68,32 @@
   };
 </script>
 
-<div class="machine-data">
-  <h3>Operational Parameters</h3>
-  {#each Object.entries(gameSession.machine_state?.operational_parameters ?? {}) as [parameter, value]}
-    <Sensor
-      sensorCost={globalSettings.sensor_cost ?? 0}
-      {parameter}
-      {value}
-      {sensorPurchaseButtonDisabled}
-      {purchaseSensor}
-    />
-  {/each}
-  <p>
-    {"Remaining Useful Life"}: {gameSession.machine_state?.predicted_rul
-      ? `${gameSession.machine_state?.predicted_rul} steps`
-      : "???"}
-    <span hidden={!isUndefinedOrNull(gameSession.machine_state?.predicted_rul)}>
-      <button
-        disabled={predictionPurchaseButtonDisabled}
-        on:click={() => purchaseRulPredictionModel()}
+{#if !isUndefinedOrNull($gameSession)}
+  <div class="machine-data">
+    <h3>Operational Parameters</h3>
+    {#each Object.entries($gameSession?.machine_state?.operational_parameters ?? {}) as [parameter, value]}
+      <Sensor
+        sensorCost={$globalSettings?.sensor_cost ?? 0}
+        sensorPurchaseButtonDisabled={$sensorPurchaseButtonDisabled}
+        {parameter}
+        {value}
+        {purchaseSensor}
+      />
+    {/each}
+    <p>
+      {"Remaining Useful Life"}: {$gameSession?.machine_state?.predicted_rul
+        ? `${$gameSession.machine_state?.predicted_rul} steps`
+        : "???"}
+      <span
+        hidden={!isUndefinedOrNull($gameSession?.machine_state?.predicted_rul)}
       >
-        Buy (${globalSettings.prediction_model_cost})
-      </button>
-    </span>
-  </p>
-</div>
+        <button
+          disabled={$predictionPurchaseButtonDisabled}
+          on:click={() => purchaseRulPredictionModel()}
+        >
+          Buy (${$globalSettings?.prediction_model_cost})
+        </button>
+      </span>
+    </p>
+  </div>
+{/if}

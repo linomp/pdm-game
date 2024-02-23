@@ -1,9 +1,14 @@
 <script lang="ts">
+  import { dayInProgress, gameOver, gameSession } from "src/stores/stores";
+  import { isUndefinedOrNull } from "src/shared/utils";
   import runningMachineSrc from "/img/healthy.gif";
   const stoppedMachineSrc = new URL("/img/stopped.PNG", import.meta.url).href;
 
-  export let stopAnimation: boolean;
-  export let hidden: boolean;
+  let stopAnimation = false;
+
+  $: {
+    stopAnimation = $gameOver || !$dayInProgress;
+  }
 </script>
 
 <img
@@ -12,5 +17,5 @@
   alt="..."
   width="369"
   height="276"
-  {hidden}
+  hidden={isUndefinedOrNull($gameSession)}
 />

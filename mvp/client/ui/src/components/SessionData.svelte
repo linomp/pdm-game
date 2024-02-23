@@ -1,27 +1,64 @@
 <script lang="ts">
-  import { PlayerActionsService, type GameSessionDTO } from "src/api/generated";
+  import { PlayerActionsService, SessionsService } from "src/api/generated";
+  import { isUndefinedOrNull } from "src/shared/utils";
+  import {
+    dayInProgress,
+    gameOver,
+    gameSession,
+    globalSettings,
+    maintenanceButtonDisabled,
+    performedMaintenanceInThisTurn,
+  } from "src/stores/stores";
 
   export let maintenanceCost: number;
-  export let dayInProgress: boolean;
-  export let maintenanceButtonDisabled: boolean;
-  export let gameOver: boolean;
-  export let gameSession: GameSessionDTO;
-  export let setPerformedMaintenanceFlag: () => void;
-  export let advanceToNextDay: () => Promise<void>;
-  export let updateGameSession: (newObj: GameSessionDTO) => void;
+  export let fetchExistingSession: () => Promise<void>;
+
+  $: {
+    maintenanceButtonDisabled.set(
+      $performedMaintenanceInThisTurn ||
+        $dayInProgress ||
+        ($gameSession?.available_funds ?? 0) <
+          ($globalSettings?.maintenance_cost ?? Infinity),
+    );
+  }
+
+  const advanceToNextDay = async () => {
+    if (isUndefinedOrNull($gameSession) || $gameOver) {
+      return;
+    }
+    // TODO: migrate this polling strategy to a websocket connection
+    // start fetching machine health every second while the day is advancing
+    const intervalId = setInterval(fetchExistingSession, 500);
+    dayInProgress.set(true);
+
+    try {
+      let result = await SessionsService.advanceSessionsTurnsPut(
+        $gameSession?.id!,
+      );
+      gameSession.set(result);
+    } catch (error) {
+      console.error("Error advancing day:", error);
+    } finally {
+      await fetchExistingSession();
+      // stop fetching machine health until the player advances to next day again
+      clearInterval(intervalId);
+      dayInProgress.set(false);
+      performedMaintenanceInThisTurn.set(false);
+    }
+  };
 
   const doMaintenance = async () => {
-    if (gameOver) {
+    if ($gameOver || isUndefinedOrNull($gameSession)) {
       return;
     }
 
     try {
       const result =
         await PlayerActionsService.doMaintenancePlayerActionsMaintenanceInterventionsPost(
-          gameSession?.id,
+          $gameSession!.id,
         );
-      updateGameSession(result);
-      setPerformedMaintenanceFlag();
+      gameSession.set(result);
+      performedMaintenanceInThisTurn.set(true);
     } catch (error: any) {
       if (error.status === 400) {
         alert("Not enough funds to perform maintenance!");
@@ -32,19 +69,21 @@
   };
 </script>
 
-<div class="session-data">
-  <h3>Game Session Details</h3>
-  <p>Current Step: {gameSession.current_step}</p>
-  <p>Available Funds: {gameSession.available_funds}</p>
-  <div class="session-commands">
-    <button on:click={advanceToNextDay} disabled={dayInProgress}>
-      Advance to next day
-    </button>
-    <button on:click={doMaintenance} disabled={maintenanceButtonDisabled}>
-      Perform Maintenance (${maintenanceCost})
-    </button>
+{#if !isUndefinedOrNull($gameSession)}
+  <div class="session-data">
+    <h3>Game Session Details</h3>
+    <p>Current Step: {$gameSession?.current_step}</p>
+    <p>Available Funds: {$gameSession?.available_funds}</p>
+    <div class="session-commands">
+      <button on:click={advanceToNextDay} disabled={$dayInProgress}>
+        Advance to next day
+      </button>
+      <button on:click={doMaintenance} disabled={$maintenanceButtonDisabled}>
+        Perform Maintenance (${maintenanceCost})
+      </button>
+    </div>
   </div>
-</div>
+{/if}
 
 <style>
   .session-commands {
