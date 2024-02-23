@@ -1,19 +1,21 @@
 <script lang="ts">
-  import { Route, Router } from "svelte-navigator";
-  import HomePage from "src/pages/HomePage.svelte";
   import { onMount } from "svelte";
-  import { GameParametersService } from "./api/generated/services/GameParametersService";
-  import { OpenAPI } from "./api/generated/core/OpenAPI";
+  import { Route, Router } from "svelte-navigator";
+  import { GameParametersService, OpenAPI } from "./api/generated/";
+  import HomePage from "src/pages/HomePage.svelte";
+  import Spinner from "src/components/Spinner.svelte";
+  import { globalSettings } from "./stores/stores";
+  import { isUndefinedOrNull } from "./shared/utils";
 
   OpenAPI.BASE = import.meta.env.VITE_API_BASE;
 
   onMount(async () => {
     try {
-      let globalSettings =
+      const result =
         await GameParametersService.getParametersGameParametersGet();
-      console.log("API works!", globalSettings);
+      globalSettings.set(result);
     } catch (error) {
-      console.error("Error fetching global settings:", error);
+      alert("Error fetching game settings. Please refresh the page.");
     }
   });
 </script>
@@ -23,7 +25,20 @@
 </svelte:head>
 
 <Router primary={false}>
-  <div class="App min-h-screen flex flex-col">
-    <Route path="/" component={HomePage} />
-  </div>
+  {#if isUndefinedOrNull($globalSettings)}
+    <div class="spinner-container">
+      <Spinner />
+    </div>
+  {:else}
+    <div>
+      <Route path="/" component={HomePage} />
+    </div>
+  {/if}
 </Router>
+
+<style>
+  .spinner-container {
+    width: 5%;
+    margin: 0 auto;
+  }
+</style>
