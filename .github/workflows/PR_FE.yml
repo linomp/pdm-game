@@ -20,6 +20,11 @@ jobs:
         run: |
           cd mvp/client/ui
           npm install
+      
+      - name: Run  tests
+        run: |
+          cd mvp/client/ui
+          npm run test
 
       - name: Build frontend
         run: |
