@@ -1,6 +1,7 @@
 # Gameplay
 DEFAULT_SESSION_ID = 'test'
 GAME_TICK_INTERVAL = 0.5
+IDLE_SESSION_TTL_SECONDS = 60 * 30  # 30 minutes
 TIMESTEPS_PER_MOVE = 8  # we conceptualize every player move as a full working day, or "8 hours"
 GAME_OVER_MESSAGE_MACHINE_BREAKDOWN = "Machine health has reached 0%"
 GAME_OVER_MESSAGE_NO_MONEY = "Player ran out of money"

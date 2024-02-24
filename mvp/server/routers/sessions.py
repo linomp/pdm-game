@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_utilities import repeat_every
 
 from mvp.server.core.game.GameSession import GameSession
 from mvp.server.core.game.GameSessionDTO import GameSessionDTO
@@ -22,6 +23,16 @@ router = APIRouter(
     tags=["Sessions"],
     responses={404: {"description": "Not found"}},
 )
+
+
+@router.on_event("startup")
+@repeat_every(seconds=3600, wait_first=True)
+async def clear_inactive_sessions():
+    print("Checking for abandoned sessions...")
+    for session_id, session in list(sessions.items()):
+        if session.is_abandoned():
+            print(f"Session '{session_id}' has been abandoned and will be removed")
+            sessions.pop(session_id)
 
 
 @router.post("/", response_model=GameSessionDTO)

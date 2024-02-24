@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 from typing import Callable
 
 from pydantic import BaseModel
@@ -16,6 +17,7 @@ class GameSession(BaseModel):
     is_game_over: bool = False
     available_sensors: dict[str, bool] = None
     available_predictions: dict[str, bool] = None
+    last_updated: datetime.datetime = None
 
     # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
@@ -31,7 +33,12 @@ class GameSession(BaseModel):
         session.available_sensors = {sensor: False for sensor in session.machine_state.get_purchasable_sensors()}
         session.available_predictions = {prediction: False for prediction in
                                          session.machine_state.get_purchasable_predictions()}
+        session.last_updated = datetime.datetime.now()
+
         return session
+
+    def is_abandoned(self):
+        return (datetime.datetime.now() - self.last_updated).total_seconds() > IDLE_SESSION_TTL_SECONDS
 
     def check_if_game_over(self):
         self.is_game_over = True
@@ -72,6 +79,8 @@ class GameSession(BaseModel):
             self.rul_predictor,
             collected_machine_states_during_turn
         )
+
+        self.last_updated = datetime.datetime.now()
 
         return collected_machine_states_during_turn
 

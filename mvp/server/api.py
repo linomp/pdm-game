@@ -24,7 +24,7 @@ async def http_exception_handler(_, exc):
 
 
 @app.on_event("shutdown")
-async def cleanup_sessions():
+async def clear_all_sessions():
     sessions.clear()
 
 
