@@ -6,6 +6,7 @@
     gameOver,
     gameSession,
     globalSettings,
+    machineStateSnapshots,
     maintenanceButtonDisabled,
     performedMaintenanceInThisTurn,
   } from "src/stores/stores";
@@ -28,14 +29,22 @@
     }
     // TODO: migrate this polling strategy to a websocket connection
     // start fetching machine health every second while the day is advancing
-    const intervalId = setInterval(fetchExistingSession, 500);
+    const intervalId = setInterval(
+      fetchExistingSession,
+      $globalSettings?.game_tick_interval! * 1000 * 0.5,
+    );
     dayInProgress.set(true);
 
     try {
+      // TODO repeated code, maybe refactor?
       let result = await SessionsService.advanceSessionsTurnsPut(
         $gameSession?.id!,
       );
       gameSession.set(result);
+      machineStateSnapshots.update((snapshots) => {
+        snapshots[result.current_step!] = result.machine_state!;
+        return snapshots;
+      });
     } catch (error) {
       console.error("Error advancing day:", error);
     } finally {

@@ -10,6 +10,7 @@
     gameOverReason,
     gameSession,
     globalSettings,
+    machineStateSnapshots,
   } from "src/stores/stores";
 
   const startSession = async () => {
@@ -27,10 +28,15 @@
     }
 
     try {
+      // TODO repeated code, maybe refactor?
       let result = await SessionsService.getSessionSessionsGet(
         $gameSession?.id!,
       );
       gameSession.set(result);
+      machineStateSnapshots.update((snapshots) => {
+        snapshots[result.current_step!] = result.machine_state!;
+        return snapshots;
+      });
       checkForGameOver();
     } catch (error) {
       console.error("Error fetching session:", error);
