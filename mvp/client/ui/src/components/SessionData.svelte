@@ -53,7 +53,6 @@
       clearInterval(intervalId);
       dayInProgress.set(false);
       performedMaintenanceInThisTurn.set(false);
-      console.log($gameSession?.machineStateSnapshots);
     }
   };
 
