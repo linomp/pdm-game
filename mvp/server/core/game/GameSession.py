@@ -18,7 +18,8 @@ class GameSession(BaseModel):
     available_sensors: dict[str, bool] = None
     available_predictions: dict[str, bool] = None
     last_updated: datetime.datetime = None
-
+    # TODO: do something with these states. May be useful for prediction functionality.
+    machine_state_history: list[tuple[int, MachineState]] = []
     # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
 
@@ -81,6 +82,13 @@ class GameSession(BaseModel):
         )
 
         self.last_updated = datetime.datetime.now()
+
+        self.machine_state_history.extend(
+            zip(
+                range(self.current_step - TIMESTEPS_PER_MOVE, self.current_step),
+                collected_machine_states_during_turn
+            )
+        )
 
         return collected_machine_states_during_turn
 

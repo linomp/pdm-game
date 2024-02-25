@@ -2,6 +2,7 @@ import pytest
 
 from mvp.server.core.constants import TIMESTEPS_PER_MOVE
 from mvp.server.core.game.GameSession import GameSession
+from mvp.server.core.machine.MachineState import MachineState
 
 
 @pytest.fixture
@@ -22,12 +23,15 @@ async def test_game_session_advance_one_turn(game_session):
     initial_step = game_session.current_step
 
     collected_stats = await game_session.advance_one_turn()
-    assert len(collected_stats) == TIMESTEPS_PER_MOVE
 
-    # Checking if current_step increases correctly after each turn
+    assert len(collected_stats) == TIMESTEPS_PER_MOVE
     assert game_session.current_step == initial_step + TIMESTEPS_PER_MOVE
 
-    # Checking if health decreases after each turn
+    assert len(game_session.machine_state_history) == TIMESTEPS_PER_MOVE
+    for i in range(TIMESTEPS_PER_MOVE):
+        assert game_session.machine_state_history[i][0] == i
+        assert isinstance(game_session.machine_state_history[i][1], MachineState)
+
     final_health = game_session.machine_state.health_percentage
     assert final_health < initial_health
 

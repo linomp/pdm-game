@@ -53,7 +53,6 @@ async def get_session(session: GameSession = Depends(get_session_dependency)) ->
 
 @router.put("/turns", response_model=GameSessionDTO)
 async def advance(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
-    # TODO: do something with the returned list of MachineState. May be useful for prediction functionality.
     await session.advance_one_turn()
 
     return GameSessionDTO.from_session(session)
