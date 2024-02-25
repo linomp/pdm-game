@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_utilities import repeat_every
 
 from mvp.server.core.game.GameSession import GameSession
 from mvp.server.core.game.GameSessionDTO import GameSessionDTO
@@ -24,6 +25,16 @@ router = APIRouter(
 )
 
 
+@router.on_event("startup")
+@repeat_every(seconds=3600, wait_first=True)
+async def clear_inactive_sessions():
+    print("Checking for abandoned sessions...")
+    for session_id, session in list(sessions.items()):
+        if session.is_abandoned():
+            print(f"Session '{session_id}' has been abandoned and will be removed")
+            sessions.pop(session_id)
+
+
 @router.post("/", response_model=GameSessionDTO)
 async def create_session() -> GameSessionDTO:
     new_session_id = uuid.uuid4().hex
@@ -42,7 +53,6 @@ async def get_session(session: GameSession = Depends(get_session_dependency)) ->
 
 @router.put("/turns", response_model=GameSessionDTO)
 async def advance(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
-    # TODO: do something with the returned list of MachineState. May be useful for prediction functionality.
     await session.advance_one_turn()
 
     return GameSessionDTO.from_session(session)

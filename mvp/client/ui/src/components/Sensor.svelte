@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { formatNumber } from "src/shared/utils";
+
   export let parameter: string;
   export let value: number | null;
   export let sensorPurchaseButtonDisabled: boolean;
@@ -14,7 +16,7 @@
 </script>
 
 <p>
-  {formatParameterName(parameter)}: {value ?? "???"}
+  {formatParameterName(parameter)}: {formatNumber(value) ?? "???"}
   <span hidden={value != null}>
     <button
       disabled={sensorPurchaseButtonDisabled}

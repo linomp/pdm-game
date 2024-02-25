@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { SessionsService } from "../api/generated";
-  import { isUndefinedOrNull } from "src/shared/utils";
+  import { SessionsService, type GameSessionDTO } from "../api/generated";
+  import { isNotUndefinedNorNull, isUndefinedOrNull } from "src/shared/utils";
   import GameOver from "src/components/GameOver.svelte";
   import MachineView from "src/components/MachineView.svelte";
   import SessionData from "src/components/SessionData.svelte";
@@ -14,23 +14,39 @@
 
   const startSession = async () => {
     try {
-      const result = await SessionsService.createSessionSessionsPost();
-      gameSession.set(result);
+      const newGameSessionDto =
+        await SessionsService.createSessionSessionsPost();
+      updateGameSession(newGameSessionDto);
     } catch (error) {
       console.error("Error fetching session:", error);
     }
   };
 
-  const fetchExistingSession = async () => {
+  const updateGameSession = (newGameSessionDto: GameSessionDTO) => {
+    gameSession.update((previousGameSession) => {
+      if (isNotUndefinedNorNull(previousGameSession)) {
+        previousGameSession!.machineStateSnapshots[
+          newGameSessionDto.current_step
+        ] = newGameSessionDto.machine_state!;
+      }
+
+      return {
+        ...newGameSessionDto,
+        machineStateSnapshots: previousGameSession?.machineStateSnapshots ?? {},
+      };
+    });
+  };
+
+  const pollGameSession = async () => {
     if (isUndefinedOrNull($gameSession) || $gameOver) {
       return;
     }
 
     try {
-      let result = await SessionsService.getSessionSessionsGet(
+      let newGameSessionDto = await SessionsService.getSessionSessionsGet(
         $gameSession?.id!,
       );
-      gameSession.set(result);
+      updateGameSession(newGameSessionDto);
       checkForGameOver();
     } catch (error) {
       console.error("Error fetching session:", error);
@@ -61,9 +77,10 @@
       <div class="game-data">
         <SessionData
           maintenanceCost={$globalSettings?.maintenance_cost ?? 0}
-          {fetchExistingSession}
+          {pollGameSession}
+          {updateGameSession}
         />
-        <MachineData />
+        <MachineData {updateGameSession} />
       </div>
     {/if}
   </div>

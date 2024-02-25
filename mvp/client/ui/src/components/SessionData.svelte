@@ -1,6 +1,14 @@
 <script lang="ts">
-  import { PlayerActionsService, SessionsService } from "src/api/generated";
-  import { isUndefinedOrNull } from "src/shared/utils";
+  import {
+    PlayerActionsService,
+    SessionsService,
+    type GameSessionDTO,
+  } from "src/api/generated";
+  import {
+    formatNumber,
+    isNotUndefinedNorNull,
+    isUndefinedOrNull,
+  } from "src/shared/utils";
   import {
     dayInProgress,
     gameOver,
@@ -11,7 +19,8 @@
   } from "src/stores/stores";
 
   export let maintenanceCost: number;
-  export let fetchExistingSession: () => Promise<void>;
+  export let pollGameSession: () => Promise<void>;
+  export let updateGameSession: (newGameSessionDto: GameSessionDTO) => void;
 
   $: {
     maintenanceButtonDisabled.set(
@@ -26,20 +35,20 @@
     if (isUndefinedOrNull($gameSession) || $gameOver) {
       return;
     }
-    // TODO: migrate this polling strategy to a websocket connection
+    // TODO: migrate this polling strategy to websockets / MQTT
     // start fetching machine health every second while the day is advancing
-    const intervalId = setInterval(fetchExistingSession, 500);
+    const intervalId = setInterval(pollGameSession, 100);
     dayInProgress.set(true);
 
     try {
-      let result = await SessionsService.advanceSessionsTurnsPut(
+      let newGameSessionDto = await SessionsService.advanceSessionsTurnsPut(
         $gameSession?.id!,
       );
-      gameSession.set(result);
+      updateGameSession(newGameSessionDto);
     } catch (error) {
       console.error("Error advancing day:", error);
     } finally {
-      await fetchExistingSession();
+      await pollGameSession();
       // stop fetching machine health until the player advances to next day again
       clearInterval(intervalId);
       dayInProgress.set(false);
@@ -53,11 +62,11 @@
     }
 
     try {
-      const result =
+      const newGameSessionDto =
         await PlayerActionsService.doMaintenancePlayerActionsMaintenanceInterventionsPost(
           $gameSession!.id,
         );
-      gameSession.set(result);
+      updateGameSession(newGameSessionDto);
       performedMaintenanceInThisTurn.set(true);
     } catch (error: any) {
       if (error.status === 400) {
@@ -69,11 +78,11 @@
   };
 </script>
 
-{#if !isUndefinedOrNull($gameSession)}
+{#if isNotUndefinedNorNull($gameSession)}
   <div class="session-data">
     <h3>Game Session Details</h3>
     <p>Current Step: {$gameSession?.current_step}</p>
-    <p>Available Funds: {$gameSession?.available_funds}</p>
+    <p>Available Funds: {formatNumber($gameSession?.available_funds)}</p>
     <div class="session-commands">
       <button on:click={advanceToNextDay} disabled={$dayInProgress}>
         Advance to next day
