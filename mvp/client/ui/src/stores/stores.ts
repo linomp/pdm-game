@@ -1,10 +1,9 @@
 import { writable } from 'svelte/store';
-import type { GameParametersDTO, GameSessionDTO, MachineStateDTO } from 'src/api/generated';
-import type { MachineStateSnapshotDict } from 'src/shared/types';
+import type { GameParametersDTO } from 'src/api/generated';
+import type { GameSessionWithStateSnapshots } from 'src/shared/types';
 
 export const globalSettings = writable<GameParametersDTO | null>(null);
-export const gameSession = writable<GameSessionDTO | null>(null);
-export const machineStateSnapshots = writable<MachineStateSnapshotDict>({});
+export const gameSession = writable<GameSessionWithStateSnapshots | null>(null);
 export const gameOver = writable(false);
 export const gameOverReason = writable<string | null>(null);
 export const maintenanceButtonDisabled = writable(false);

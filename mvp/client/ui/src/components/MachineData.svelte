@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { isUndefinedOrNull } from "src/shared/utils";
-  import { PlayerActionsService } from "src/api/generated";
+  import { isNotUndefinedNorNull } from "src/shared/utils";
+  import { PlayerActionsService, type GameSessionDTO } from "src/api/generated";
   import {
     dayInProgress,
     gameOver,
@@ -10,6 +10,8 @@
     sensorPurchaseButtonDisabled,
   } from "src/stores/stores";
   import Sensor from "src/components/Sensor.svelte";
+
+  export let updateGameSession: (newGameSessionDto: GameSessionDTO) => void;
 
   $: {
     sensorPurchaseButtonDisabled.set(
@@ -31,12 +33,12 @@
     }
 
     try {
-      const result =
+      const newGameSessionDto =
         await PlayerActionsService.purchaseSensorPlayerActionsPurchasesSensorsPost(
           sensorName,
           $gameSession?.id!,
         );
-      gameSession.set(result);
+      updateGameSession(newGameSessionDto);
     } catch (error: any) {
       if (error.status === 400) {
         alert("Not enough funds to buy the sensor!");
@@ -52,12 +54,12 @@
     }
 
     try {
-      const result =
+      const newGameSessionDto =
         await PlayerActionsService.purchasePredictionPlayerActionsPurchasesPredictionModelsPost(
           "predicted_rul",
           $gameSession?.id!,
         );
-      gameSession.set(result);
+      updateGameSession(newGameSessionDto);
     } catch (error: any) {
       if (error.status === 400) {
         alert("Not enough funds to buy the prediction model!");
@@ -68,7 +70,7 @@
   };
 </script>
 
-{#if !isUndefinedOrNull($gameSession)}
+{#if isNotUndefinedNorNull($gameSession)}
   <div class="machine-data">
     <h3>Operational Parameters</h3>
     {#each Object.entries($gameSession?.machine_state?.operational_parameters ?? {}) as [parameter, value]}
@@ -85,7 +87,9 @@
         ? `${$gameSession.machine_state?.predicted_rul} steps`
         : "???"}
       <span
-        hidden={!isUndefinedOrNull($gameSession?.machine_state?.predicted_rul)}
+        hidden={isNotUndefinedNorNull(
+          $gameSession?.machine_state?.predicted_rul,
+        )}
       >
         <button
           disabled={$predictionPurchaseButtonDisabled}
