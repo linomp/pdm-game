@@ -1,8 +1,16 @@
 <script>
-  import { Chart, LineSeries } from "svelte-lightweight-charts";
+  import {
+    Chart,
+    LineSeries,
+    PriceLine,
+    TimeScale,
+  } from "svelte-lightweight-charts";
   export let data;
 </script>
 
 <Chart width={300} height={250}>
-  <LineSeries {data} />
+  <LineSeries {data}>
+    <!-- TODO: get the danger zone indicator value from Backend -->
+    <PriceLine title="!" price={100} />
+  </LineSeries>
 </Chart>

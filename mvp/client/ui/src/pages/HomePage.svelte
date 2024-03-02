@@ -83,7 +83,7 @@
   }
 
   .title {
-    margin-bottom: 2em;
+    margin-bottom: 1em;
     text-align: center;
   }
 

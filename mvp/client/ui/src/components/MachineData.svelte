@@ -1,6 +1,13 @@
 <script lang="ts">
-  import { isNotUndefinedNorNull } from "src/shared/utils";
-  import { PlayerActionsService, type GameSessionDTO } from "src/api/generated";
+  import {
+    getFormattedTimeseriesForParameters,
+    isNotUndefinedNorNull,
+  } from "src/shared/utils";
+  import {
+    PlayerActionsService,
+    type GameSessionDTO,
+    type MachineStateDTO,
+  } from "src/api/generated";
   import {
     dayInProgress,
     gameOver,
@@ -10,8 +17,11 @@
     sensorPurchaseButtonDisabled,
   } from "src/stores/stores";
   import Sensor from "src/components/Sensor.svelte";
+  import type { TimeSeriesPoint } from "src/shared/types";
 
   export let updateGameSession: (newGameSessionDto: GameSessionDTO) => void;
+
+  let data = {} as { [key: string]: TimeSeriesPoint[] };
 
   $: {
     sensorPurchaseButtonDisabled.set(
@@ -25,6 +35,13 @@
         ($gameSession?.available_funds ?? 0) <
           ($globalSettings?.prediction_model_cost ?? Infinity),
     );
+
+    if (isNotUndefinedNorNull($gameSession)) {
+      data = getFormattedTimeseriesForParameters(
+        Object.keys($gameSession!.machine_state!.operational_parameters ?? {}),
+        $gameSession!,
+      );
+    }
   }
 
   const purchaseSensor = async (sensorName: string) => {
@@ -74,13 +91,17 @@
   <div class="machine-data">
     <div class="sensors-display">
       {#each Object.entries($gameSession?.machine_state?.operational_parameters ?? {}) as [parameter, value]}
-        <Sensor
-          sensorCost={$globalSettings?.sensor_cost ?? 0}
-          sensorPurchaseButtonDisabled={$sensorPurchaseButtonDisabled}
-          {parameter}
-          {value}
-          {purchaseSensor}
-        />
+        <!-- TODO improve this horrible hack.. -->
+        {#key data[parameter]}
+          <Sensor
+            sensorCost={$globalSettings?.sensor_cost ?? 0}
+            sensorPurchaseButtonDisabled={$sensorPurchaseButtonDisabled}
+            {parameter}
+            {value}
+            {purchaseSensor}
+            data={data[parameter] ?? []}
+          />
+        {/key}
       {/each}
     </div>
     <div class="rul-display">
