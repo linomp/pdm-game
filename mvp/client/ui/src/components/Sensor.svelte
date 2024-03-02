@@ -32,16 +32,41 @@
   // - style HomePage as in the mockup
 </script>
 
-<p>
-  {formatParameterName(parameter)}: {formatNumber(value) ?? "???"}
-  {#if isUndefinedOrNull(value)}
-    <button
-      disabled={sensorPurchaseButtonDisabled}
-      on:click={() => purchaseSensor(parameter)}
-    >
-      Buy (${sensorCost})
-    </button>
-  {:else}
-    <TimeSeriesChart {data} />
-  {/if}
-</p>
+<div class="sensor">
+  <div class="title">
+    {formatParameterName(parameter)}
+  </div>
+  <small class="temp-value">
+    ({formatNumber(value) ?? "???"})
+  </small>
+  <div class="display">
+    {#if isUndefinedOrNull(value)}
+      <button
+        disabled={sensorPurchaseButtonDisabled}
+        on:click={() => purchaseSensor(parameter)}
+      >
+        Buy (${sensorCost})
+      </button>
+    {:else}
+      <TimeSeriesChart {data} />
+    {/if}
+  </div>
+</div>
+
+<style>
+  .sensor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1em;
+  }
+  .title {
+    margin-bottom: 0.5em;
+  }
+  .temp-value {
+    margin-bottom: 0.5em;
+  }
+  .display {
+    margin-bottom: 2em;
+  }
+</style>

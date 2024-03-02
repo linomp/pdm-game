@@ -3,6 +3,6 @@
   export let data;
 </script>
 
-<Chart width={200} height={200}>
+<Chart width={300} height={250}>
   <LineSeries {data} />
 </Chart>

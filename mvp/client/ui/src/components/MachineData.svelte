@@ -70,19 +70,20 @@
   };
 </script>
 
-{#if isNotUndefinedNorNull($gameSession)}
+{#if isNotUndefinedNorNull($gameSession) && !$gameOver}
   <div class="machine-data">
-    <h3>Operational Parameters</h3>
-    {#each Object.entries($gameSession?.machine_state?.operational_parameters ?? {}) as [parameter, value]}
-      <Sensor
-        sensorCost={$globalSettings?.sensor_cost ?? 0}
-        sensorPurchaseButtonDisabled={$sensorPurchaseButtonDisabled}
-        {parameter}
-        {value}
-        {purchaseSensor}
-      />
-    {/each}
-    <p>
+    <div class="sensors-display">
+      {#each Object.entries($gameSession?.machine_state?.operational_parameters ?? {}) as [parameter, value]}
+        <Sensor
+          sensorCost={$globalSettings?.sensor_cost ?? 0}
+          sensorPurchaseButtonDisabled={$sensorPurchaseButtonDisabled}
+          {parameter}
+          {value}
+          {purchaseSensor}
+        />
+      {/each}
+    </div>
+    <div class="rul-display">
       {"Remaining Useful Life"}: {$gameSession?.machine_state?.predicted_rul
         ? `${$gameSession.machine_state?.predicted_rul} steps`
         : "???"}
@@ -98,6 +99,20 @@
           Buy (${$globalSettings?.prediction_model_cost})
         </button>
       </span>
-    </p>
+    </div>
   </div>
 {/if}
+
+<style>
+  .machine-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .sensors-display {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>

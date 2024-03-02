@@ -78,9 +78,8 @@
   };
 </script>
 
-{#if isNotUndefinedNorNull($gameSession)}
+{#if isNotUndefinedNorNull($gameSession) && !$gameOver}
   <div class="session-data">
-    <h3>Game Session Details</h3>
     <p>Current Step: {$gameSession?.current_step}</p>
     <p>Available Funds: {formatNumber($gameSession?.available_funds)}</p>
     <div class="session-commands">
@@ -95,6 +94,10 @@
 {/if}
 
 <style>
+  .session-data {
+    margin: 1em;
+  }
+
   .session-commands {
     display: flex;
     flex-direction: column;
