@@ -31,7 +31,7 @@ class GameSession(BaseModel):
             machine_state=MachineState.new_machine_state(),
             available_funds=INITIAL_CASH
         )
-        session.available_sensors = {sensor: False for sensor in session.machine_state.get_purchasable_sensors()}
+        session.available_sensors = {sensor: True for sensor in session.machine_state.get_purchasable_sensors()}
         session.available_predictions = {prediction: False for prediction in
                                          session.machine_state.get_purchasable_predictions()}
         session.last_updated = datetime.now()
@@ -74,7 +74,7 @@ class GameSession(BaseModel):
             self.available_funds += REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
             self._log()
 
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(GAME_TICK_INTERVAL)
 
         self.machine_state.update_prediction(
             self.current_step,

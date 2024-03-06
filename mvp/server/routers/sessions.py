@@ -29,9 +29,8 @@ def get_session_dependency(session_id: str) -> GameSession:
 @repeat_every(seconds=3600, wait_first=False)
 async def cleanup_inactive_sessions():
     print(f"{datetime.now()}: Cleaning up sessions...")
-    # TODO: update logic later on to clean up game-over sessions only after saving high score
     for session_id, session in list(sessions.items()):
-        if session.is_abandoned() or session.is_game_over:
+        if session.is_abandoned():
             print(f"{datetime.now()}: Session '{session_id}' will be dropped")
             sessions.pop(session_id)
 
