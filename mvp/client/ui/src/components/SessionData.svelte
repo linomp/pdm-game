@@ -4,6 +4,7 @@
     SessionsService,
     type GameSessionDTO,
   } from "src/api/generated";
+  import { SAMPLE_INTERVAL_MS } from "src/shared/types";
   import {
     formatNumber,
     isNotUndefinedNorNull,
@@ -37,7 +38,7 @@
     }
     // TODO: migrate this polling strategy to websockets / MQTT
     // start fetching machine health every second while the day is advancing
-    const intervalId = setInterval(pollGameSession, 100);
+    const intervalId = setInterval(pollGameSession, SAMPLE_INTERVAL_MS);
     dayInProgress.set(true);
 
     try {

@@ -1,8 +1,12 @@
 <script lang="ts">
   import { SessionsService, type GameSessionDTO } from "../api/generated";
-  import { isNotUndefinedNorNull, isUndefinedOrNull } from "src/shared/utils";
+  import {
+    getFormattedTimeseriesForParameters,
+    isNotUndefinedNorNull,
+    isUndefinedOrNull,
+  } from "src/shared/utils";
   import GameOver from "src/components/GameOver.svelte";
-  import MachineView from "src/components/MachineView.svelte";
+  import MachineView from "src/components/graphical/MachineView.svelte";
   import SessionData from "src/components/SessionData.svelte";
   import MachineData from "src/components/MachineData.svelte";
   import StartSessionButton from "src/components/StartSessionButton.svelte";
@@ -12,20 +16,34 @@
     gameSession,
     globalSettings,
   } from "src/stores/stores";
+  import type { GameSessionWithStateSnapshots } from "src/shared/types";
 
   const updateGameSession = (newGameSessionDto: GameSessionDTO) => {
-    gameSession.update((previousGameSession) => {
-      if (isNotUndefinedNorNull(previousGameSession)) {
-        previousGameSession!.machineStateSnapshots[
-          newGameSessionDto.current_step
-        ] = newGameSessionDto.machine_state!;
-      }
+    gameSession.update(
+      (
+        previousGameSession: GameSessionWithStateSnapshots | null,
+      ): GameSessionWithStateSnapshots => {
+        if (isNotUndefinedNorNull(previousGameSession)) {
+          previousGameSession!.machineStateSnapshots[
+            newGameSessionDto.current_step
+          ] = newGameSessionDto.machine_state!;
+        }
 
-      return {
-        ...newGameSessionDto,
-        machineStateSnapshots: previousGameSession?.machineStateSnapshots ?? {},
-      };
-    });
+        return {
+          ...newGameSessionDto,
+          machineStateSnapshots:
+            previousGameSession?.machineStateSnapshots ?? {},
+          // formattedTimeseries: getFormattedTimeseriesForParameters(
+          //   ["temperature", "oil_age", "mechanical_wear"],
+          //   previousGameSession,
+          // ),
+          formattedTimeseries: getFormattedTimeseriesForParameters(
+            ["temperature", "oil_age", "mechanical_wear"],
+            previousGameSession?.machineStateSnapshots,
+          ),
+        };
+      },
+    );
   };
 
   const pollGameSession = async () => {

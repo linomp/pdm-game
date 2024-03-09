@@ -1,6 +1,6 @@
 <script lang="ts">
   import { formatNumber, isUndefinedOrNull } from "src/shared/utils";
-  import TimeSeriesChart from "./TimeSeriesChart.svelte";
+  import TimeSeriesChart from "./graphical/TimeSeriesChart.svelte";
   import type { TimeSeriesPoint } from "src/shared/types";
 
   export let parameter: string;

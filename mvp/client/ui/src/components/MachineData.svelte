@@ -1,13 +1,6 @@
 <script lang="ts">
-  import {
-    getFormattedTimeseriesForParameters,
-    isNotUndefinedNorNull,
-  } from "src/shared/utils";
-  import {
-    PlayerActionsService,
-    type GameSessionDTO,
-    type MachineStateDTO,
-  } from "src/api/generated";
+  import { isNotUndefinedNorNull } from "src/shared/utils";
+  import { PlayerActionsService, type GameSessionDTO } from "src/api/generated";
   import {
     dayInProgress,
     gameOver,
@@ -35,13 +28,6 @@
         ($gameSession?.available_funds ?? 0) <
           ($globalSettings?.prediction_model_cost ?? Infinity),
     );
-
-    if (isNotUndefinedNorNull($gameSession)) {
-      data = getFormattedTimeseriesForParameters(
-        Object.keys($gameSession!.machine_state!.operational_parameters ?? {}),
-        $gameSession!,
-      );
-    }
   }
 
   const purchaseSensor = async (sensorName: string) => {
@@ -92,14 +78,14 @@
     <div class="sensors-display">
       {#each Object.entries($gameSession?.machine_state?.operational_parameters ?? {}) as [parameter, value]}
         <!-- TODO improve this horrible hack.. -->
-        {#key data[parameter]}
+        {#key $gameSession?.formattedTimeseries[parameter]}
           <Sensor
             sensorCost={$globalSettings?.sensor_cost ?? 0}
             sensorPurchaseButtonDisabled={$sensorPurchaseButtonDisabled}
             {parameter}
             {value}
             {purchaseSensor}
-            data={data[parameter] ?? []}
+            data={$gameSession?.formattedTimeseries[parameter] ?? []}
           />
         {/key}
       {/each}

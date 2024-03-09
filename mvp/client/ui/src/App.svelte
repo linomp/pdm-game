@@ -3,7 +3,7 @@
   import { Route, Router } from "svelte-navigator";
   import { GameParametersService, OpenAPI } from "./api/generated/";
   import HomePage from "src/pages/HomePage.svelte";
-  import Spinner from "src/components/Spinner.svelte";
+  import Spinner from "src/components/graphical/Spinner.svelte";
   import { globalSettings } from "./stores/stores";
   import { isUndefinedOrNull } from "./shared/utils";
 
