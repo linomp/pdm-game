@@ -1,4 +1,4 @@
-name: MVP Frontend Build
+name: MVP Frontend Build & test
 
 on:
   pull_request:
