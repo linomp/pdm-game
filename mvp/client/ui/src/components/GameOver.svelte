@@ -1,12 +1,20 @@
 <script lang="ts">
-  import { gameOverReason, gameSession } from "src/stores/stores";
+  import type { GameSessionWithTimeSeries } from "src/shared/types";
+  import { gameOver, gameOverReason, gameSession } from "src/stores/stores";
 
-  const gameSessionWithoutStateSnapshots = {
-    ...$gameSession,
-    machineStateSnapshots: undefined,
-  };
+  const formatSessionData = (session: GameSessionWithTimeSeries | null) =>
+    JSON.stringify(
+      {
+        ...session,
+        formattedTimeSeries: undefined,
+      },
+      null,
+      2,
+    );
 </script>
 
-<h3>Game Over</h3>
-<pre>{JSON.stringify(gameSessionWithoutStateSnapshots, null, 2)}</pre>
-<p>{$gameOverReason}</p>
+{#if $gameOver}
+  <h3>Game Over</h3>
+  <pre>{formatSessionData($gameSession)}</pre>
+  <p>{$gameOverReason}</p>
+{/if}

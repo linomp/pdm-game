@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from mvp.server.api import app
-from mvp.server.core.constants import INITIAL_CASH, MAINTENANCE_COST, SENSOR_COST, PREDICTION_MODEL_COST
+from mvp.server.core.constants import INITIAL_CASH, MAINTENANCE_COST, PREDICTION_MODEL_COST, SENSOR_COST
 
 client = TestClient(app)
 
@@ -85,7 +85,7 @@ def test_purchase_sensor(session_id):
 
     for sensor in ["temperature", "oil_age", "mechanical_wear"]:
         while available_funds < SENSOR_COST:
-            response = client.post(f"/player-actions/purchases/sensors?session_id={session_id}&sensor=temperature")
+            response = client.post(f"/player-actions/purchases/sensors?session_id={session_id}&sensor={sensor}")
             assert response.status_code == 400
 
             response = client.put(f"/sessions/turns?session_id={session_id}")

@@ -1,5 +1,5 @@
 import asyncio
-import datetime
+from datetime import datetime
 from typing import Callable
 
 from pydantic import BaseModel
@@ -11,13 +11,13 @@ from mvp.server.core.machine.MachineState import MachineState
 
 class GameSession(BaseModel):
     id: str
-    current_step: int = 0
+    current_step: int
     machine_state: MachineState
-    available_funds: float = 0.
+    available_funds: float
     is_game_over: bool = False
     available_sensors: dict[str, bool] = None
     available_predictions: dict[str, bool] = None
-    last_updated: datetime.datetime = None
+    last_updated: datetime = None
     # TODO: do something with these states. May be useful for prediction functionality.
     machine_state_history: list[tuple[int, MachineState]] = []
     # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
@@ -34,23 +34,25 @@ class GameSession(BaseModel):
         session.available_sensors = {sensor: False for sensor in session.machine_state.get_purchasable_sensors()}
         session.available_predictions = {prediction: False for prediction in
                                          session.machine_state.get_purchasable_predictions()}
-        session.last_updated = datetime.datetime.now()
+        session.last_updated = datetime.now()
 
         return session
 
     def is_abandoned(self):
-        return (datetime.datetime.now() - self.last_updated).total_seconds() > IDLE_SESSION_TTL_SECONDS
+        return (datetime.now() - self.last_updated).total_seconds() > IDLE_SESSION_TTL_SECONDS
 
     def check_if_game_over(self):
         self.is_game_over = True
 
         if self.machine_state.is_broken():
-            print(f"GameSession '{self.id}' - machine failed at step {self.current_step} - {self.machine_state}")
+            print(
+                f"{datetime.now()}: GameSession '{self.id}' - machine failed at step {self.current_step} - {self.machine_state}"
+            )
         # TODO: decide if to allow for slightly negative overshoot (player debt)
         # TODO: decide if to bring back this rule. While testing it turned out frustrating for the player.
-        # elif self.available_funds <= 0:
+        # elif (self.current_step > 0) and (self.available_funds <= 0):
         #     print(
-        #         f"GameSession '{self.id}' - player ran out of money at step {self.current_step} - {self.machine_state}")
+        #         f"{datetime.now()}: GameSession '{self.id}' - player ran out of money at step {self.current_step} - {self.machine_state}")
         else:
             self.is_game_over = False
 
@@ -73,7 +75,7 @@ class GameSession(BaseModel):
             self.available_funds += REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
             self._log()
 
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(GAME_TICK_INTERVAL)
 
         self.machine_state.update_prediction(
             self.current_step,
@@ -81,7 +83,7 @@ class GameSession(BaseModel):
             collected_machine_states_during_turn
         )
 
-        self.last_updated = datetime.datetime.now()
+        self.last_updated = datetime.now()
 
         self.machine_state_history.extend(
             zip(
@@ -118,4 +120,4 @@ class GameSession(BaseModel):
 
     def _log(self, multiple=5):
         if self.current_step % multiple == 0:
-            print(f"GameSession '{self.id}' - step: {self.current_step} - {self.machine_state}")
+            print(f"{datetime.now()}: GameSession '{self.id}' - step: {self.current_step} - {self.machine_state}")

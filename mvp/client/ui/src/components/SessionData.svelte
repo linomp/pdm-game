@@ -4,6 +4,7 @@
     SessionsService,
     type GameSessionDTO,
   } from "src/api/generated";
+  import { SAMPLE_INTERVAL_MS } from "src/shared/types";
   import {
     formatNumber,
     isNotUndefinedNorNull,
@@ -26,8 +27,7 @@
     maintenanceButtonDisabled.set(
       $performedMaintenanceInThisTurn ||
         $dayInProgress ||
-        ($gameSession?.available_funds ?? 0) <
-          ($globalSettings?.maintenance_cost ?? Infinity),
+        ($gameSession?.available_funds ?? 0) < $globalSettings.maintenance_cost,
     );
   }
 
@@ -37,7 +37,7 @@
     }
     // TODO: migrate this polling strategy to websockets / MQTT
     // start fetching machine health every second while the day is advancing
-    const intervalId = setInterval(pollGameSession, 100);
+    const intervalId = setInterval(pollGameSession, SAMPLE_INTERVAL_MS);
     dayInProgress.set(true);
 
     try {
@@ -78,12 +78,11 @@
   };
 </script>
 
-{#if isNotUndefinedNorNull($gameSession)}
+{#if isNotUndefinedNorNull($gameSession) && !$gameOver}
   <div class="session-data">
-    <h3>Game Session Details</h3>
     <p>Current Step: {$gameSession?.current_step}</p>
     <p>Available Funds: {formatNumber($gameSession?.available_funds)}</p>
-    <div class="session-commands">
+    <div class="session-controls">
       <button on:click={advanceToNextDay} disabled={$dayInProgress}>
         Advance to next day
       </button>
@@ -95,7 +94,11 @@
 {/if}
 
 <style>
-  .session-commands {
+  .session-data {
+    margin: 1em;
+  }
+
+  .session-controls {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;

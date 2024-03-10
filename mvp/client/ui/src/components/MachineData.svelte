@@ -15,15 +15,16 @@
 
   $: {
     sensorPurchaseButtonDisabled.set(
-      $dayInProgress ||
-        ($gameSession?.available_funds ?? 0) <
-          ($globalSettings?.sensor_cost ?? Infinity),
+      $gameSession?.is_game_over ||
+        $dayInProgress ||
+        ($gameSession?.available_funds ?? 0) < $globalSettings.sensor_cost,
     );
 
     predictionPurchaseButtonDisabled.set(
-      $dayInProgress ||
+      $gameSession?.is_game_over ||
+        $dayInProgress ||
         ($gameSession?.available_funds ?? 0) <
-          ($globalSettings?.prediction_model_cost ?? Infinity),
+          $globalSettings.prediction_model_cost,
     );
   }
 
@@ -72,17 +73,18 @@
 
 {#if isNotUndefinedNorNull($gameSession)}
   <div class="machine-data">
-    <h3>Operational Parameters</h3>
-    {#each Object.entries($gameSession?.machine_state?.operational_parameters ?? {}) as [parameter, value]}
-      <Sensor
-        sensorCost={$globalSettings?.sensor_cost ?? 0}
-        sensorPurchaseButtonDisabled={$sensorPurchaseButtonDisabled}
-        {parameter}
-        {value}
-        {purchaseSensor}
-      />
-    {/each}
-    <p>
+    <div class="sensors-display">
+      {#each Object.entries($gameSession?.machine_state?.operational_parameters ?? {}) as [parameter, value]}
+        <Sensor
+          sensorCost={$globalSettings.sensor_cost}
+          sensorPurchaseButtonDisabled={$sensorPurchaseButtonDisabled}
+          {parameter}
+          {value}
+          {purchaseSensor}
+        />
+      {/each}
+    </div>
+    <div class="rul-display">
       {"Remaining Useful Life"}: {$gameSession?.machine_state?.predicted_rul
         ? `${$gameSession.machine_state?.predicted_rul} steps`
         : "???"}
@@ -95,9 +97,23 @@
           disabled={$predictionPurchaseButtonDisabled}
           on:click={() => purchaseRulPredictionModel()}
         >
-          Buy (${$globalSettings?.prediction_model_cost})
+          Buy (${$globalSettings.prediction_model_cost})
         </button>
       </span>
-    </p>
+    </div>
   </div>
 {/if}
+
+<style>
+  .machine-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .sensors-display {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>

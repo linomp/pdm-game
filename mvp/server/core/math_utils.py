@@ -9,7 +9,7 @@ def linear_growth_with_reset(initial_value: float, period: int, current_timestep
 
 
 def exponential_decay(current_timestep: int, initial_value: float, decay_speed: float) -> float:
-    return initial_value - math.exp(current_timestep * decay_speed)
+    return initial_value / math.exp(current_timestep * decay_speed)
 
 
 def map_value(value: float, from_low: float, from_high: float, to_low: float, to_high: float) -> float:

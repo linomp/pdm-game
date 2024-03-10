@@ -22,12 +22,15 @@ async def test_game_session_advance_one_turn(game_session):
     initial_health = game_session.machine_state.health_percentage
     initial_step = game_session.current_step
 
-    collected_stats = await game_session.advance_one_turn()
+    total_turns_to_simulate = 5
+    collected_stats = []
+    for i in range(total_turns_to_simulate):
+        collected_stats.extend(await game_session.advance_one_turn())
 
-    assert len(collected_stats) == TIMESTEPS_PER_MOVE
-    assert game_session.current_step == initial_step + TIMESTEPS_PER_MOVE
+    assert len(collected_stats) == total_turns_to_simulate * TIMESTEPS_PER_MOVE
+    assert game_session.current_step == initial_step + total_turns_to_simulate * TIMESTEPS_PER_MOVE
 
-    assert len(game_session.machine_state_history) == TIMESTEPS_PER_MOVE
+    assert len(game_session.machine_state_history) == total_turns_to_simulate * TIMESTEPS_PER_MOVE
     for i in range(TIMESTEPS_PER_MOVE):
         assert game_session.machine_state_history[i][0] == i
         assert isinstance(game_session.machine_state_history[i][1], MachineState)

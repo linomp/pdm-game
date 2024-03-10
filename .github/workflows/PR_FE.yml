@@ -1,4 +1,4 @@
-name: MVP Frontend Build
+name: MVP Frontend
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build:
+  build_test:
     runs-on: ubuntu-latest
 
     steps:
