@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SessionsService, type GameSessionDTO } from "../api/generated";
   import {
-    getFormattedTimeseriesForParameters,
+    getUpdatedTimeseries,
     isNotUndefinedNorNull,
     isUndefinedOrNull,
   } from "src/shared/utils";
@@ -16,30 +16,21 @@
     gameSession,
     globalSettings,
   } from "src/stores/stores";
-  import type { GameSessionWithStateSnapshots } from "src/shared/types";
+  import type { GameSessionWithTimeSeries } from "src/shared/types";
 
   const updateGameSession = (newGameSessionDto: GameSessionDTO) => {
     gameSession.update(
       (
-        previousGameSession: GameSessionWithStateSnapshots | null,
-      ): GameSessionWithStateSnapshots => {
-        if (isNotUndefinedNorNull(previousGameSession)) {
-          previousGameSession!.machineStateSnapshots[
-            newGameSessionDto.current_step
-          ] = newGameSessionDto.machine_state!;
-        }
+        previousGameSession: GameSessionWithTimeSeries | null,
+      ): GameSessionWithTimeSeries => {
+        const previousTimeSeries =
+          previousGameSession?.formattedTimeSeries ?? {};
 
         return {
           ...newGameSessionDto,
-          machineStateSnapshots:
-            previousGameSession?.machineStateSnapshots ?? {},
-          // formattedTimeseries: getFormattedTimeseriesForParameters(
-          //   ["temperature", "oil_age", "mechanical_wear"],
-          //   previousGameSession,
-          // ),
-          formattedTimeseries: getFormattedTimeseriesForParameters(
-            ["temperature", "oil_age", "mechanical_wear"],
-            previousGameSession?.machineStateSnapshots,
+          formattedTimeSeries: getUpdatedTimeseries(
+            newGameSessionDto,
+            previousTimeSeries,
           ),
         };
       },
@@ -108,7 +99,7 @@
   .game-area {
     display: flex;
     flex-direction: row;
-    align-items: center; /* Align children (including title) to center */
+    align-items: center;
     gap: 5em;
     flex-wrap: wrap;
   }

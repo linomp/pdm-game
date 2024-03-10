@@ -1,13 +1,12 @@
 <script lang="ts">
-  import type { GameSessionWithStateSnapshots } from "src/shared/types";
+  import type { GameSessionWithTimeSeries } from "src/shared/types";
   import { gameOver, gameOverReason, gameSession } from "src/stores/stores";
 
-  const formatSessionData = (session: GameSessionWithStateSnapshots | null) =>
+  const formatSessionData = (session: GameSessionWithTimeSeries | null) =>
     JSON.stringify(
       {
         ...session,
-        machineStateSnapshots: undefined,
-        formattedTimeseries: undefined,
+        formattedTimeSeries: undefined,
       },
       null,
       2,

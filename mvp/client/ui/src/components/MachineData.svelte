@@ -81,8 +81,6 @@
           {parameter}
           {value}
           {purchaseSensor}
-          data={$gameSession?.formattedTimeseries[parameter] ?? []}
-          warningLevel={$globalSettings.warning_levels[parameter]}
         />
       {/each}
     </div>

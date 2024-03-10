@@ -1,17 +1,13 @@
 <script lang="ts">
   import { isUndefinedOrNull } from "src/shared/utils";
   import TimeSeriesChart from "./graphical/TimeSeriesChart.svelte";
-  import type { TimeSeriesPoint } from "src/shared/types";
-  import { gameSession } from "src/stores/stores";
+  import { gameSession, globalSettings } from "src/stores/stores";
 
   export let parameter: string;
   export let value: number | null;
   export let sensorPurchaseButtonDisabled: boolean;
   export let purchaseSensor: (parameter: string) => void;
   export let sensorCost: number;
-
-  export let data: TimeSeriesPoint[];
-  export let warningLevel: number;
 
   const formatParameterName = (parameter: string) => {
     return parameter
@@ -38,7 +34,10 @@
       </button>
     {:else}
       {#key `${$gameSession?.current_step}-${value}`}
-        <TimeSeriesChart {data} {warningLevel} />
+        <TimeSeriesChart
+          data={$gameSession?.formattedTimeSeries[parameter] ?? []}
+          warningLevel={$globalSettings.warning_levels[parameter]}
+        />
       {/key}
     {/if}
   </div>

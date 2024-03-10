@@ -12,7 +12,6 @@ class GameParametersDTO(BaseModel):
     game_tick_interval: float
     warning_levels: dict[str, float]
 
-    # generate constructor that sets the dafault alues
     def __init__(self):
         super().__init__(
             initial_cash=INITIAL_CASH,
