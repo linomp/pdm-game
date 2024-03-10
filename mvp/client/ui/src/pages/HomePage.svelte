@@ -80,7 +80,7 @@
       <GameOver />
       <StartSessionButton {updateGameSession} />
       <SessionData
-        maintenanceCost={$globalSettings?.maintenance_cost ?? 0}
+        maintenanceCost={$globalSettings.maintenance_cost}
         {pollGameSession}
         {updateGameSession}
       />

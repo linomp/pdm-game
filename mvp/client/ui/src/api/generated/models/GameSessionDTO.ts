@@ -8,8 +8,8 @@ import type { MachineStateDTO } from './MachineStateDTO';
 export type GameSessionDTO = {
     id: string;
     current_step: number;
-    machine_state?: (MachineStateDTO | null);
-    available_funds?: number;
-    is_game_over?: boolean;
+    machine_state: MachineStateDTO;
+    available_funds: number;
+    is_game_over: boolean;
     game_over_reason?: (string | null);
 };

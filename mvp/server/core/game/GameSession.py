@@ -11,9 +11,9 @@ from mvp.server.core.machine.MachineState import MachineState
 
 class GameSession(BaseModel):
     id: str
-    current_step: int = 0
+    current_step: int
     machine_state: MachineState
-    available_funds: float = 0.
+    available_funds: float
     is_game_over: bool = False
     available_sensors: dict[str, bool] = None
     available_predictions: dict[str, bool] = None
@@ -31,6 +31,7 @@ class GameSession(BaseModel):
             machine_state=MachineState.new_machine_state(),
             available_funds=INITIAL_CASH
         )
+        # TODO reset after testing sensor charts
         session.available_sensors = {sensor: True for sensor in session.machine_state.get_purchasable_sensors()}
         session.available_predictions = {prediction: False for prediction in
                                          session.machine_state.get_purchasable_predictions()}
@@ -42,6 +43,9 @@ class GameSession(BaseModel):
         return (datetime.now() - self.last_updated).total_seconds() > IDLE_SESSION_TTL_SECONDS
 
     def check_if_game_over(self):
+        # return False
+        # TODO reset after testing sensor charts
+
         self.is_game_over = True
 
         if self.machine_state.is_broken():
@@ -50,8 +54,9 @@ class GameSession(BaseModel):
             )
         # TODO: decide if to allow for slightly negative overshoot (player debt)
         # TODO: decide if to bring back this rule. While testing it turned out frustrating for the player.
-        # elif self.available_funds <= 0:
-        #     print(f"{datetime.now()}: GameSession '{self.id}' - player ran out of money at step {self.current_step} - {self.machine_state}")
+        # elif (self.current_step > 0) and (self.available_funds <= 0):
+        #     print(
+        #         f"{datetime.now()}: GameSession '{self.id}' - player ran out of money at step {self.current_step} - {self.machine_state}")
         else:
             self.is_game_over = False
 
@@ -117,6 +122,7 @@ class GameSession(BaseModel):
         self.available_predictions[prediction] = True
         return True
 
-    def _log(self, multiple=5):
+    def _log(self, multiple=1):
+        # TODO reset after testing sensor charts
         if self.current_step % multiple == 0:
             print(f"{datetime.now()}: GameSession '{self.id}' - step: {self.current_step} - {self.machine_state}")

@@ -11,9 +11,9 @@ from mvp.server.core.machine.MachineStateDTO import MachineStateDTO
 class GameSessionDTO(BaseModel):
     id: str
     current_step: int
-    machine_state: MachineStateDTO | None = None
-    available_funds: float = 0.
-    is_game_over: bool = False
+    machine_state: MachineStateDTO
+    available_funds: float
+    is_game_over: bool
     game_over_reason: str | None = None
 
     @staticmethod
@@ -23,6 +23,7 @@ class GameSessionDTO(BaseModel):
             current_step=session.current_step,
             available_funds=session.available_funds,
             is_game_over=session.is_game_over,
+            machine_state=MachineStateDTO.from_machine_state(session.machine_state)
         )
 
         if session.is_game_over:

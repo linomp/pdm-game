@@ -1,19 +1,21 @@
-<script>
+<script lang="ts">
   import {
     Chart,
     LineSeries,
     PriceLine,
     TimeScale,
   } from "svelte-lightweight-charts";
-  export let data;
+  import type { TimeSeriesPoint } from "src/shared/types";
+
+  export let data: TimeSeriesPoint[];
+  export let warningLevel: number;
 </script>
 
 <Chart width={300} height={250}>
   <LineSeries {data}>
-    <!-- TODO: get the danger zone indicator value from Backend -->
     <PriceLine
       title="!"
-      price={100}
+      price={warningLevel}
       color={undefined}
       lineWidth={undefined}
       lineStyle={undefined}

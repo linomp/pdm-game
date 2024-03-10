@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { formatNumber, isUndefinedOrNull } from "src/shared/utils";
+  import { isUndefinedOrNull } from "src/shared/utils";
   import TimeSeriesChart from "./graphical/TimeSeriesChart.svelte";
   import type { TimeSeriesPoint } from "src/shared/types";
+  import { gameSession } from "src/stores/stores";
 
   export let parameter: string;
   export let value: number | null;
@@ -10,6 +11,7 @@
   export let sensorCost: number;
 
   export let data: TimeSeriesPoint[];
+  export let warningLevel: number;
 
   const formatParameterName = (parameter: string) => {
     return parameter
@@ -17,15 +19,15 @@
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
   };
+
+  // TODO: instead of rerendering the whole chart, update the data using a ref like in this example:
+  // https://svelte.dev/repl/c06c05db84a0466199ddd40c6622903c?version=4.2.12
 </script>
 
 <div class="sensor">
   <div class="title">
     {formatParameterName(parameter)}
   </div>
-  <small class="temp-value">
-    ({formatNumber(value) ?? "???"})
-  </small>
   <div class="display">
     {#if isUndefinedOrNull(value)}
       <button
@@ -35,7 +37,9 @@
         Buy (${sensorCost})
       </button>
     {:else}
-      <TimeSeriesChart {data} />
+      {#key `${$gameSession?.current_step}-${value}`}
+        <TimeSeriesChart {data} {warningLevel} />
+      {/key}
     {/if}
   </div>
 </div>
@@ -48,9 +52,6 @@
     margin: 1em;
   }
   .title {
-    margin-bottom: 0.5em;
-  }
-  .temp-value {
     margin-bottom: 0.5em;
   }
   .display {

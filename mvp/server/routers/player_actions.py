@@ -28,7 +28,7 @@ async def purchase_sensor(sensor: str,
     if sensor not in session.available_sensors:
         return JSONResponse(status_code=404, content={"message": "Unknown sensor"})
     elif session.available_sensors[sensor]:
-        return JSONResponse(status_code=400, content={"message": "Sensor already purchased"})
+        return JSONResponse(status_code=204, content={"message": "Sensor already purchased"})
 
     success = session.purchase_sensor(sensor)
     if not success:

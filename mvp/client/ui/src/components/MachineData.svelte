@@ -10,23 +10,21 @@
     sensorPurchaseButtonDisabled,
   } from "src/stores/stores";
   import Sensor from "src/components/Sensor.svelte";
-  import type { TimeSeriesPoint } from "src/shared/types";
 
   export let updateGameSession: (newGameSessionDto: GameSessionDTO) => void;
 
-  let data = {} as { [key: string]: TimeSeriesPoint[] };
-
   $: {
     sensorPurchaseButtonDisabled.set(
-      $dayInProgress ||
-        ($gameSession?.available_funds ?? 0) <
-          ($globalSettings?.sensor_cost ?? Infinity),
+      $gameSession?.is_game_over ||
+        $dayInProgress ||
+        ($gameSession?.available_funds ?? 0) < $globalSettings.sensor_cost,
     );
 
     predictionPurchaseButtonDisabled.set(
-      $dayInProgress ||
+      $gameSession?.is_game_over ||
+        $dayInProgress ||
         ($gameSession?.available_funds ?? 0) <
-          ($globalSettings?.prediction_model_cost ?? Infinity),
+          $globalSettings.prediction_model_cost,
     );
   }
 
@@ -73,21 +71,19 @@
   };
 </script>
 
-{#if isNotUndefinedNorNull($gameSession) && !$gameOver}
+{#if isNotUndefinedNorNull($gameSession)}
   <div class="machine-data">
     <div class="sensors-display">
       {#each Object.entries($gameSession?.machine_state?.operational_parameters ?? {}) as [parameter, value]}
-        <!-- TODO improve this horrible hack.. -->
-        {#key $gameSession?.formattedTimeseries[parameter]}
-          <Sensor
-            sensorCost={$globalSettings?.sensor_cost ?? 0}
-            sensorPurchaseButtonDisabled={$sensorPurchaseButtonDisabled}
-            {parameter}
-            {value}
-            {purchaseSensor}
-            data={$gameSession?.formattedTimeseries[parameter] ?? []}
-          />
-        {/key}
+        <Sensor
+          sensorCost={$globalSettings.sensor_cost}
+          sensorPurchaseButtonDisabled={$sensorPurchaseButtonDisabled}
+          {parameter}
+          {value}
+          {purchaseSensor}
+          data={$gameSession?.formattedTimeseries[parameter] ?? []}
+          warningLevel={$globalSettings.warning_levels[parameter]}
+        />
       {/each}
     </div>
     <div class="rul-display">
@@ -103,7 +99,7 @@
           disabled={$predictionPurchaseButtonDisabled}
           on:click={() => purchaseRulPredictionModel()}
         >
-          Buy (${$globalSettings?.prediction_model_cost})
+          Buy (${$globalSettings.prediction_model_cost})
         </button>
       </span>
     </div>

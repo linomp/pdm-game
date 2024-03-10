@@ -27,8 +27,7 @@
     maintenanceButtonDisabled.set(
       $performedMaintenanceInThisTurn ||
         $dayInProgress ||
-        ($gameSession?.available_funds ?? 0) <
-          ($globalSettings?.maintenance_cost ?? Infinity),
+        ($gameSession?.available_funds ?? 0) < $globalSettings.maintenance_cost,
     );
   }
 
@@ -83,7 +82,7 @@
   <div class="session-data">
     <p>Current Step: {$gameSession?.current_step}</p>
     <p>Available Funds: {formatNumber($gameSession?.available_funds)}</p>
-    <div class="session-commands">
+    <div class="session-controls">
       <button on:click={advanceToNextDay} disabled={$dayInProgress}>
         Advance to next day
       </button>
@@ -99,7 +98,7 @@
     margin: 1em;
   }
 
-  .session-commands {
+  .session-controls {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;

@@ -4,7 +4,7 @@
 /* eslint-disable */
 
 export type OperationalParameters = {
-    temperature: number;
-    oil_age: number;
-    mechanical_wear: number;
+    temperature: (number | null);
+    oil_age: (number | null);
+    mechanical_wear: (number | null);
 };

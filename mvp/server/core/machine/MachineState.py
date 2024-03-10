@@ -55,7 +55,7 @@ class MachineState(BaseModel):
         )
         # TODO: decide if it makes sense to restore some health percentage; maybe should be kept as is,
         #  maintenance does not mean  "new" machine, only slows down the decay
-        self.health_percentage = min(100, max(0, round(self.health_percentage * 1.25)))
+        self.health_percentage = min(100, max(0, round(self.health_percentage * 1.90)))
 
     def is_broken(self) -> bool:
         return self.health_percentage <= 0
