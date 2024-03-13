@@ -3,7 +3,7 @@ import math
 from pydantic import BaseModel
 
 from mvp.server.core.constants import *
-from mvp.server.core.math_utils import linear_growth_with_reset, map_value
+from mvp.server.core.math_utils import linear_growth_with_reset, map_value, exponential_decay, round_from_0_to_100
 
 
 class OperationalParameters(BaseModel):
@@ -18,6 +18,16 @@ class OperationalParameters(BaseModel):
         self.temperature = self.compute_machine_temperature(current_timestep)
         self.oil_age = self.compute_oil_age(current_timestep)
         self.mechanical_wear = self.compute_mechanical_wear(current_timestep)
+
+    def compute_health_percentage(self, current_timestep: int, current_health: int) -> int:
+        raw_value = round(
+            exponential_decay(
+                current_timestep,
+                initial_value=current_health,
+                decay_speed=self.compute_decay_speed()
+            )
+        )
+        return round_from_0_to_100(raw_value)
 
     def compute_decay_speed(self) -> float:
         # TODO: calibrate these weights

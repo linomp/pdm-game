@@ -17,7 +17,7 @@ class GameSessionDTO(BaseModel):
     game_over_reason: str | None = None
 
     @staticmethod
-    def from_session(session: GameSession):
+    def from_session(session: GameSession) -> "GameSessionDTO":
         dto = GameSessionDTO(
             id=session.id,
             current_step=session.current_step,
@@ -43,7 +43,7 @@ class GameSessionDTO(BaseModel):
         return dto
 
     @staticmethod
-    def from_dict(json: dict[str, Any]):
+    def from_dict(json: dict[str, Any]) -> "GameSessionDTO":
         return GameSessionDTO(
             id=json.get("id", ""),
             current_step=json.get("current_step", 0),
