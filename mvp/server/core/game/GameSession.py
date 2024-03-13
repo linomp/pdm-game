@@ -18,13 +18,14 @@ class GameSession(BaseModel):
     available_sensors: dict[str, bool] = None
     available_predictions: dict[str, bool] = None
     last_updated: datetime = None
-    # TODO: do something with these states. May be useful for prediction functionality.
+    started_at: datetime = datetime.now()
+    ended_at: datetime = None
     machine_state_history: list[tuple[int, MachineState]] = []
     # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
 
     @staticmethod
-    def new_game_session(_id: str):
+    def new_game_session(_id: str) -> "GameSession":
         session = GameSession(
             id=_id,
             current_step=0,
@@ -38,21 +39,23 @@ class GameSession(BaseModel):
 
         return session
 
-    def is_abandoned(self):
+    def is_abandoned(self) -> bool:
         return (datetime.now() - self.last_updated).total_seconds() > IDLE_SESSION_TTL_SECONDS
+
+    def get_total_duration(self) -> float:
+        if self.ended_at is None:
+            raise ValueError("Game is not over yet")
+        
+        return (self.ended_at - self.started_at).total_seconds()
 
     def check_if_game_over(self):
         self.is_game_over = True
 
         if self.machine_state.is_broken():
+            self.ended_at = datetime.now()
             print(
                 f"{datetime.now()}: GameSession '{self.id}' - machine failed at step {self.current_step} - {self.machine_state}"
             )
-        # TODO: decide if to allow for slightly negative overshoot (player debt)
-        # TODO: decide if to bring back this rule. While testing it turned out frustrating for the player.
-        # elif (self.current_step > 0) and (self.available_funds <= 0):
-        #     print(
-        #         f"{datetime.now()}: GameSession '{self.id}' - player ran out of money at step {self.current_step} - {self.machine_state}")
         else:
             self.is_game_over = False
 
@@ -118,6 +121,6 @@ class GameSession(BaseModel):
         self.available_predictions[prediction] = True
         return True
 
-    def _log(self, multiple=5):
+    def _log(self, multiple=5) -> None:
         if self.current_step % multiple == 0:
             print(f"{datetime.now()}: GameSession '{self.id}' - step: {self.current_step} - {self.machine_state}")

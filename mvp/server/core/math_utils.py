@@ -25,3 +25,7 @@ def map_value(value: float, from_low: float, from_high: float, to_low: float, to
         return to_high
     else:
         return mapped_value
+
+
+def round_from_0_to_100(value: float) -> int:
+    return min(100, max(0, round(value)))

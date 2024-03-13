@@ -2,9 +2,10 @@ from typing import Any, Callable
 
 from pydantic import BaseModel
 
-from mvp.server.core.constants import TEMPERATURE_STARTING_POINT
+from mvp.server.core.constants import TEMPERATURE_STARTING_POINT, HEALTH_RECOVERY_FACTOR_ON_MAINTENANCE, \
+    MECHANICAL_WEAR_REDUCTION_FACTOR_ON_MAINTENANCE
 from mvp.server.core.machine.OperationalParameters import OperationalParameters
-from mvp.server.core.math_utils import exponential_decay
+from mvp.server.core.math_utils import round_from_0_to_100
 
 
 class MachineState(BaseModel):
@@ -13,7 +14,7 @@ class MachineState(BaseModel):
     operational_parameters: OperationalParameters
 
     @staticmethod
-    def new_machine_state():
+    def new_machine_state() -> "MachineState":
         return MachineState(
             health_percentage=100,
             operational_parameters=OperationalParameters(
@@ -29,7 +30,7 @@ class MachineState(BaseModel):
     def get_purchasable_predictions(self) -> set[str]:
         return {"predicted_rul"}
 
-    def update_parameters(self, timestep: int):
+    def update_parameters(self, timestep: int) -> None:
         self.operational_parameters.update(timestep)
         self.health_percentage = self.compute_health_percentage(timestep)
 
@@ -38,30 +39,21 @@ class MachineState(BaseModel):
         self.predicted_rul = rul_predictor(timestep)
 
     def compute_health_percentage(self, current_timestep: int) -> int:
-        raw_value = round(
-            exponential_decay(
-                current_timestep,
-                initial_value=self.health_percentage,
-                decay_speed=self.operational_parameters.compute_decay_speed()
-            )
-        )
-        return min(100, max(0, raw_value))
+        return self.operational_parameters.compute_health_percentage(current_timestep, self.health_percentage)
 
-    def do_maintenance(self):
+    def do_maintenance(self) -> None:
         self.operational_parameters = OperationalParameters(
             temperature=TEMPERATURE_STARTING_POINT,
             oil_age=0,
-            mechanical_wear=self.operational_parameters.mechanical_wear / 100
+            mechanical_wear=self.operational_parameters.mechanical_wear / MECHANICAL_WEAR_REDUCTION_FACTOR_ON_MAINTENANCE
         )
-        # TODO: decide if it makes sense to restore some health percentage; maybe should be kept as is,
-        #  maintenance does not mean  "new" machine, only slows down the decay
-        self.health_percentage = min(100, max(0, round(self.health_percentage * 1.90)))
+        self.health_percentage = round_from_0_to_100(self.health_percentage * HEALTH_RECOVERY_FACTOR_ON_MAINTENANCE)
 
     def is_broken(self) -> bool:
         return self.health_percentage <= 0
 
     @staticmethod
-    def from_dict(json: dict[str, Any]):
+    def from_dict(json: dict[str, Any]) -> "MachineState":
         return MachineState(
             predicted_rul=json.get("predicted_rul", None),
             health_percentage=json.get("health_percentage", 0),
@@ -70,6 +62,6 @@ class MachineState(BaseModel):
             )
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (f"MachineState(predicted_rul={self.predicted_rul}, health_percentage={self.health_percentage}, "
                 f"operational_parameters={self.operational_parameters})")
