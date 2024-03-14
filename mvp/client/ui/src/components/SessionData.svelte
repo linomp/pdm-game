@@ -4,7 +4,7 @@
     SessionsService,
     type GameSessionDTO,
   } from "src/api/generated";
-  import { SAMPLE_INTERVAL_MS } from "src/shared/types";
+  import { SAMPLE_INTERVAL_MS } from "src/shared/constants";
   import {
     formatNumber,
     isNotUndefinedNorNull,

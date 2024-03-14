@@ -23,9 +23,9 @@ class GameMetrics(BaseModel):
             max_game_duration=0
         )
 
-    def update_on_game_started(self) -> None:
+    def update_on_game_started(self, new_active_sessions_count: int) -> None:
         self.total_started_games += 1
-        self.active_sessions += 1
+        self.active_sessions = new_active_sessions_count
 
     def update_on_game_ended(self, game_duration: float) -> None:
         self.total_ended_games += 1
@@ -44,6 +44,6 @@ class GameMetrics(BaseModel):
         if self.max_game_duration == 0 or game_duration > self.max_game_duration:
             self.max_game_duration = game_duration
 
-    def update_on_game_abandoned(self) -> None:
+    def update_on_game_abandoned(self, new_active_sessions_count: int) -> None:
         self.total_abandoned_games += 1
-        self.active_sessions -= 1
+        self.active_sessions = new_active_sessions_count

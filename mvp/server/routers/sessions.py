@@ -39,7 +39,7 @@ async def cleanup_inactive_sessions():
             must_be_dropped = True
         if session.is_abandoned():
             must_be_dropped = True
-            game_metrics.update_on_game_abandoned()
+            game_metrics.update_on_game_abandoned(len(sessions) - 1)
 
         if must_be_dropped:
             print(f"{datetime.now()}: Session '{session_id}' will be dropped")
@@ -59,7 +59,7 @@ async def create_session() -> GameSessionDTO:
         session = GameSession.new_game_session(_id=new_session_id)
         sessions[new_session_id] = session
 
-    game_metrics.update_on_game_started()
+    game_metrics.update_on_game_started(len(sessions))
 
     return GameSessionDTO.from_session(sessions[new_session_id])
 
