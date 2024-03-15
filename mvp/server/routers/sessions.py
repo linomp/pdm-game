@@ -4,6 +4,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_utilities import repeat_every
 
+from mvp.server.core.constants import SESSION_CLEANUP_INTERVAL_SECONDS
 from mvp.server.core.game.GameMetrics import GameMetrics
 from mvp.server.core.game.GameSession import GameSession
 from mvp.server.core.game.GameSessionDTO import GameSessionDTO
@@ -28,17 +29,14 @@ def get_session_dependency(session_id: str) -> GameSession:
 
 
 @router.on_event("startup")
-@repeat_every(seconds=3600, wait_first=False)
+@repeat_every(seconds=SESSION_CLEANUP_INTERVAL_SECONDS, wait_first=False)
 async def cleanup_inactive_sessions():
     print(f"{datetime.now()}: Cleaning up sessions...")
 
     for session_id, session in list(sessions.items()):
-        must_be_dropped = False
+        must_be_dropped = session.is_game_over or session.is_abandoned()
 
-        if session.is_game_over:
-            must_be_dropped = True
         if session.is_abandoned():
-            must_be_dropped = True
             game_metrics.update_on_game_abandoned(len(sessions) - 1)
 
         if must_be_dropped:
@@ -78,7 +76,7 @@ async def get_session(session: GameSession = Depends(get_session_dependency)) ->
 async def advance(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
     await session.advance_one_turn()
 
-    if session.check_if_game_over():
+    if session.is_game_over:
         game_metrics.update_on_game_ended(session.get_total_duration())
 
     return GameSessionDTO.from_session(session)

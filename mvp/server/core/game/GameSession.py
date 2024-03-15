@@ -18,7 +18,7 @@ class GameSession(BaseModel):
     available_sensors: dict[str, bool] = None
     available_predictions: dict[str, bool] = None
     last_updated: datetime = None
-    started_at: datetime = datetime.now()
+    started_at: datetime = None
     ended_at: datetime = None
     machine_state_history: list[tuple[int, MachineState]] = []
     # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
@@ -30,7 +30,8 @@ class GameSession(BaseModel):
             id=_id,
             current_step=0,
             machine_state=MachineState.new_machine_state(),
-            available_funds=INITIAL_CASH
+            available_funds=INITIAL_CASH,
+            started_at=datetime.now()
         )
         session.available_sensors = {sensor: False for sensor in session.machine_state.get_purchasable_sensors()}
         session.available_predictions = {prediction: False for prediction in
@@ -40,15 +41,18 @@ class GameSession(BaseModel):
         return session
 
     def is_abandoned(self) -> bool:
-        return (datetime.now() - self.last_updated).total_seconds() > IDLE_SESSION_TTL_SECONDS
+        if self.ended_at is not None:
+            return False
+
+        return (datetime.now() - self.last_updated).total_seconds() >= IDLE_SESSION_TTL_SECONDS
 
     def get_total_duration(self) -> float:
         if self.ended_at is None:
             raise ValueError("Game is not over yet")
-        
+
         return (self.ended_at - self.started_at).total_seconds()
 
-    def check_if_game_over(self):
+    def check_if_game_over(self) -> bool:
         self.is_game_over = True
 
         if self.machine_state.is_broken():
@@ -63,6 +67,8 @@ class GameSession(BaseModel):
 
     async def advance_one_turn(self) -> list[MachineState]:
         collected_machine_states_during_turn = []
+
+        self.last_updated = datetime.now()
 
         for _ in range(TIMESTEPS_PER_MOVE):
             # collect stats
@@ -85,8 +91,6 @@ class GameSession(BaseModel):
             self.rul_predictor,
             collected_machine_states_during_turn
         )
-
-        self.last_updated = datetime.now()
 
         self.machine_state_history.extend(
             zip(
