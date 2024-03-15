@@ -1,1 +1,1 @@
-export const SAMPLE_INTERVAL_MS = 150;
+export const SAMPLE_INTERVAL_MS = 100;
