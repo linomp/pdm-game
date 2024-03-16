@@ -2,10 +2,11 @@
   import { onMount } from "svelte";
   import { Route, Router } from "svelte-navigator";
   import { GameParametersService, OpenAPI } from "./api/generated/";
+  import { globalSettings } from "src/stores/stores";
+  import { isUndefinedOrNull } from "src/shared/utils";
   import HomePage from "src/pages/HomePage.svelte";
   import Spinner from "src/components/graphical/Spinner.svelte";
-  import { globalSettings } from "./stores/stores";
-  import { isUndefinedOrNull } from "./shared/utils";
+  import Preloader from "src/components/Preloader.svelte";
 
   OpenAPI.BASE = import.meta.env.VITE_API_BASE;
 
@@ -25,6 +26,7 @@
 </svelte:head>
 
 <Router primary={false}>
+  <Preloader />
   {#if isUndefinedOrNull($globalSettings)}
     <div class="spinner-container">
       <Spinner />

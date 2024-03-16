@@ -46,7 +46,7 @@ class OperationalParameters(BaseModel):
 
         computed = min(mapping_max, computed)
 
-        return map_value(computed, from_low=0, from_high=mapping_max, to_low=0, to_high=0.05)
+        return map_value(computed, from_low=0, from_high=mapping_max, to_low=0, to_high=0.005)
 
     def compute_machine_temperature(self, current_timestep: int) -> float:
         # temperature grows linearly over the 8 hours of a shift (resets every 8 hours)

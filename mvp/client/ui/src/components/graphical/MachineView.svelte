@@ -1,8 +1,10 @@
 <script lang="ts">
   import { dayInProgress, gameOver, gameSession } from "src/stores/stores";
   import { isUndefinedOrNull } from "src/shared/utils";
-  import runningMachineSrc from "/img/healthy.gif";
-  const stoppedMachineSrc = new URL("/img/stopped.PNG", import.meta.url).href;
+  import {
+    RUNNING_MACHINE_SRC,
+    STOPPED_MACHINE_SRC,
+  } from "src/shared/constants";
 
   let stopAnimation = false;
 
@@ -13,7 +15,7 @@
 
 <img
   class="machine-view"
-  src={stopAnimation ? stoppedMachineSrc : runningMachineSrc}
+  src={stopAnimation ? STOPPED_MACHINE_SRC : RUNNING_MACHINE_SRC}
   alt="..."
   width="369"
   height="276"

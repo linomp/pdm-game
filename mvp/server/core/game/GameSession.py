@@ -1,4 +1,5 @@
 import asyncio
+import math
 from datetime import datetime
 from typing import Callable
 
@@ -81,7 +82,7 @@ class GameSession(BaseModel):
             self.current_step += 1
             self.machine_state.update_parameters(self.current_step)
             # Player earns money for the production at every timestep
-            self.available_funds += REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
+            self.available_funds += math.ceil(REVENUE_PER_DAY / TIMESTEPS_PER_MOVE)
             self._log()
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
