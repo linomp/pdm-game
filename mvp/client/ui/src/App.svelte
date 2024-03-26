@@ -2,21 +2,25 @@
   import { onMount } from "svelte";
   import { Route, Router } from "svelte-navigator";
   import { GameParametersService, OpenAPI } from "./api/generated/";
-  import { globalSettings } from "src/stores/stores";
+  import { globalSettings, mqttClient } from "src/stores/stores";
   import { isUndefinedOrNull } from "src/shared/utils";
   import HomePage from "src/pages/HomePage.svelte";
   import Spinner from "src/components/graphical/Spinner.svelte";
   import Preloader from "src/components/Preloader.svelte";
+  import { getClient } from "./mqtt/client";
 
   OpenAPI.BASE = import.meta.env.VITE_API_BASE;
 
   onMount(async () => {
     try {
-      const result =
-        await GameParametersService.getParametersGameParametersGet();
-      globalSettings.set(result);
+      globalSettings.set(
+        await GameParametersService.getParametersGameParametersGet(),
+      );
+      mqttClient.set(await getClient());
     } catch (error) {
-      alert("Error fetching game settings. Please refresh the page.");
+      alert(
+        "Error fetching game settings or connecting to MQT broker. Please refresh the page.",
+      );
     }
   });
 </script>

@@ -1,5 +1,6 @@
 # Source: https://github.com/hivemq-cloud/paho-mqtt-client-example/blob/master/simple_example.py
 import os
+import time
 
 import paho.mqtt.client as paho
 from dotenv import load_dotenv
@@ -7,7 +8,6 @@ from paho import mqtt
 from paho.mqtt.enums import CallbackAPIVersion
 
 
-# setting callbacks for different events to see if it works, print the message etc.
 def on_connect(client, userdata, flags, rc, properties=None):
     """
         Prints the result of the connection with a reasoncode to stdout ( used as callback for connect )
@@ -65,36 +65,39 @@ def on_message(client, userdata, msg):
 if __name__ == "__main__":
     load_dotenv()
 
-    HOST = os.environ.get("HIVEMQ_HOST")
-    PORT = 8883
-    USER = os.environ.get("HIVEMQ_USER")
-    PASSWORD = os.environ.get("HIVEMQ_PASSWORD")
+    MQTT_HOST = os.environ.get("MQTT_HOST", "test.mosquitto.org")
+    MQTT_PORT = int(os.environ.get("MQTT_PORT", 1883))
+    MQTT_USER = os.environ.get("MQTT_USER")
+    MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD")
+    MQTT_TOPIC_PREFIX = os.environ.get("MQTT_TOPIC_PREFIX", "pdmgame/clients")
+
+    topic = f"{MQTT_TOPIC_PREFIX}/test"
+
+    print(f"Connecting to {MQTT_HOST}:{MQTT_PORT} with user {MQTT_USER} and topic {topic}")
 
     # using MQTT version 5 here, for 3.1.1: MQTTv311, 3.1: MQTTv31
     # userdata is user defined data of any type, updated by user_data_set()
     # client_id is the given name of the client
-    client = paho.Client(client_id="", userdata=None, protocol=paho.MQTTv5,
+    client = paho.Client(client_id="pdmgame_server", userdata=None, protocol=paho.MQTTv5,
                          callback_api_version=CallbackAPIVersion.VERSION2)
     client.on_connect = on_connect
 
-    # enable TLS for secure connection
-    client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
-    # set username and password
-    client.username_pw_set(USER, PASSWORD)
-    # connect to HiveMQ Cloud on port 8883 (default for MQTT)
-    client.connect(HOST, PORT)
+    if MQTT_USER is not None and MQTT_PASSWORD is not None:
+        client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
+        client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
 
-    # setting callbacks, use separate functions like above for better visibility
+    client.connect(MQTT_HOST, MQTT_PORT)
+
     client.on_subscribe = on_subscribe
     client.on_message = on_message
     client.on_publish = on_publish
 
-    # subscribe to all topics of encyclopedia by using the wildcard "#"
-    client.subscribe("encyclopedia/#", qos=1)
+    # client.subscribe(topic, qos=1)
 
-    # a single publish, this can also be done in loops, etc.
-    client.publish("encyclopedia/temperature", payload="hot", qos=1)
+    client.loop_start()
 
-    # loop_forever for simplicity, here you need to stop the loop manually
-    # you can also use loop_start and loop_stop
-    client.loop_forever()
+    i = 0
+    while True:
+        client.publish(topic, payload=i, qos=1)
+        time.sleep(5)
+        i += 1
