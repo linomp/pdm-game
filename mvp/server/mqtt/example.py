@@ -78,7 +78,7 @@ if __name__ == "__main__":
     # using MQTT version 5 here, for 3.1.1: MQTTv311, 3.1: MQTTv31
     # userdata is user defined data of any type, updated by user_data_set()
     # client_id is the given name of the client
-    client = paho.Client(client_id="pdmgame_server", userdata=None, protocol=paho.MQTTv5,
+    client = paho.Client(client_id="pdmgame_server_example", userdata=None, protocol=paho.MQTTv5,
                          callback_api_version=CallbackAPIVersion.VERSION2)
     client.on_connect = on_connect
 
@@ -91,8 +91,6 @@ if __name__ == "__main__":
     client.on_subscribe = on_subscribe
     client.on_message = on_message
     client.on_publish = on_publish
-
-    # client.subscribe(topic, qos=1)
 
     client.loop_start()
 

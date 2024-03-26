@@ -19,7 +19,7 @@
       mqttClient.set(await getClient());
     } catch (error) {
       alert(
-        "Error fetching game settings or connecting to MQT broker. Please refresh the page.",
+        "Error fetching game settings or connecting to MQTT broker. Please refresh the page.",
       );
     }
   });
