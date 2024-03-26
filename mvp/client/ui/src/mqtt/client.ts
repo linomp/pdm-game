@@ -10,9 +10,7 @@ export const getClient = async (): Promise<mqtt.MqttClient> => {
             brokerUrl,
             {
                 username: import.meta.env.VITE_MQTT_USERNAME,
-                password: import.meta.env.VITE_MQTT_PASSWORD,
-                clean: true,
-                clientId: "pdmgame_client_debug"
+                password: import.meta.env.VITE_MQTT_PASSWORD
             }
         );
 

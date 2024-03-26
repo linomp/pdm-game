@@ -8,9 +8,11 @@ from mvp.server.core.constants import SESSION_CLEANUP_INTERVAL_SECONDS
 from mvp.server.core.game.GameMetrics import GameMetrics
 from mvp.server.core.game.GameSession import GameSession
 from mvp.server.core.game.GameSessionDTO import GameSessionDTO
+from mvp.server.mqtt.client import MqttClient
 
 sessions: dict[str, GameSession] = {}
 game_metrics = GameMetrics()
+mqttClient = MqttClient()
 
 router = APIRouter(
     prefix="/sessions",
@@ -74,6 +76,7 @@ async def get_session(session: GameSession = Depends(get_session_dependency)) ->
 
 @router.put("/turns", response_model=GameSessionDTO)
 async def advance(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
+    # TODO: pass mqtt client somehow, to report machine op. parameters as they are updated
     await session.advance_one_turn()
 
     if session.is_game_over:
