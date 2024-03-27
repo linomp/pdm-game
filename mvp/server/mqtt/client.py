@@ -26,6 +26,11 @@ class MqttClient:
     __client__: paho.Client = None
 
     def __init__(self):
+
+        # TODO refactor this dirty hack!!
+        if MQTT_USER is None:
+            return 
+            
         client = paho.Client(client_id="pdmgame_server", userdata=None, protocol=paho.MQTTv5,
                              callback_api_version=CallbackAPIVersion.VERSION2)
         client.on_connect = on_connect
