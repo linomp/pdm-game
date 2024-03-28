@@ -12,11 +12,13 @@
 
   onMount(async () => {
     try {
-      const result =
-        await GameParametersService.getParametersGameParametersGet();
-      globalSettings.set(result);
+      globalSettings.set(
+        await GameParametersService.getParametersGameParametersGet(),
+      );
     } catch (error) {
-      alert("Error fetching game settings. Please refresh the page.");
+      alert(
+        "Error fetching game settings or connecting to MQTT broker. Please refresh the page.",
+      );
     }
   });
 </script>
