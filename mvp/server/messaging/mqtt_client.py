@@ -26,11 +26,9 @@ class MqttClient:
     __client__: paho.Client = None
 
     def __init__(self):
-
-        # TODO refactor this dirty hack!!
         if MQTT_USER is None:
-            return 
-            
+            return
+
         client = paho.Client(client_id="pdmgame_server", userdata=None, protocol=paho.MQTTv5,
                              callback_api_version=CallbackAPIVersion.VERSION2)
         client.on_connect = on_connect
@@ -48,4 +46,9 @@ class MqttClient:
         self.__client__ = client
 
     def publish_parameter(self, client_uid: str, parameter_name: str, payload: float):
-        self.__client__.publish(f"{MQTT_TOPIC_PREFIX}/{client_uid}/{parameter_name}", payload=payload, qos=1)
+        if self.__client__ is None:
+            return
+
+        self.__client__.publish(
+            f"{MQTT_TOPIC_PREFIX}/{client_uid}/{parameter_name}", payload=payload, qos=1
+        )

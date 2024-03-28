@@ -8,7 +8,7 @@ from mvp.server.core.constants import SESSION_CLEANUP_INTERVAL_SECONDS
 from mvp.server.core.game.GameMetrics import GameMetrics
 from mvp.server.core.game.GameSession import GameSession
 from mvp.server.core.game.GameSessionDTO import GameSessionDTO
-from mvp.server.mqtt.client import MqttClient
+from mvp.server.messaging.mqtt_client import MqttClient
 
 sessions: dict[str, GameSession] = {}
 game_metrics = GameMetrics()
