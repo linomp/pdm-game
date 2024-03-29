@@ -78,8 +78,8 @@ async def get_metrics() -> GameMetrics:
 async def get_mqtt_connection_details(session_id: str) -> MqttFrontendConnectionDetails:
     session = sessions.get(session_id)
 
-    if session is None or session.is_abandoned() or session.is_game_over:
-        raise HTTPException(status_code=404, detail="Invalid session")
+    if session.is_abandoned() or session.is_game_over:
+        raise HTTPException(status_code=412, detail="Session has already been terminated")
 
     return MqttFrontendConnectionDetails(session_id)
 
