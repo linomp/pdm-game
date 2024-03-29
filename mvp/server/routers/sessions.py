@@ -13,7 +13,7 @@ from mvp.server.messaging.mqtt_client import MqttClient
 
 sessions: dict[str, GameSession] = {}
 game_metrics = GameMetrics()
-mqttClient = MqttClient()
+mqtt_client = MqttClient()
 
 router = APIRouter(
     prefix="/sessions",
@@ -29,17 +29,6 @@ def get_session_dependency(session_id: str) -> GameSession:
         raise HTTPException(status_code=404, detail="Session not found")
 
     return session
-
-
-@router.get("/mqtt-connection-details", response_model=MqttFrontendConnectionDetails)
-async def get_mqtt_connection_details(session_id: str) -> MqttFrontendConnectionDetails:
-    session = sessions.get(session_id)
-
-    if session is None or session.is_abandoned() or session.is_game_over:
-        raise HTTPException(status_code=404, detail="Invalid session")
-
-    return MqttFrontendConnectionDetails(session_id)
-
 
 @router.on_event("startup")
 @repeat_every(seconds=SESSION_CLEANUP_INTERVAL_SECONDS, wait_first=False)
@@ -62,6 +51,11 @@ async def cleanup_all_sessions():
     sessions.clear()
 
 
+@router.get("/", response_model=GameSessionDTO)
+async def get_session(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
+    return GameSessionDTO.from_session(session)
+
+
 @router.post("/", response_model=GameSessionDTO)
 async def create_session() -> GameSessionDTO:
     new_session_id = uuid.uuid4().hex
@@ -80,15 +74,20 @@ async def get_metrics() -> GameMetrics:
     return game_metrics
 
 
-@router.get("/", response_model=GameSessionDTO)
-async def get_session(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
-    return GameSessionDTO.from_session(session)
+@router.get("/mqtt-connection-details", response_model=MqttFrontendConnectionDetails)
+async def get_mqtt_connection_details(session_id: str) -> MqttFrontendConnectionDetails:
+    session = sessions.get(session_id)
+
+    if session is None or session.is_abandoned() or session.is_game_over:
+        raise HTTPException(status_code=404, detail="Invalid session")
+
+    return MqttFrontendConnectionDetails(session_id)
 
 
 @router.put("/turns", response_model=GameSessionDTO)
 async def advance(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
     # TODO: pass mqtt client somehow, to report machine op. parameters as they are updated
-    mqttClient.publish_parameter(session.id, "test", 25.0)
+    mqtt_client.publish_parameter(session.id, "test", 25.0)
     await session.advance_one_turn()
 
     if session.is_game_over:
