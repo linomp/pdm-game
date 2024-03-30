@@ -1,5 +1,5 @@
 import mqtt from "mqtt";
-import type { MqttFrontendConnectionDetails } from "src/api/generated";
+import type { GameSessionDTO, MqttFrontendConnectionDetails } from "src/api/generated";
 
 export const getClient = async (connectionDetails: MqttFrontendConnectionDetails): Promise<mqtt.MqttClient> => {
 
@@ -20,7 +20,7 @@ export const getClient = async (connectionDetails: MqttFrontendConnectionDetails
             }
         );
 
-        client.subscribe(`${connectionDetails.base_topic}/#`,
+        client.subscribe(`${connectionDetails.base_topic}`,
             (err) => {
                 if (err) {
                     console.error("Error subscribing to topic: ", err);
@@ -28,11 +28,12 @@ export const getClient = async (connectionDetails: MqttFrontendConnectionDetails
             }
         );
 
-        if (import.meta.env.VITE_DEBUG) {
-            client.on("message", (topic, message) => {
-                console.log(`Received message on topic ${topic}: ${message.toString()}`);
-            });
-        }
+        // if (import.meta.env.VITE_DEBUG) {
+        //     client.on("message", (topic, message): any => {
+        //         const casted = JSON.parse(message.toString()) as GameSessionDTO;
+        //         console.log(`Received message on topic ${topic}`, casted);
+        //     });
+        // }
 
         return client;
 

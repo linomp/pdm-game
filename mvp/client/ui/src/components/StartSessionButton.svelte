@@ -5,6 +5,7 @@
   import { gameSession, mqttClient } from "src/stores/stores";
 
   export let updateGameSession: (newGameSessionDto: GameSessionDTO) => void;
+  export let checkForGameOver: () => void;
 
   const startSession = async () => {
     try {
@@ -21,6 +22,11 @@
 
       // Build MQTT client
       mqttClient.set(await getClient(mqttConnectionDetails));
+      $mqttClient.on("message", (topic, message): any => {
+        const casted = JSON.parse(message.toString()) as GameSessionDTO;
+        //console.log(`Received message on topic ${topic}`, casted);
+        updateGameSession(casted);
+      });
     } catch (error) {
       console.error("Error fetching session:", error);
     }

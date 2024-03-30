@@ -6,13 +6,15 @@ from dotenv import load_dotenv
 from paho import mqtt
 from paho.mqtt.enums import CallbackAPIVersion
 
+from mvp.server.core.game import GameSessionDTO
+
 load_dotenv()
 
 MQTT_HOST = os.environ.get("MQTT_HOST", "test.mosquitto.org")
 MQTT_PORT = int(os.environ.get("MQTT_PORT", 1883))
 MQTT_USER = os.environ.get("MQTT_USER")
 MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD")
-MQTT_TOPIC_PREFIX = os.environ.get("MQTT_TOPIC_PREFIX", "pdmgame/clients")
+MQTT_TOPIC_PREFIX = os.environ.get("MQTT_TOPIC_PREFIX", "pdmgame/sessions")
 
 
 def on_connect(client, userdata, flags, rc, properties=None):
@@ -45,10 +47,12 @@ class MqttClient:
 
         self.__client__ = client
 
-    def publish_parameter(self, client_uid: str, parameter_name: str, payload: float):
+    def publish_session_state(self, client_uid: str, session: GameSessionDTO):
         if self.__client__ is None:
             return
 
+        payload = bytes(session.json(), "utf-8")
+
         self.__client__.publish(
-            f"{MQTT_TOPIC_PREFIX}/{client_uid}/{parameter_name}", payload=payload, qos=1
+            f"{MQTT_TOPIC_PREFIX}/{client_uid}", payload=payload, qos=0
         )

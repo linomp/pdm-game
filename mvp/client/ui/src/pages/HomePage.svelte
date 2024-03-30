@@ -35,6 +35,7 @@
         };
       },
     );
+    checkForGameOver();
   };
 
   const pollGameSession = async () => {
@@ -69,7 +70,7 @@
     <div class="basic-controls">
       <MachineView />
       <GameOver />
-      <StartSessionButton {updateGameSession} />
+      <StartSessionButton {updateGameSession} {checkForGameOver} />
       <SessionData
         maintenanceCost={$globalSettings.maintenance_cost}
         {pollGameSession}

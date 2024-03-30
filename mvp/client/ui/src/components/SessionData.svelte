@@ -37,7 +37,7 @@
     }
     // TODO: migrate this polling strategy to websockets / MQTT
     // start fetching machine health every second while the day is advancing
-    const intervalId = setInterval(pollGameSession, SAMPLE_INTERVAL_MS);
+    //const intervalId = setInterval(pollGameSession, SAMPLE_INTERVAL_MS);
     dayInProgress.set(true);
 
     try {
@@ -48,9 +48,10 @@
     } catch (error) {
       console.error("Error advancing day:", error);
     } finally {
-      await pollGameSession();
+      // TODO extract the check for gameOver that was embedded into the pollGameSession function
+      //await pollGameSession();
       // stop fetching machine health until the player advances to next day again
-      clearInterval(intervalId);
+      //clearInterval(intervalId);
       dayInProgress.set(false);
       performedMaintenanceInThisTurn.set(false);
     }

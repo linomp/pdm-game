@@ -30,6 +30,7 @@ def get_session_dependency(session_id: str) -> GameSession:
 
     return session
 
+
 @router.on_event("startup")
 @repeat_every(seconds=SESSION_CLEANUP_INTERVAL_SECONDS, wait_first=False)
 async def cleanup_inactive_sessions():
@@ -87,8 +88,11 @@ async def get_mqtt_connection_details(session_id: str) -> MqttFrontendConnection
 @router.put("/turns", response_model=GameSessionDTO)
 async def advance(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
     # TODO: pass mqtt client somehow, to report machine op. parameters as they are updated
-    mqtt_client.publish_parameter(session.id, "test", 25.0)
-    await session.advance_one_turn()
+
+    def publishing_func(game_session: GameSession) -> None:
+        mqtt_client.publish_session_state(game_session.id, GameSessionDTO.from_session(game_session))
+
+    await session.advance_one_turn(publishing_func)
 
     if session.is_game_over:
         game_metrics.update_on_game_ended(session.get_total_duration())
