@@ -66,7 +66,8 @@ class GameSession(BaseModel):
 
         return self.is_game_over
 
-    async def advance_one_turn(self, publishing_func: Callable[['GameSession'], None]) -> list[MachineState]:
+    async def advance_one_turn(self, publishing_func: Callable[['GameSession'], None] | None = None) -> list[
+        MachineState]:
         collected_machine_states_during_turn = []
 
         self.last_updated = datetime.now()
@@ -85,7 +86,9 @@ class GameSession(BaseModel):
             self.available_funds += math.ceil(REVENUE_PER_DAY / TIMESTEPS_PER_MOVE)
             self._log()
 
-            publishing_func(self)
+            if publishing_func is not None:
+                publishing_func(self)
+
             await asyncio.sleep(GAME_TICK_INTERVAL)
 
         self.machine_state.update_prediction(
