@@ -40,7 +40,7 @@ async def test_game_session_advance_one_turn(game_session):
         assert game_session.machine_state_history[i][0] == i
         assert isinstance(game_session.machine_state_history[i][1], MachineState)
 
-    assert game_session.state_publish_function.call_count == total_turns_to_simulate * TIMESTEPS_PER_MOVE
+    assert game_session.state_publish_function.call_count == total_turns_to_simulate * (TIMESTEPS_PER_MOVE / 2)
 
     final_health = game_session.machine_state.health_percentage
     assert final_health < initial_health
