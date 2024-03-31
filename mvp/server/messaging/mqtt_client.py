@@ -15,6 +15,7 @@ MQTT_PORT = int(os.environ.get("MQTT_PORT", 1883))
 MQTT_USER = os.environ.get("MQTT_USER")
 MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD")
 MQTT_TOPIC_PREFIX = os.environ.get("MQTT_TOPIC_PREFIX", "pdmgame/sessions")
+MQTT_QOS = int(os.environ.get("MQTT_QOS", 0))
 
 
 def on_connect(client, userdata, flags, rc, properties=None):
@@ -51,8 +52,6 @@ class MqttClient:
         if self.__client__ is None:
             return
 
-        payload = bytes(session.json(), "utf-8")
-
         self.__client__.publish(
-            f"{MQTT_TOPIC_PREFIX}/{client_uid}", payload=payload, qos=0
+            f"{MQTT_TOPIC_PREFIX}/{client_uid}", payload=bytes(session.json(), "utf-8"), qos=MQTT_QOS
         )

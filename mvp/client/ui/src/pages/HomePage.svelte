@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { SessionsService, type GameSessionDTO } from "../api/generated";
   import {
     getUpdatedTimeseries,
     isNotUndefinedNorNull,
@@ -15,10 +14,12 @@
     gameOverReason,
     gameSession,
     globalSettings,
+    mqttClientUnsubscribe,
   } from "src/stores/stores";
   import type { GameSessionWithTimeSeries } from "src/shared/types";
+  import type { GameSessionDTO } from "src/api/generated";
 
-  const updateGameSession = (newGameSessionDto: GameSessionDTO) => {
+  const updateGameSession = async (newGameSessionDto: GameSessionDTO) => {
     gameSession.update(
       (
         previousGameSession: GameSessionWithTimeSeries | null,
@@ -38,22 +39,6 @@
     checkForGameOver();
   };
 
-  const pollGameSession = async () => {
-    if (isUndefinedOrNull($gameSession) || $gameOver) {
-      return;
-    }
-
-    try {
-      let newGameSessionDto = await SessionsService.getSessionSessionsGet(
-        $gameSession?.id!,
-      );
-      updateGameSession(newGameSessionDto);
-      checkForGameOver();
-    } catch (error) {
-      console.error("Error fetching session:", error);
-    }
-  };
-
   const checkForGameOver = () => {
     if (isUndefinedOrNull($gameSession)) {
       return;
@@ -61,6 +46,10 @@
 
     gameOver.set($gameSession?.is_game_over ?? false);
     gameOverReason.set($gameSession?.game_over_reason ?? null);
+
+    if ($gameSession?.is_game_over) {
+      $mqttClientUnsubscribe?.();
+    }
   };
 </script>
 
@@ -70,10 +59,9 @@
     <div class="basic-controls">
       <MachineView />
       <GameOver />
-      <StartSessionButton {updateGameSession} {checkForGameOver} />
+      <StartSessionButton {updateGameSession} />
       <SessionData
         maintenanceCost={$globalSettings.maintenance_cost}
-        {pollGameSession}
         {updateGameSession}
       />
     </div>

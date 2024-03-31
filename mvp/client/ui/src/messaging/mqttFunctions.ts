@@ -1,7 +1,13 @@
-import mqtt from "mqtt";
+import mqtt, { type Packet } from "mqtt";
 import type { GameSessionDTO, MqttFrontendConnectionDetails } from "src/api/generated";
 
-export const getClient = async (connectionDetails: MqttFrontendConnectionDetails): Promise<mqtt.MqttClient> => {
+export const getClient = async (
+    connectionDetails: MqttFrontendConnectionDetails,
+    messageHandler: (
+        topic: string,
+        message: Buffer,
+    ) => Promise<void>
+): Promise<[mqtt.MqttClient, () => void]> => {
 
     const brokerUrl = `wss://${connectionDetails.host}:${connectionDetails.port}/mqtt`;
 
@@ -20,22 +26,25 @@ export const getClient = async (connectionDetails: MqttFrontendConnectionDetails
             }
         );
 
-        client.subscribe(`${connectionDetails.base_topic}`,
-            (err) => {
-                if (err) {
-                    console.error("Error subscribing to topic: ", err);
-                }
+        await client.subscribeAsync(`${connectionDetails.base_topic}`);
+
+        client.on("message", async (topic, message): Promise<void> => {
+            if (import.meta.env.VITE_DEBUG) {
+                const casted = JSON.parse(message.toString()) as GameSessionDTO;
+                console.log(`Received message on topic ${topic}`, casted);
             }
-        );
+            await messageHandler(topic, message);
+        });
 
-        // if (import.meta.env.VITE_DEBUG) {
-        //     client.on("message", (topic, message): any => {
-        //         const casted = JSON.parse(message.toString()) as GameSessionDTO;
-        //         console.log(`Received message on topic ${topic}`, casted);
-        //     });
-        // }
-
-        return client;
+        return [
+            client,
+            () => {
+                if (import.meta.env.VITE_DEBUG) {
+                    console.log(`Unsubscribing from topic ${connectionDetails.base_topic}`);
+                }
+                client.unsubscribe(`${connectionDetails.base_topic}`);
+            }
+        ];
 
     } catch (error) {
         console.error(`Error connecting to MQTT broker ${brokerUrl}: `, error);

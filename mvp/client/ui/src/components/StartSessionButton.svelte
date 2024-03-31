@@ -2,10 +2,13 @@
   import { getClient } from "src/messaging/mqttFunctions";
   import { SessionsService, type GameSessionDTO } from "../api/generated";
   import { isUndefinedOrNull } from "src/shared/utils";
-  import { gameSession, mqttClient } from "src/stores/stores";
+  import {
+    gameSession,
+    mqttClient,
+    mqttClientUnsubscribe,
+  } from "src/stores/stores";
 
   export let updateGameSession: (newGameSessionDto: GameSessionDTO) => void;
-  export let checkForGameOver: () => void;
 
   const startSession = async () => {
     try {
@@ -20,13 +23,27 @@
           newGameSessionDto.id,
         );
 
-      // Build MQTT client
-      mqttClient.set(await getClient(mqttConnectionDetails));
-      $mqttClient.on("message", (topic, message): any => {
-        const casted = JSON.parse(message.toString()) as GameSessionDTO;
-        //console.log(`Received message on topic ${topic}`, casted);
-        updateGameSession(casted);
-      });
+      // Build & set up MQTT client
+      if (isUndefinedOrNull($mqttClient)) {
+        const messageHandler = async (
+          topic: string,
+          message: Buffer,
+        ): Promise<void> => {
+          const casted = JSON.parse(message.toString()) as GameSessionDTO;
+          updateGameSession(casted);
+        };
+
+        const [client, unsubscribe] = await getClient(
+          mqttConnectionDetails,
+          messageHandler,
+        );
+        mqttClient.set(client);
+        mqttClientUnsubscribe.set(unsubscribe);
+      } else {
+        if (import.meta.env.VITE_DEBUG) {
+          console.log("Cleaning up old subscription");
+        }
+      }
     } catch (error) {
       console.error("Error fetching session:", error);
     }

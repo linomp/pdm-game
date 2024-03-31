@@ -22,19 +22,21 @@ class GameSession(BaseModel):
     started_at: datetime = None
     ended_at: datetime = None
     machine_state_history: list[tuple[int, MachineState]] = []
+    state_publish_function: Callable[["GameSession"], None]
     # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
 
     @staticmethod
-    def new_game_session(_id: str) -> "GameSession":
+    def new_game_session(_id: str, _state_publish_function: Callable[["GameSession"], None]) -> "GameSession":
         session = GameSession(
             id=_id,
             current_step=0,
             machine_state=MachineState.new_machine_state(),
             available_funds=INITIAL_CASH,
-            started_at=datetime.now()
+            started_at=datetime.now(),
+            state_publish_function=_state_publish_function
         )
-        session.available_sensors = {sensor: False for sensor in session.machine_state.get_purchasable_sensors()}
+        session.available_sensors = {sensor: True for sensor in session.machine_state.get_purchasable_sensors()}
         session.available_predictions = {prediction: False for prediction in
                                          session.machine_state.get_purchasable_predictions()}
         session.last_updated = datetime.now()
@@ -66,8 +68,7 @@ class GameSession(BaseModel):
 
         return self.is_game_over
 
-    async def advance_one_turn(self, publishing_func: Callable[['GameSession'], None] | None = None) -> list[
-        MachineState]:
+    async def advance_one_turn(self) -> list[MachineState]:
         collected_machine_states_during_turn = []
 
         self.last_updated = datetime.now()
@@ -86,8 +87,9 @@ class GameSession(BaseModel):
             self.available_funds += math.ceil(REVENUE_PER_DAY / TIMESTEPS_PER_MOVE)
             self._log()
 
-            if publishing_func is not None:
-                publishing_func(self)
+            # Publish state every 2 steps (to reduce the load on the MQTT broker)
+            if self.current_step % 2 == 0:
+                self.state_publish_function(self)
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
 

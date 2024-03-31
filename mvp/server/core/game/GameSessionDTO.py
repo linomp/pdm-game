@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 from mvp.server.core.constants import *
 from mvp.server.core.game.GameSession import GameSession
-from mvp.server.core.machine.MachineState import MachineState
 from mvp.server.core.machine.MachineStateDTO import MachineStateDTO
 
 
@@ -47,7 +46,7 @@ class GameSessionDTO(BaseModel):
         return GameSessionDTO(
             id=json.get("id", ""),
             current_step=json.get("current_step", 0),
-            machine_state=MachineState.from_dict(json.get("machine_state", {})),
+            machine_state=MachineStateDTO.from_dict(json.get("machine_state", {})),
             available_funds=json.get("available_funds", 0.),
             is_game_over=json.get("is_game_over", False),
         )

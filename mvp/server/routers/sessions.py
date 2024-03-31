@@ -62,7 +62,10 @@ async def create_session() -> GameSessionDTO:
     new_session_id = uuid.uuid4().hex
 
     if new_session_id not in sessions:
-        session = GameSession.new_game_session(_id=new_session_id)
+        def publishing_func(game_session: GameSession) -> None:
+            mqtt_client.publish_session_state(game_session.id, GameSessionDTO.from_session(game_session))
+
+        session = GameSession.new_game_session(_id=new_session_id, _state_publish_function=publishing_func)
         sessions[new_session_id] = session
 
     game_metrics.update_on_game_started(len(sessions))
@@ -87,12 +90,7 @@ async def get_mqtt_connection_details(session_id: str) -> MqttFrontendConnection
 
 @router.put("/turns", response_model=GameSessionDTO)
 async def advance(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
-    # TODO: pass mqtt client somehow, to report machine op. parameters as they are updated
-
-    def publishing_func(game_session: GameSession) -> None:
-        mqtt_client.publish_session_state(game_session.id, GameSessionDTO.from_session(game_session))
-
-    await session.advance_one_turn(publishing_func)
+    await session.advance_one_turn()
 
     if session.is_game_over:
         game_metrics.update_on_game_ended(session.get_total_duration())

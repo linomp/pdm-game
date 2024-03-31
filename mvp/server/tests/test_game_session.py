@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 from mvp.server.core.constants import TIMESTEPS_PER_MOVE
@@ -7,7 +9,10 @@ from mvp.server.core.machine.MachineState import MachineState
 
 @pytest.fixture
 def game_session():
-    return GameSession.new_game_session(_id="test_session")
+    fake_publish_function = MagicMock(name='state_publish_function')
+    session = GameSession.new_game_session(_id="test_session", _state_publish_function=fake_publish_function)
+    session._log = MagicMock(name='log')
+    return session
 
 
 def test_game_session_initialization(game_session):
@@ -34,6 +39,8 @@ async def test_game_session_advance_one_turn(game_session):
     for i in range(TIMESTEPS_PER_MOVE):
         assert game_session.machine_state_history[i][0] == i
         assert isinstance(game_session.machine_state_history[i][1], MachineState)
+
+    assert game_session.state_publish_function.call_count == total_turns_to_simulate * TIMESTEPS_PER_MOVE
 
     final_health = game_session.machine_state.health_percentage
     assert final_health < initial_health
