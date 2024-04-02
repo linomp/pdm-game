@@ -36,7 +36,7 @@ class GameSession(BaseModel):
             started_at=datetime.now(),
             state_publish_function=_state_publish_function
         )
-        session.available_sensors = {sensor: True for sensor in session.machine_state.get_purchasable_sensors()}
+        session.available_sensors = {sensor: False for sensor in session.machine_state.get_purchasable_sensors()}
         session.available_predictions = {prediction: False for prediction in
                                          session.machine_state.get_purchasable_predictions()}
         session.last_updated = datetime.now()
