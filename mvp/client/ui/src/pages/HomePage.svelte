@@ -20,6 +20,27 @@
   import type { GameSessionDTO } from "src/api/generated";
 
   const updateGameSession = async (newGameSessionDto: GameSessionDTO) => {
+    // TODO: this is a workaround to prevent the game from updating the game session if it receives an outdated one
+    //        e.g. if an MQTT message arrives after the last POST request is resolved
+    if (
+      $gameSession &&
+      ($gameSession?.is_game_over ||
+        (newGameSessionDto.current_step < $gameSession?.current_step ?? 0))
+    ) {
+      return;
+    }
+
+    gameOver.set(newGameSessionDto.is_game_over);
+    gameOverReason.set(newGameSessionDto.game_over_reason ?? null);
+
+    if (newGameSessionDto.is_game_over) {
+      if (import.meta.env.VITE_DEBUG) {
+        console.log("Game over. Last known GameSessionDTO:", newGameSessionDto);
+      }
+
+      $mqttClientUnsubscribe?.();
+    }
+
     gameSession.update(
       (
         previousGameSession: GameSessionWithTimeSeries | null,
@@ -36,20 +57,6 @@
         };
       },
     );
-    checkForGameOver();
-  };
-
-  const checkForGameOver = () => {
-    if (isUndefinedOrNull($gameSession)) {
-      return;
-    }
-
-    gameOver.set($gameSession?.is_game_over ?? false);
-    gameOverReason.set($gameSession?.game_over_reason ?? null);
-
-    if ($gameSession?.is_game_over) {
-      $mqttClientUnsubscribe?.();
-    }
   };
 </script>
 
@@ -76,8 +83,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-left: 2em;
-    padding-right: 2em;
   }
 
   .title {

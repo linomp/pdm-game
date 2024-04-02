@@ -32,8 +32,12 @@ class MqttClient:
         if MQTT_USER is None:
             return
 
-        client = paho.Client(client_id="pdmgame_server", userdata=None, protocol=paho.MQTTv5,
-                             callback_api_version=CallbackAPIVersion.VERSION2)
+        client = paho.Client(
+            protocol=paho.MQTTv311,
+            callback_api_version=CallbackAPIVersion.VERSION2,
+            reconnect_on_failure=False,
+            clean_session=True
+        )
         client.on_connect = on_connect
 
         client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)

@@ -23,6 +23,7 @@ export const getClient = async (
             {
                 username: connectionDetails.username,
                 password: connectionDetails.password,
+                protocolVersion: 4, // MQTT 3.1.1
             }
         );
 

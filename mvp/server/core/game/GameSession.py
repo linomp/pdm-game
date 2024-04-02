@@ -83,9 +83,9 @@ class GameSession(BaseModel):
 
             self.current_step += 1
             self.machine_state.update_parameters(self.current_step)
+
             # Player earns money for the production at every timestep
             self.available_funds += math.ceil(REVENUE_PER_DAY / TIMESTEPS_PER_MOVE)
-            self._log()
 
             # Publish state every 2 steps (to reduce the load on the MQTT broker)
             if self.current_step % 2 == 0:
@@ -131,7 +131,3 @@ class GameSession(BaseModel):
         self.available_funds -= PREDICTION_MODEL_COST
         self.available_predictions[prediction] = True
         return True
-
-    def _log(self, multiple=5) -> None:
-        if self.current_step % multiple == 0:
-            print(f"{datetime.now()}: GameSession '{self.id}' - step: {self.current_step} - {self.machine_state}")

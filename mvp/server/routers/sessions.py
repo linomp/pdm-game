@@ -36,15 +36,18 @@ def get_session_dependency(session_id: str) -> GameSession:
 async def cleanup_inactive_sessions():
     print(f"{datetime.now()}: Cleaning up sessions...")
 
+    sessions_to_drop = []
+
     for session_id, session in list(sessions.items()):
-        must_be_dropped = session.is_game_over or session.is_abandoned()
-
-        if session.is_abandoned():
-            game_metrics.update_on_game_abandoned(len(sessions) - 1)
-
-        if must_be_dropped:
+        is_abandoned = session.is_abandoned()
+        if session.is_game_over or is_abandoned:
             print(f"{datetime.now()}: Session '{session_id}' will be dropped")
-            sessions.pop(session_id)
+            sessions_to_drop.append((session_id, is_abandoned))
+
+    for session_id, is_abandoned in sessions_to_drop:
+        sessions.pop(session_id)
+        if is_abandoned:
+            game_metrics.update_on_game_abandoned(len(sessions))
 
 
 @router.on_event("shutdown")
@@ -68,7 +71,7 @@ async def create_session() -> GameSessionDTO:
         session = GameSession.new_game_session(_id=new_session_id, _state_publish_function=publishing_func)
         sessions[new_session_id] = session
 
-    game_metrics.update_on_game_started(len(sessions))
+        game_metrics.update_on_game_started(len(sessions))
 
     return GameSessionDTO.from_session(sessions[new_session_id])
 
