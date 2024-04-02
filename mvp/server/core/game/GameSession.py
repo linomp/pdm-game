@@ -22,17 +22,19 @@ class GameSession(BaseModel):
     started_at: datetime = None
     ended_at: datetime = None
     machine_state_history: list[tuple[int, MachineState]] = []
+    state_publish_function: Callable[["GameSession"], None]
     # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
     rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
 
     @staticmethod
-    def new_game_session(_id: str) -> "GameSession":
+    def new_game_session(_id: str, _state_publish_function: Callable[["GameSession"], None]) -> "GameSession":
         session = GameSession(
             id=_id,
             current_step=0,
             machine_state=MachineState.new_machine_state(),
             available_funds=INITIAL_CASH,
-            started_at=datetime.now()
+            started_at=datetime.now(),
+            state_publish_function=_state_publish_function
         )
         session.available_sensors = {sensor: False for sensor in session.machine_state.get_purchasable_sensors()}
         session.available_predictions = {prediction: False for prediction in
@@ -81,9 +83,13 @@ class GameSession(BaseModel):
 
             self.current_step += 1
             self.machine_state.update_parameters(self.current_step)
+
             # Player earns money for the production at every timestep
             self.available_funds += math.ceil(REVENUE_PER_DAY / TIMESTEPS_PER_MOVE)
-            self._log()
+
+            # Publish state every 2 steps (to reduce the load on the MQTT broker)
+            if self.current_step % 2 == 0:
+                self.state_publish_function(self)
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
 
@@ -125,7 +131,3 @@ class GameSession(BaseModel):
         self.available_funds -= PREDICTION_MODEL_COST
         self.available_predictions[prediction] = True
         return True
-
-    def _log(self, multiple=5) -> None:
-        if self.current_step % multiple == 0:
-            print(f"{datetime.now()}: GameSession '{self.id}' - step: {self.current_step} - {self.machine_state}")

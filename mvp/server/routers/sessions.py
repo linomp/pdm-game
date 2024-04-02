@@ -8,9 +8,12 @@ from mvp.server.core.constants import SESSION_CLEANUP_INTERVAL_SECONDS
 from mvp.server.core.game.GameMetrics import GameMetrics
 from mvp.server.core.game.GameSession import GameSession
 from mvp.server.core.game.GameSessionDTO import GameSessionDTO
+from mvp.server.messaging.MqttFrontendConnectionDetails import MqttFrontendConnectionDetails
+from mvp.server.messaging.mqtt_client import MqttClient
 
 sessions: dict[str, GameSession] = {}
 game_metrics = GameMetrics()
+mqtt_client = MqttClient()
 
 router = APIRouter(
     prefix="/sessions",
@@ -33,15 +36,18 @@ def get_session_dependency(session_id: str) -> GameSession:
 async def cleanup_inactive_sessions():
     print(f"{datetime.now()}: Cleaning up sessions...")
 
+    sessions_to_drop = []
+
     for session_id, session in list(sessions.items()):
-        must_be_dropped = session.is_game_over or session.is_abandoned()
-
-        if session.is_abandoned():
-            game_metrics.update_on_game_abandoned(len(sessions) - 1)
-
-        if must_be_dropped:
+        is_abandoned = session.is_abandoned()
+        if session.is_game_over or is_abandoned:
             print(f"{datetime.now()}: Session '{session_id}' will be dropped")
-            sessions.pop(session_id)
+            sessions_to_drop.append((session_id, is_abandoned))
+
+    for session_id, is_abandoned in sessions_to_drop:
+        sessions.pop(session_id)
+        if is_abandoned:
+            game_metrics.update_on_game_abandoned(len(sessions))
 
 
 @router.on_event("shutdown")
@@ -49,15 +55,23 @@ async def cleanup_all_sessions():
     sessions.clear()
 
 
+@router.get("/", response_model=GameSessionDTO)
+async def get_session(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
+    return GameSessionDTO.from_session(session)
+
+
 @router.post("/", response_model=GameSessionDTO)
 async def create_session() -> GameSessionDTO:
     new_session_id = uuid.uuid4().hex
 
     if new_session_id not in sessions:
-        session = GameSession.new_game_session(_id=new_session_id)
+        def publishing_func(game_session: GameSession) -> None:
+            mqtt_client.publish_session_state(game_session.id, GameSessionDTO.from_session(game_session))
+
+        session = GameSession.new_game_session(_id=new_session_id, _state_publish_function=publishing_func)
         sessions[new_session_id] = session
 
-    game_metrics.update_on_game_started(len(sessions))
+        game_metrics.update_on_game_started(len(sessions))
 
     return GameSessionDTO.from_session(sessions[new_session_id])
 
@@ -67,9 +81,14 @@ async def get_metrics() -> GameMetrics:
     return game_metrics
 
 
-@router.get("/", response_model=GameSessionDTO)
-async def get_session(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
-    return GameSessionDTO.from_session(session)
+@router.get("/mqtt-connection-details", response_model=MqttFrontendConnectionDetails)
+async def get_mqtt_connection_details(session_id: str) -> MqttFrontendConnectionDetails:
+    session = sessions.get(session_id)
+
+    if session.is_abandoned() or session.is_game_over:
+        raise HTTPException(status_code=412, detail="Session has already been terminated")
+
+    return MqttFrontendConnectionDetails(session_id)
 
 
 @router.put("/turns", response_model=GameSessionDTO)

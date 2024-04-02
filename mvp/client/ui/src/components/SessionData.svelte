@@ -4,7 +4,6 @@
     SessionsService,
     type GameSessionDTO,
   } from "src/api/generated";
-  import { SAMPLE_INTERVAL_MS } from "src/shared/constants";
   import {
     formatNumber,
     isNotUndefinedNorNull,
@@ -20,7 +19,6 @@
   } from "src/stores/stores";
 
   export let maintenanceCost: number;
-  export let pollGameSession: () => Promise<void>;
   export let updateGameSession: (newGameSessionDto: GameSessionDTO) => void;
 
   $: {
@@ -35,9 +33,7 @@
     if (isUndefinedOrNull($gameSession) || $gameOver) {
       return;
     }
-    // TODO: migrate this polling strategy to websockets / MQTT
-    // start fetching machine health every second while the day is advancing
-    const intervalId = setInterval(pollGameSession, SAMPLE_INTERVAL_MS);
+
     dayInProgress.set(true);
 
     try {
@@ -48,9 +44,6 @@
     } catch (error) {
       console.error("Error advancing day:", error);
     } finally {
-      await pollGameSession();
-      // stop fetching machine health until the player advances to next day again
-      clearInterval(intervalId);
       dayInProgress.set(false);
       performedMaintenanceInThisTurn.set(false);
     }

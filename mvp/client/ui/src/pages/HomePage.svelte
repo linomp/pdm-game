@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { SessionsService, type GameSessionDTO } from "../api/generated";
   import {
     getUpdatedTimeseries,
     isNotUndefinedNorNull,
@@ -15,10 +14,33 @@
     gameOverReason,
     gameSession,
     globalSettings,
+    mqttClientUnsubscribe,
   } from "src/stores/stores";
   import type { GameSessionWithTimeSeries } from "src/shared/types";
+  import type { GameSessionDTO } from "src/api/generated";
 
-  const updateGameSession = (newGameSessionDto: GameSessionDTO) => {
+  const updateGameSession = async (newGameSessionDto: GameSessionDTO) => {
+    // TODO: this is a workaround to prevent the game from updating the game session if it receives an outdated one
+    //        e.g. if an MQTT message arrives after the last POST request is resolved
+    if (
+      $gameSession &&
+      ($gameSession?.is_game_over ||
+        (newGameSessionDto.current_step < $gameSession?.current_step ?? 0))
+    ) {
+      return;
+    }
+
+    gameOver.set(newGameSessionDto.is_game_over);
+    gameOverReason.set(newGameSessionDto.game_over_reason ?? null);
+
+    if (newGameSessionDto.is_game_over) {
+      if (import.meta.env.VITE_DEBUG) {
+        console.log("Game over. Last known GameSessionDTO:", newGameSessionDto);
+      }
+
+      $mqttClientUnsubscribe?.();
+    }
+
     gameSession.update(
       (
         previousGameSession: GameSessionWithTimeSeries | null,
@@ -36,31 +58,6 @@
       },
     );
   };
-
-  const pollGameSession = async () => {
-    if (isUndefinedOrNull($gameSession) || $gameOver) {
-      return;
-    }
-
-    try {
-      let newGameSessionDto = await SessionsService.getSessionSessionsGet(
-        $gameSession?.id!,
-      );
-      updateGameSession(newGameSessionDto);
-      checkForGameOver();
-    } catch (error) {
-      console.error("Error fetching session:", error);
-    }
-  };
-
-  const checkForGameOver = () => {
-    if (isUndefinedOrNull($gameSession)) {
-      return;
-    }
-
-    gameOver.set($gameSession?.is_game_over ?? false);
-    gameOverReason.set($gameSession?.game_over_reason ?? null);
-  };
 </script>
 
 <div class="homepage">
@@ -72,7 +69,6 @@
       <StartSessionButton {updateGameSession} />
       <SessionData
         maintenanceCost={$globalSettings.maintenance_cost}
-        {pollGameSession}
         {updateGameSession}
       />
     </div>
@@ -87,8 +83,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-left: 2em;
-    padding-right: 2em;
   }
 
   .title {
