@@ -1,7 +1,7 @@
 # The Predictive Maintenance Game
 
+![immagine](https://github.com/linomp/pdm-game/assets/40581019/fe7fbee0-bf31-487b-a727-f34472d94840)
 
-![10_03_2024](https://github.com/linomp/pdm-game/assets/40581019/26bd5903-c463-40ec-8356-37ee76a4a556)
 
 - **Your mission**: maximize profit & machine lifespan.
 - **Your tools**: intuition, data, charts, an internet connection!
