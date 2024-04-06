@@ -1,12 +1,24 @@
-from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
 
 from mvp.server.core.game.GameParametersDTO import GameParametersDTO
+from mvp.server.persistence.database import init_db
+from mvp.server.routers.leaderboard import router as leaderboard_router
 from mvp.server.routers.player_actions import router as player_actions_router
-from mvp.server.routers.sessions import router as sessions_router
+from mvp.server.routers.sessions import router as sessions_router, cleanup_inactive_sessions
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await cleanup_inactive_sessions()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,6 +28,9 @@ app.add_middleware(
 
 app.include_router(sessions_router)
 app.include_router(player_actions_router)
+app.include_router(leaderboard_router)
+
+init_db()
 
 
 @app.exception_handler(HTTPException)

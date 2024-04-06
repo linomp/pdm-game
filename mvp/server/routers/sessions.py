@@ -31,7 +31,6 @@ def get_session_dependency(session_id: str) -> GameSession:
     return session
 
 
-@router.on_event("startup")
 @repeat_every(seconds=SESSION_CLEANUP_INTERVAL_SECONDS, wait_first=False)
 async def cleanup_inactive_sessions():
     print(f"{datetime.now()}: Cleaning up sessions...")
