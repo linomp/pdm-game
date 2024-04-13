@@ -1,11 +1,14 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from mvp.server.core.game.GameSession import GameSession
 from mvp.server.core.leaderboard.HighScoreDTO import HighScoreDTO
 from mvp.server.core.leaderboard.HighScoreModel import HighScoreModel
 from mvp.server.persistence.database import get_db
+from mvp.server.routers.sessions import get_session_dependency
 
 router = APIRouter(
     prefix="/leaderboard",
@@ -21,7 +24,7 @@ async def get_leaderboard(db: Session = Depends(get_db)):
     return result
 
 
-@router.post("/test")
+@router.post("/test", include_in_schema=False)
 async def test_leaderboard_post(db: Session = Depends(get_db)):
     dummy_entries = [
         HighScoreModel(nickname="Player1", score=1000.5, timestamp=datetime(2024, 4, 6, 10, 0, 0)),
@@ -35,7 +38,20 @@ async def test_leaderboard_post(db: Session = Depends(get_db)):
     db.commit()
 
 
-@router.delete("/test")
+class ScoreCreateRequest(BaseModel):
+    nickname: str
+
+
+@router.post("/score")
+async def post_score(request: ScoreCreateRequest, session: GameSession = Depends(get_session_dependency),
+                     db: Session = Depends(get_db)):
+    if session.is_game_over is False:
+        raise HTTPException(status_code=400, detail="Game is not over yet")
+    db.add(HighScoreModel(nickname=request.nickname, score=session.current_step, timestamp=datetime.now()))
+    db.commit()
+
+
+@router.delete("/test", include_in_schema=False)
 async def test_leaderboard_delete(db: Session = Depends(get_db)):
     db.query(HighScoreModel).delete()
     db.commit()

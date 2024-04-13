@@ -13,17 +13,17 @@ import { request as __request } from '../core/request';
 export class SessionsService {
 
     /**
-     * Get Mqtt Connection Details
+     * Get Session
      * @param sessionId 
-     * @returns MqttFrontendConnectionDetails Successful Response
+     * @returns GameSessionDTO Successful Response
      * @throws ApiError
      */
-    public static getMqttConnectionDetailsSessionsMqttConnectionDetailsGet(
+    public static getSessionSessionsGet(
 sessionId: string,
-): CancelablePromise<MqttFrontendConnectionDetails> {
+): CancelablePromise<GameSessionDTO> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/sessions/mqtt-connection-details',
+            url: '/sessions/',
             query: {
                 'session_id': sessionId,
             },
@@ -50,28 +50,6 @@ sessionId: string,
     }
 
     /**
-     * Get Session
-     * @param sessionId 
-     * @returns GameSessionDTO Successful Response
-     * @throws ApiError
-     */
-    public static getSessionSessionsGet(
-sessionId: string,
-): CancelablePromise<GameSessionDTO> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/sessions/',
-            query: {
-                'session_id': sessionId,
-            },
-            errors: {
-                404: `Not found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
      * Get Metrics
      * @returns GameMetrics Successful Response
      * @throws ApiError
@@ -82,6 +60,28 @@ sessionId: string,
             url: '/sessions/metrics',
             errors: {
                 404: `Not found`,
+            },
+        });
+    }
+
+    /**
+     * Get Mqtt Connection Details
+     * @param sessionId 
+     * @returns MqttFrontendConnectionDetails Successful Response
+     * @throws ApiError
+     */
+    public static getMqttConnectionDetailsSessionsMqttConnectionDetailsGet(
+sessionId: string,
+): CancelablePromise<MqttFrontendConnectionDetails> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/sessions/mqtt-connection-details',
+            query: {
+                'session_id': sessionId,
+            },
+            errors: {
+                404: `Not found`,
+                422: `Validation Error`,
             },
         });
     }
