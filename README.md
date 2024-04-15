@@ -4,7 +4,7 @@
 
 
 - **Your mission**: maximize profit & machine lifespan.
-- **Your tools**: intuition, data, charts, an internet connection!
+- **Your tools**: intuition, charts, internet connection!
 - **Your obstacles**: machine degradation, limited funds!
 
 ---
