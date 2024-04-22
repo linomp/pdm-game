@@ -1,5 +1,4 @@
 from datetime import datetime
-from random import randint
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import desc
@@ -32,21 +31,4 @@ async def post_score(request: ScoreCreateRequest, session: GameSession = Depends
     if session.is_game_over is False:
         raise HTTPException(status_code=400, detail="Game is not over yet")
     db.add(HighScoreModel(nickname=request.nickname, score=session.get_score(), timestamp=datetime.now()))
-    db.commit()
-
-
-@router.post("/test")
-async def test_leaderboard_post(db: Session = Depends(get_db)):
-    dummy_entries = [
-        HighScoreModel(nickname="Player1", score=randint(100, 1000), timestamp=datetime(2024, 4, 6, 10, 0, 0)),
-        HighScoreModel(nickname="Player2", score=randint(100, 1000), timestamp=datetime(2024, 4, 6, 11, 30, 0)),
-    ]
-
-    db.add_all(dummy_entries)
-    db.commit()
-
-
-@router.delete("/test")
-async def test_leaderboard_delete(db: Session = Depends(get_db)):
-    db.query(HighScoreModel).delete()
     db.commit()
