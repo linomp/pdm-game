@@ -4,8 +4,8 @@
 
 
 - **Your mission**: maximize profit & machine lifespan.
-- **Your tools**: intuition, charts, internet connection!
-- **Your obstacles**: machine degradation, limited funds!
+- **Your tools**: data, intuition & nerve!
+- **Your foes**: machine degradation & limited funds!
 
 ---
 
