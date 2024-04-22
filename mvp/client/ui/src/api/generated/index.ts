@@ -15,6 +15,7 @@ export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { MachineStateDTO } from './models/MachineStateDTO';
 export type { MqttFrontendConnectionDetails } from './models/MqttFrontendConnectionDetails';
 export type { OperationalParameters } from './models/OperationalParameters';
+export type { ScoreCreateRequest } from './models/ScoreCreateRequest';
 export type { ValidationError } from './models/ValidationError';
 
 export { GameParametersService } from './services/GameParametersService';

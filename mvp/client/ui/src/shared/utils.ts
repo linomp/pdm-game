@@ -1,6 +1,6 @@
-import type { UTCTimestamp } from "lightweight-charts";
-import type { GameSessionWithTimeSeries, MachineStateSnapshotDict, TimeSeriesPoint } from "./types";
-import type { GameSessionDTO } from "src/api/generated";
+import type {UTCTimestamp} from "lightweight-charts";
+import type {TimeSeriesPoint} from "./types";
+import type {GameSessionDTO} from "src/api/generated";
 
 export const isUndefinedOrNull = (value: any): boolean => {
     return value === undefined || value === null;
@@ -43,4 +43,12 @@ export const getUpdatedTimeseries = (newGameSessionDto: GameSessionDTO, previous
     }
 
     return previousTimeSeries;
+}
+
+export const formatDatetime = (datetimeStr: string): string => {
+    const datetime = new Date(datetimeStr);
+    const formattedDate = `${datetime.getDate().toString().padStart(2, '0')}/${(datetime.getMonth() + 1).toString().padStart(2, '0')}/${datetime.getFullYear()}`
+    const formattedTime = `${datetime.getHours().toString().padStart(2, '0')}:${datetime.getMinutes().toString().padStart(2, '0')}`;
+
+    return `${formattedDate} - ${formattedTime}`;
 }

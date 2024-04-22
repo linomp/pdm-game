@@ -48,14 +48,26 @@
 </script>
 
 {#if isUndefinedOrNull($gameSession)}
-    <button class="start-session-btn" on:click={startSession}>
-        Start Session
-    </button>
-    <HighScoreList/>
+    <div class="lobby">
+        <HighScoreList/>
+        <button class="start-session-btn" on:click={startSession}>
+            Play Now
+        </button>
+    </div>
 {/if}
 
 <style>
+
     .start-session-btn {
         max-width: fit-content;
+        padding: 0.25em 0.5em;
+        font-size: medium;
+    }
+
+    .lobby {
+        display: flex;
+        flex-direction: column;
+        max-width: fit-content;
+        align-items: center;
     }
 </style>

@@ -50,8 +50,7 @@ class MachineState(BaseModel):
         self.health_percentage = round_from_0_to_100(self.health_percentage * HEALTH_RECOVERY_FACTOR_ON_MAINTENANCE)
 
     def is_broken(self) -> bool:
-        # return self.health_percentage <= 0
-        return True
+        return self.health_percentage <= 0
 
     @staticmethod
     def from_dict(json: dict[str, Any]) -> "MachineState":
