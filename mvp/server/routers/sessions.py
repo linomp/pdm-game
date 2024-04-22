@@ -49,11 +49,6 @@ async def cleanup_inactive_sessions():
             game_metrics.update_on_game_abandoned(len(sessions))
 
 
-@router.on_event("shutdown")
-async def cleanup_all_sessions():
-    sessions.clear()
-
-
 @router.get("/", response_model=GameSessionDTO)
 async def get_session(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
     return GameSessionDTO.from_session(session)

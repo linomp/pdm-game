@@ -1,11 +1,16 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///mvp/data/pdm_game.db"
+DATA_DIR = "mvp/data"
+
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    f"sqlite:///{DATA_DIR}/pdm_game.db", connect_args={"check_same_thread": False}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
