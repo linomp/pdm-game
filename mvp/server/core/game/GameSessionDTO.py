@@ -14,6 +14,7 @@ class GameSessionDTO(BaseModel):
     available_funds: float
     is_game_over: bool
     game_over_reason: str | None = None
+    final_score: float | None = None
 
     @staticmethod
     def from_session(session: GameSession) -> "GameSessionDTO":
@@ -22,11 +23,13 @@ class GameSessionDTO(BaseModel):
             current_step=session.current_step,
             available_funds=session.available_funds,
             is_game_over=session.is_game_over,
-            machine_state=MachineStateDTO.from_machine_state(session.machine_state)
+            machine_state=MachineStateDTO.from_machine_state(session.machine_state),
+            final_score=None
         )
 
         if session.is_game_over:
             dto.game_over_reason = GAME_OVER_MESSAGE_MACHINE_BREAKDOWN if session.machine_state.is_broken() else GAME_OVER_MESSAGE_NO_MONEY
+            dto.final_score = session.get_score()
 
         # Filter out sensor data & predictions that the player has not purchased
         dto.machine_state = MachineStateDTO.from_machine_state(session.machine_state)

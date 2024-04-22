@@ -1,8 +1,5 @@
 version: "3.8"
 
-networks:
-  my-network:
-
 services:
   mvp-api:
     build:
@@ -13,6 +10,8 @@ services:
     networks:
       - my-network
     restart: always
+    volumes:
+      - ./mvp/data:/code/mvp/data
 
   mvp-client:
     build:
@@ -23,3 +22,6 @@ services:
     networks:
       - my-network
     restart: always
+
+networks:
+  my-network:

@@ -4,3 +4,4 @@ venv
 *.xml
 *.iml
 *.pyc
+**/data/

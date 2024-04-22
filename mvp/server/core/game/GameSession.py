@@ -1,13 +1,17 @@
 import asyncio
 import math
+import os
 from datetime import datetime
 from typing import Callable
 
+from dotenv import load_dotenv
 from pydantic import BaseModel
 
 from mvp.server.core.analysis.rul_prediction import default_rul_prediction_fn
 from mvp.server.core.constants import *
 from mvp.server.core.machine.MachineState import MachineState
+
+load_dotenv()
 
 
 class GameSession(BaseModel):
@@ -55,18 +59,19 @@ class GameSession(BaseModel):
 
         return (self.ended_at - self.started_at).total_seconds()
 
-    def check_if_game_over(self) -> bool:
-        self.is_game_over = True
+    def update_game_over_flag(self) -> None:
+        self.is_game_over = False
+
+        if os.getenv("DEV_FORCE_QUICK_FINISH", False):
+            if self.current_step >= 30:
+                self.machine_state.health_percentage = -1
 
         if self.machine_state.is_broken():
+            self.is_game_over = True
             self.ended_at = datetime.now()
             print(
                 f"{datetime.now()}: GameSession '{self.id}' - machine failed at step {self.current_step} - {self.machine_state}"
             )
-        else:
-            self.is_game_over = False
-
-        return self.is_game_over
 
     async def advance_one_turn(self) -> list[MachineState]:
         collected_machine_states_during_turn = []
@@ -77,7 +82,7 @@ class GameSession(BaseModel):
             # collect stats
             collected_machine_states_during_turn.append(self.machine_state)
 
-            self.check_if_game_over()
+            self.update_game_over_flag()
             if self.is_game_over:
                 break
 
@@ -131,3 +136,7 @@ class GameSession(BaseModel):
         self.available_funds -= PREDICTION_MODEL_COST
         self.available_predictions[prediction] = True
         return True
+
+    def get_score(self) -> float:
+        # TODO: review this score calculation, decide if needs to be more complex
+        return (self.current_step * self.available_funds) / 100

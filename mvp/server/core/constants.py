@@ -1,5 +1,4 @@
 # Gameplay
-
 DEFAULT_SESSION_ID = 'test'
 GAME_TICK_INTERVAL = 0.03  # 30ms
 IDLE_SESSION_TTL_SECONDS = 60 * 30  # 15 minutes

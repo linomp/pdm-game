@@ -12,4 +12,5 @@ export type GameSessionDTO = {
     available_funds: number;
     is_game_over: boolean;
     game_over_reason?: (string | null);
+    final_score?: (number | null);
 };
