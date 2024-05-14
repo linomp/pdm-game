@@ -9,11 +9,11 @@ from mvp.server.core.game.GameMetrics import GameMetrics
 from mvp.server.core.game.GameSession import GameSession
 from mvp.server.core.game.GameSessionDTO import GameSessionDTO
 from mvp.server.messaging.MqttFrontendConnectionDetails import MqttFrontendConnectionDetails
-from mvp.server.messaging.mqtt_client import MqttClient
+from mvp.server.messaging.mqtt_client import get_mqtt_client
 
 sessions: dict[str, GameSession] = {}
 game_metrics = GameMetrics()
-mqtt_client = MqttClient()
+mqtt_client = get_mqtt_client()
 
 router = APIRouter(
     prefix="/sessions",

@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  hivemq-broker:
+    image: hivemq/hivemq-ce
+    ports:
+      - "8883:1883"
+      - "8884:8000"
+    networks:
+      - my-network
+    restart: always
+
+networks:
+  my-network:
+
+# docker compose -f docker-compose-dev.yml up -d
+# docker compose -f docker-compose-dev.yml down -v
