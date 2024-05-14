@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { isNotUndefinedNorNull } from "src/shared/utils";
-  import { PlayerActionsService, type GameSessionDTO } from "src/api/generated";
+  import {isNotUndefinedNorNull} from "src/shared/utils";
+  import {type GameSessionDTO, PlayerActionsService} from "src/api/generated";
   import {
     dayInProgress,
     gameOver,
@@ -16,15 +16,15 @@
   $: {
     sensorPurchaseButtonDisabled.set(
       $gameSession?.is_game_over ||
-        $dayInProgress ||
-        ($gameSession?.available_funds ?? 0) < $globalSettings.sensor_cost,
+      $dayInProgress ||
+      ($gameSession?.available_funds ?? 0) < $globalSettings.sensor_cost,
     );
 
     predictionPurchaseButtonDisabled.set(
       $gameSession?.is_game_over ||
-        $dayInProgress ||
-        ($gameSession?.available_funds ?? 0) <
-          $globalSettings.prediction_model_cost,
+      $dayInProgress ||
+      ($gameSession?.available_funds ?? 0) <
+      $globalSettings.prediction_model_cost,
     );
   }
 
@@ -86,8 +86,8 @@
     </div>
     <div class="rul-display">
       {"Remaining Useful Life"}: {$gameSession?.machine_state?.predicted_rul
-        ? `${$gameSession.machine_state?.predicted_rul} steps`
-        : "???"}
+      ? `${$gameSession.machine_state?.predicted_rul} steps`
+      : "???"}
       <span
         hidden={isNotUndefinedNorNull(
           $gameSession?.machine_state?.predicted_rul,
@@ -97,7 +97,7 @@
           disabled={$predictionPurchaseButtonDisabled}
           on:click={() => purchaseRulPredictionModel()}
         >
-          Buy (${$globalSettings.prediction_model_cost})
+          Buy Predictive Model (${$globalSettings.prediction_model_cost})
         </button>
       </span>
     </div>
@@ -110,6 +110,7 @@
     flex-direction: column;
     align-items: center;
   }
+
   .sensors-display {
     display: flex;
     flex-direction: row;
