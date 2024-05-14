@@ -30,5 +30,13 @@ async def post_score(request: ScoreCreateRequest, session: GameSession = Depends
                      db: Session = Depends(get_db)):
     if session.is_game_over is False:
         raise HTTPException(status_code=400, detail="Game is not over yet")
-    db.add(HighScoreModel(nickname=request.nickname, score=session.get_score(), timestamp=datetime.now()))
+    db.add(
+        HighScoreModel(
+            nickname=request.nickname,
+            score=session.get_score(),
+            level_reached=session.current_step,
+            cash_balance=session.available_funds,
+            timestamp=datetime.now()
+        )
+    )
     db.commit()

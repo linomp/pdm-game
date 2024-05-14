@@ -1,5 +1,4 @@
 import asyncio
-import math
 import os
 from datetime import datetime
 from typing import Callable
@@ -90,7 +89,7 @@ class GameSession(BaseModel):
             self.machine_state.update_parameters(self.current_step)
 
             # Player earns money for the production at every timestep
-            self.available_funds += math.ceil(REVENUE_PER_DAY / TIMESTEPS_PER_MOVE)
+            self.available_funds += REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
 
             # Publish state every 2 steps (to reduce the load on the MQTT broker)
             if self.current_step % 2 == 0:
@@ -137,6 +136,7 @@ class GameSession(BaseModel):
         self.available_predictions[prediction] = True
         return True
 
-    def get_score(self) -> float:
+    def get_score(self) -> int:
         # TODO: review this score calculation, decide if needs to be more complex
-        return (self.current_step * self.available_funds) / 100
+        raw_score = (0.75 * self.current_step) + (0.85 * self.available_funds)
+        return round(raw_score)
