@@ -52,34 +52,4 @@ requestBody: ScoreCreateRequest,
         });
     }
 
-    /**
-     * Test Leaderboard Post
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static testLeaderboardPostLeaderboardTestPost(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/leaderboard/test',
-            errors: {
-                404: `Not found`,
-            },
-        });
-    }
-
-    /**
-     * Test Leaderboard Delete
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static testLeaderboardDeleteLeaderboardTestDelete(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/leaderboard/test',
-            errors: {
-                404: `Not found`,
-            },
-        });
-    }
-
 }

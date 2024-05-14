@@ -6,5 +6,7 @@
 export type HighScoreDTO = {
     nickname: string;
     score: number;
+    level_reached: number;
+    cash_balance: number;
     timestamp: string;
 };

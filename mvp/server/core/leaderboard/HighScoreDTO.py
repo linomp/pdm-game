@@ -5,7 +5,9 @@ from pydantic import BaseModel
 
 class HighScoreDTO(BaseModel):
     nickname: str
-    score: float
+    score: int
+    level_reached: int
+    cash_balance: float
     timestamp: datetime
 
     class Config:
