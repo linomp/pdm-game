@@ -1,14 +1,6 @@
 <script lang="ts">
-  import {
-    PlayerActionsService,
-    SessionsService,
-    type GameSessionDTO,
-  } from "src/api/generated";
-  import {
-    formatNumber,
-    isNotUndefinedNorNull,
-    isUndefinedOrNull,
-  } from "src/shared/utils";
+  import {type GameSessionDTO, PlayerActionsService, SessionsService,} from "src/api/generated";
+  import {formatNumber, isNotUndefinedNorNull, isUndefinedOrNull,} from "src/shared/utils";
   import {
     dayInProgress,
     gameOver,
@@ -24,8 +16,8 @@
   $: {
     maintenanceButtonDisabled.set(
       $performedMaintenanceInThisTurn ||
-        $dayInProgress ||
-        ($gameSession?.available_funds ?? 0) < $globalSettings.maintenance_cost,
+      $dayInProgress ||
+      ($gameSession?.available_funds ?? 0) < $globalSettings.maintenance_cost,
     );
   }
 
@@ -76,10 +68,10 @@
     <p>Current Step: {$gameSession?.current_step}</p>
     <p>Available Funds: {formatNumber($gameSession?.available_funds)}</p>
     <div class="session-controls">
-      <button on:click={advanceToNextDay} disabled={$dayInProgress}>
+      <button on:mousedown={advanceToNextDay} disabled={$dayInProgress}>
         Advance to next day
       </button>
-      <button on:click={doMaintenance} disabled={$maintenanceButtonDisabled}>
+      <button on:mousedown={doMaintenance} disabled={$maintenanceButtonDisabled}>
         Perform Maintenance (${maintenanceCost})
       </button>
     </div>

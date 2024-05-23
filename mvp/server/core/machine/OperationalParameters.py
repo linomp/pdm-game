@@ -1,4 +1,5 @@
 import math
+import random
 
 from pydantic import BaseModel
 
@@ -27,13 +28,14 @@ class OperationalParameters(BaseModel):
                 decay_speed=self.compute_decay_speed()
             )
         )
+
         return round_from_0_to_100(raw_value)
 
     def compute_decay_speed(self) -> float:
         # TODO: calibrate these weights
-        temperature_weight = 0.0005
-        oil_age_weight = 0.01
-        mechanical_wear_weight = 0.001
+        temperature_weight = 0.01
+        oil_age_weight = 0.001
+        mechanical_wear_weight = 0.1
 
         # Made-up calculation involving operational parameters:  temperature, oil age, mechanical wear
         computed = self.temperature * temperature_weight + \
@@ -50,11 +52,13 @@ class OperationalParameters(BaseModel):
 
     def compute_machine_temperature(self, current_timestep: int) -> float:
         # temperature grows linearly over the 8 hours of a shift (resets every 8 hours)
-        raw_value = linear_growth_with_reset(
+        raw_value = self.mechanical_wear * linear_growth_with_reset(
             initial_value=0,
             period=TIMESTEPS_PER_MOVE,
             current_timestep=current_timestep
         )
+        raw_value += random.random() * raw_value
+
         return map_value(
             raw_value,
             from_low=0,
@@ -65,7 +69,9 @@ class OperationalParameters(BaseModel):
 
     def compute_oil_age(self, current_timestep: int) -> float:
         # oil age grows monotonically and resets only after every maintenance routine
-        raw_value = min(1e6, self.oil_age + ((current_timestep / 300) * (self.temperature ** 2)))
+        raw_value = min(1e6, self.oil_age + ((current_timestep / 1000) * (self.temperature ** 2)))
+        raw_value += random.random() * raw_value
+
         return map_value(
             raw_value,
             from_low=self.oil_age,
@@ -77,7 +83,9 @@ class OperationalParameters(BaseModel):
     def compute_mechanical_wear(self, current_timestep: int) -> float:
         # mechanical wear grows monotonically, directly proportional to oil ag.
         # for now it never resets (such that at some point, the machine will definitely break and game over)
-        raw_value = min(1e6, math.exp(current_timestep / 1000) * self.oil_age)
+        raw_value = min(1e6, math.exp(current_timestep / 200) * self.oil_age)
+        raw_value += random.random() * raw_value
+
         return map_value(
             raw_value,
             from_low=0,

@@ -1,6 +1,6 @@
 <script lang="ts">
   import {isUndefinedOrNull} from "src/shared/utils";
-  import TimeSeriesChart from "./graphical/TimeSeriesChart.svelte";
+  import TimeSeriesChart from "./TimeSeriesChart.svelte";
   import {gameSession, globalSettings} from "src/stores/stores";
 
   export let parameter: string;
@@ -28,7 +28,7 @@
     {#if isUndefinedOrNull(value)}
       <button
         disabled={sensorPurchaseButtonDisabled}
-        on:click={() => purchaseSensor(parameter)}
+        on:mousedown={() => purchaseSensor(parameter)}
       >
         Buy Sensor (${sensorCost})
       </button>
