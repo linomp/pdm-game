@@ -22,15 +22,6 @@ router = APIRouter(
 )
 
 
-def end_player_session(session_id: str):
-    session = sessions.get(session_id)
-    if session is not None:
-        print(f"{datetime.now()}: Session '{session_id}' will be dropped")
-        session.ended_at = datetime.now()
-        sessions.pop(session_id)
-        game_metrics.update_on_game_ended(len(sessions))
-
-
 def get_session_dependency(session_id: str) -> GameSession:
     session = sessions.get(session_id)
 
@@ -38,6 +29,13 @@ def get_session_dependency(session_id: str) -> GameSession:
         raise HTTPException(status_code=404, detail="Session not found")
 
     return session
+
+
+def cleanup_session(session_id: str):
+    session = sessions.get(session_id)
+    if session is not None:
+        print(f"{datetime.now()}: Session '{session_id}' will be dropped")
+        sessions.pop(session_id)
 
 
 @repeat_every(seconds=SESSION_CLEANUP_INTERVAL_SECONDS, wait_first=False)

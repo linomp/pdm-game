@@ -9,7 +9,7 @@ from mvp.server.core.leaderboard.HighScoreDTO import HighScoreDTO
 from mvp.server.core.leaderboard.HighScoreModel import HighScoreModel
 from mvp.server.core.leaderboard.ScoreCreateRequest import ScoreCreateRequest
 from mvp.server.persistence.database import get_db
-from mvp.server.routers.sessions import get_session_dependency, end_player_session
+from mvp.server.routers.sessions import get_session_dependency, cleanup_session
 
 router = APIRouter(
     prefix="/leaderboard",
@@ -42,4 +42,4 @@ async def post_score(request: ScoreCreateRequest, session: GameSession = Depends
     )
     db.commit()
 
-    end_player_session(session.id)
+    cleanup_session(session.id)
