@@ -28,7 +28,7 @@ def end_player_session(session_id: str):
         print(f"{datetime.now()}: Session '{session_id}' will be dropped")
         session.ended_at = datetime.now()
         sessions.pop(session_id)
-        game_metrics.update_on_game_abandoned(len(sessions))
+        game_metrics.update_on_game_ended(len(sessions))
 
 
 def get_session_dependency(session_id: str) -> GameSession:
