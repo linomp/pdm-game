@@ -34,13 +34,12 @@ class MachineWrapperForExperiment:
     def advance_one_step(self):
         self.current_step += 1
         self.machine_state.update_parameters(self.current_step)
-
-        if SIMULATE_MAINTENANCE and (self.machine_state.health_percentage <= 50):
-            self.machine_state.do_maintenance()
         self._record_state()
 
     def run_to_failure(self) -> dict[str, list]:
         while not self.machine_state.is_broken():
+            if SIMULATE_MAINTENANCE and (self.machine_state.health_percentage <= 50):
+                self.machine_state.do_maintenance()
             self.advance_one_step()
         return self.machine_state_history
 
