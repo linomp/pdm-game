@@ -50,7 +50,7 @@
 {#if isUndefinedOrNull($gameSession)}
     <div class="lobby">
         <HighScoreList/>
-        <button class="start-session-btn" on:click={startSession}>
+        <button class="start-session-btn" on:mousedown={startSession}>
             Play Now
         </button>
     </div>

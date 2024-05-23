@@ -21,8 +21,8 @@ class GameParametersDTO(BaseModel):
             prediction_model_cost=PREDICTION_MODEL_COST,
             game_tick_interval=GAME_TICK_INTERVAL,
             warning_levels={
-                "oil_age": OIL_AGE_MAPPING_MAX * 0.05,
-                "mechanical_wear": MECHANICAL_WEAR_MAPPING_MAX * 0.001,
-                "temperature": TEMPERATURE_MAPPING_MAX * 0.75
+                "oil_age": OIL_AGE_MAPPING_MAX * OIL_AGE_WARNING_FACTOR,
+                "mechanical_wear": MECHANICAL_WEAR_MAPPING_MAX * MECHANICAL_WEAR_WARNING_FACTOR,
+                "temperature": TEMPERATURE_MAPPING_MAX * TEMPERATURE_WARNING_FACTOR
             }
         )

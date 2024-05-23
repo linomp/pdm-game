@@ -95,7 +95,7 @@
       >
         <button
           disabled={$predictionPurchaseButtonDisabled}
-          on:click={() => purchaseRulPredictionModel()}
+          on:mousedown={() => purchaseRulPredictionModel()}
         >
           Buy Predictive Model (${$globalSettings.prediction_model_cost})
         </button>

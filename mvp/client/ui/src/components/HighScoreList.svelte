@@ -19,22 +19,22 @@
     <table>
       <thead>
       <tr>
-        <th>#</th>
+        <th>Rank</th>
         <th>Player</th>
         <th>Score</th>
         <th>Level Reached</th>
-        <th>Profit Made</th>
+        <th>Net Profit</th>
         <th>Date</th>
       </tr>
       </thead>
       <tbody>
       {#each rows as row, i}
         <tr>
-          <td>{i + 1}</td>
+          <td>#{i + 1}</td>
           <td>{row.nickname}</td>
           <td>{row.score}</td>
           <td>{row.level_reached}</td>
-          <td>{formatNumber(row.cash_balance)}</td>
+          <td>$ {formatNumber(row.cash_balance)}</td>
           <td>{formatDatetime(row.timestamp)}</td>
         </tr>
       {/each}

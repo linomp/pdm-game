@@ -1,111 +1,111 @@
 <script lang="ts">
-    import {getUpdatedTimeseries,} from "src/shared/utils";
-    import GameOver from "src/components/GameOver.svelte";
-    import MachineAnimation from "src/components/graphical/MachineAnimation.svelte";
-    import SessionData from "src/components/SessionData.svelte";
-    import MachineData from "src/components/MachineData.svelte";
-    import Lobby from "src/components/Lobby.svelte";
-    import {
-        gameOver,
-        gameOverReason,
-        gameSession,
-        globalSettings,
-        mqttClient,
-        mqttClientUnsubscribe,
-    } from "src/stores/stores";
-    import type {GameSessionWithTimeSeries} from "src/shared/types";
-    import type {GameSessionDTO} from "src/api/generated";
+  import {getUpdatedTimeseries,} from "src/shared/utils";
+  import GameOver from "src/components/GameOver.svelte";
+  import MachineAnimation from "src/components/MachineAnimation.svelte";
+  import SessionData from "src/components/SessionData.svelte";
+  import MachineData from "src/components/MachineData.svelte";
+  import Lobby from "src/components/Lobby.svelte";
+  import {
+    gameOver,
+    gameOverReason,
+    gameSession,
+    globalSettings,
+    mqttClient,
+    mqttClientUnsubscribe,
+  } from "src/stores/stores";
+  import type {GameSessionWithTimeSeries} from "src/shared/types";
+  import type {GameSessionDTO} from "src/api/generated";
 
-    const cleanupGameSession = () => {
-        gameSession.set(null);
-        gameOver.set(false);
-        gameOverReason.set(null);
-        mqttClient.update(() => null!);
-        mqttClientUnsubscribe.update(() => null!);
-    };
+  const cleanupGameSession = () => {
+    gameSession.set(null);
+    gameOver.set(false);
+    gameOverReason.set(null);
+    mqttClient.update(() => null!);
+    mqttClientUnsubscribe.update(() => null!);
+  };
 
-    const updateGameSession = async (newGameSessionDto: GameSessionDTO) => {
-        // TODO: this is a workaround to prevent the game from updating the game session if it receives an outdated one
-        //        e.g. if an MQTT message arrives after the last POST request is resolved
-        if (
-            $gameSession &&
-            ($gameSession?.is_game_over ||
-                (newGameSessionDto.current_step < $gameSession?.current_step ?? 0))
-        ) {
-            return;
-        }
+  const updateGameSession = async (newGameSessionDto: GameSessionDTO) => {
+    // TODO: this is a workaround to prevent the game from updating the game session if it receives an outdated one
+    //        e.g. if an MQTT message arrives after the last POST request is resolved
+    if (
+      $gameSession &&
+      ($gameSession?.is_game_over ||
+        (newGameSessionDto.current_step < $gameSession?.current_step ?? 0))
+    ) {
+      return;
+    }
 
-        gameOver.set(newGameSessionDto.is_game_over);
-        gameOverReason.set(newGameSessionDto.game_over_reason ?? null);
+    gameOver.set(newGameSessionDto.is_game_over);
+    gameOverReason.set(newGameSessionDto.game_over_reason ?? null);
 
-        if (newGameSessionDto.is_game_over) {
-            if (import.meta.env.VITE_DEBUG) {
-                console.log("Game over. Last known GameSessionDTO:", newGameSessionDto);
-            }
+    if (newGameSessionDto.is_game_over) {
+      if (import.meta.env.VITE_DEBUG) {
+        console.log("Game over. Last known GameSessionDTO:", newGameSessionDto);
+      }
 
-            $mqttClientUnsubscribe?.();
-        }
+      $mqttClientUnsubscribe?.();
+    }
 
-        gameSession.update(
-            (
-                previousGameSession: GameSessionWithTimeSeries | null,
-            ): GameSessionWithTimeSeries => {
-                const previousTimeSeries =
-                    previousGameSession?.formattedTimeSeries ?? {};
+    gameSession.update(
+      (
+        previousGameSession: GameSessionWithTimeSeries | null,
+      ): GameSessionWithTimeSeries => {
+        const previousTimeSeries =
+          previousGameSession?.formattedTimeSeries ?? {};
 
-                return {
-                    ...newGameSessionDto,
-                    formattedTimeSeries: getUpdatedTimeseries(
-                        newGameSessionDto,
-                        previousTimeSeries,
-                    ),
-                };
-            },
-        );
-    };
+        return {
+          ...newGameSessionDto,
+          formattedTimeSeries: getUpdatedTimeseries(
+            newGameSessionDto,
+            previousTimeSeries,
+          ),
+        };
+      },
+    );
+  };
 </script>
 
 <div class="homepage">
-    <h2 class="title">The Predictive Maintenance Game</h2>
-    <Lobby {updateGameSession}/>
-    <div class="game-area">
-        <div class="basic-controls">
-            <MachineAnimation/>
-            <GameOver {cleanupGameSession}/>
-            <SessionData
-                    maintenanceCost={$globalSettings.maintenance_cost}
-                    {updateGameSession}
-            />
-        </div>
-        <div class="monitoring-controls">
-            <MachineData {updateGameSession}/>
-        </div>
+  <h2 class="title">The Predictive Maintenance Game</h2>
+  <Lobby {updateGameSession}/>
+  <div class="game-area">
+    <div class="basic-controls">
+      <MachineAnimation/>
+      <GameOver {cleanupGameSession}/>
+      <SessionData
+        maintenanceCost={$globalSettings.maintenance_cost}
+        {updateGameSession}
+      />
     </div>
+    <div class="monitoring-controls">
+      <MachineData {updateGameSession}/>
+    </div>
+  </div>
 </div>
 
 <style>
-    .homepage {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
+  .homepage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-    .title {
-        margin-bottom: 1em;
-        text-align: center;
-    }
+  .title {
+    margin-bottom: 1em;
+    text-align: center;
+  }
 
-    .game-area {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 5em;
-        flex-wrap: wrap;
-    }
+  .game-area {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5em;
+    flex-wrap: wrap;
+  }
 
-    .basic-controls {
-        display: flex;
-        flex-direction: column;
-        max-width: fit-content;
-    }
+  .basic-controls {
+    display: flex;
+    flex-direction: column;
+    max-width: fit-content;
+  }
 </style>

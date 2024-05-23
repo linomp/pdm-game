@@ -88,8 +88,9 @@ class GameSession(BaseModel):
             self.current_step += 1
             self.machine_state.update_parameters(self.current_step)
 
-            # Player earns money for the production at every timestep
-            self.available_funds += REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
+            # Player earns money for the production at every timestep,
+            # proportional to the health of the machine (bad health = less efficient production)
+            self.available_funds += (self.machine_state.health_percentage / 50) * REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
 
             # Publish state every 2 steps (to reduce the load on the MQTT broker)
             if self.current_step % 2 == 0:
@@ -137,6 +138,5 @@ class GameSession(BaseModel):
         return True
 
     def get_score(self) -> int:
-        # TODO: review this score calculation, decide if needs to be more complex
-        raw_score = (0.75 * self.current_step) + (0.85 * self.available_funds)
-        return round(raw_score)
+        raw_score = self.current_step * self.available_funds
+        return round(raw_score / 100)
