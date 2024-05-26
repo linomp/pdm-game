@@ -43,10 +43,10 @@ plt.figure(figsize=(12, 8))
 
 for i, (series, prediction) in enumerate(zip(all_series, all_predictions)):
     if i == 0:
-        series.plot(label='_nolegend_', color='black')
+        series.plot(label=None, color='black', lw=0.5)
     else:
-        series.plot(label='_nolegend_', color='black')
-    prediction.plot(label='_nolegend_', low_quantile=0.05, high_quantile=0.95, color='blue', linestyle='dotted')
+        series.plot(label=None, color='black', lw=0.5)
+    prediction.plot(label=None, low_quantile=0.05, high_quantile=0.95, color='blue', linestyle='dotted')
 
 plt.legend()
 plt.title("Health percentage forecast every 24 steps")
