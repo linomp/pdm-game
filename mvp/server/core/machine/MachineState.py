@@ -5,12 +5,12 @@ from pydantic import BaseModel
 from mvp.server.core.constants import TEMPERATURE_STARTING_POINT, HEALTH_RECOVERY_FACTOR_ON_MAINTENANCE, \
     MECHANICAL_WEAR_REDUCTION_FACTOR_ON_MAINTENANCE
 from mvp.server.core.machine.OperationalParameters import OperationalParameters
-from mvp.server.core.math_utils import round_from_0_to_100
+from mvp.server.core.math_utils import constrain_from_0_to_100
 
 
 class MachineState(BaseModel):
     predicted_rul: int | None = None
-    health_percentage: int
+    health_percentage: float
     operational_parameters: OperationalParameters
 
     @staticmethod
@@ -38,7 +38,7 @@ class MachineState(BaseModel):
                           latest_states=list['MachineState']):
         self.predicted_rul = rul_predictor(timestep)
 
-    def compute_health_percentage(self, current_timestep: int) -> int:
+    def compute_health_percentage(self, current_timestep: int) -> float:
         return self.operational_parameters.compute_health_percentage(current_timestep, self.health_percentage)
 
     def do_maintenance(self) -> None:
@@ -47,7 +47,7 @@ class MachineState(BaseModel):
             oil_age=0,
             mechanical_wear=self.operational_parameters.mechanical_wear / MECHANICAL_WEAR_REDUCTION_FACTOR_ON_MAINTENANCE
         )
-        self.health_percentage = round_from_0_to_100(self.health_percentage * HEALTH_RECOVERY_FACTOR_ON_MAINTENANCE)
+        self.health_percentage = constrain_from_0_to_100(self.health_percentage * HEALTH_RECOVERY_FACTOR_ON_MAINTENANCE)
 
     def is_broken(self) -> bool:
         return self.health_percentage <= 0

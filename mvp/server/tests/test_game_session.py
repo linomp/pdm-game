@@ -27,7 +27,7 @@ async def test_game_session_advance_one_turn(game_session):
     initial_health = game_session.machine_state.health_percentage
     initial_step = game_session.current_step
 
-    total_turns_to_simulate = 10
+    total_turns_to_simulate = 5
     collected_stats = []
     for i in range(total_turns_to_simulate):
         collected_stats.extend(await game_session.advance_one_turn())

@@ -1,3 +1,4 @@
+import pandas as pd
 from matplotlib.pyplot import figure, show
 
 from mvp.server.core.machine.MachineState import MachineState
@@ -62,3 +63,7 @@ if __name__ == "__main__":
     ax4.plot(history["time"], history["health_percentage"])
     ax4.set_title("Health Percentage")
     show()
+
+    # save as dataframe
+    df = pd.DataFrame(history)
+    pd.to_pickle(df, "./history.pkl")

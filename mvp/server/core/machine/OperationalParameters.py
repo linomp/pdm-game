@@ -4,7 +4,7 @@ import random
 from pydantic import BaseModel
 
 from mvp.server.core.constants import *
-from mvp.server.core.math_utils import linear_growth_with_reset, map_value, exponential_decay, round_from_0_to_100
+from mvp.server.core.math_utils import linear_growth_with_reset, map_value, exponential_decay, constrain_from_0_to_100
 
 
 class OperationalParameters(BaseModel):
@@ -20,7 +20,7 @@ class OperationalParameters(BaseModel):
         self.oil_age = self.compute_oil_age(current_timestep)
         self.mechanical_wear = self.compute_mechanical_wear(current_timestep)
 
-    def compute_health_percentage(self, current_timestep: int, current_health: int) -> int:
+    def compute_health_percentage(self, current_timestep: int, current_health: float) -> float:
         raw_value = round(
             exponential_decay(
                 current_timestep,
@@ -29,7 +29,9 @@ class OperationalParameters(BaseModel):
             )
         )
 
-        return round_from_0_to_100(raw_value)
+        raw_value -= random.random() * (0.005 * raw_value)
+
+        return constrain_from_0_to_100(raw_value)
 
     def compute_decay_speed(self) -> float:
         # TODO: calibrate these weights
@@ -57,7 +59,8 @@ class OperationalParameters(BaseModel):
             period=TIMESTEPS_PER_MOVE,
             current_timestep=current_timestep
         )
-        raw_value += random.random() * raw_value
+
+        raw_value -= random.random() * raw_value
 
         return map_value(
             raw_value,
