@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {gameOver, gameOverReason, gameSession} from "src/stores/stores";
-  import {ApiError, LeaderboardService} from "src/api/generated";
+  import { gameOver, gameOverReason, gameSession } from "src/stores/stores";
+  import { ApiError, LeaderboardService } from "src/api/generated";
 
   export let cleanupGameSession: () => void;
   let nickName = "";
@@ -11,23 +11,28 @@
       console.error("Game session id is not defined");
       return;
     }
-    submitDisabled = true;
 
     try {
-      await LeaderboardService.postScoreLeaderboardScorePost($gameSession?.id, {nickname: nickName});
+      submitDisabled = true;
+
+      await LeaderboardService.postScoreLeaderboardScorePost($gameSession?.id, {
+        nickname: nickName,
+      });
 
       if (import.meta.env.VITE_DEBUG) {
         console.log("Score submitted: ", nickName, $gameSession);
       }
       cleanupGameSession();
+      nickName = "";
       // TODO: show a toast on success, if easy
     } catch (error) {
       if (error instanceof ApiError && error.status === 422) {
-        submitDisabled = false;
         alert("Nickname cannot not be empty!");
       }
+    } finally {
+      submitDisabled = false;
     }
-  }
+  };
 </script>
 
 {#if $gameSession && $gameOver}
@@ -37,17 +42,16 @@
     <form on:submit|preventDefault={onSubmit}>
       <div class="score-field">
         <label for="score">Your score:</label>
-        <input value={$gameSession.final_score} disabled/>
+        <input value={$gameSession.final_score} disabled />
       </div>
       <div class="nickname-field">
         <label for="nickname">Nickname:</label>
-        <input bind:value={nickName} maxlength="10"/>
+        <input bind:value={nickName} maxlength="10" />
       </div>
       <button type="submit" disabled={submitDisabled}>Save Score</button>
     </form>
   </div>
 {/if}
-
 
 <style>
   .container {
