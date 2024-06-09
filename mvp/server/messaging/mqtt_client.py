@@ -88,7 +88,7 @@ class MqttClient(MqttClientBase):
             qos=MQTT_QOS
         )
 
-    def publish_heartbeat(self):
+    def publish_heartbeat(self) -> str | None:
         try:
             self.__client__.publish(
                 MQTT_HEARTBEAT_TOPIC,
@@ -98,3 +98,4 @@ class MqttClient(MqttClientBase):
         except Exception as e:
             print(f"{datetime.now()}: Mqtt Client failed to publish heartbeat: {e}")
             self.__init__()
+            return str(e)

@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi_utilities import repeat_every
 
 from mvp.server.core.constants import SESSION_CLEANUP_INTERVAL_SECONDS
@@ -85,6 +86,14 @@ async def create_session() -> GameSessionDTO:
 @router.get("/metrics", response_model=GameMetrics)
 async def get_metrics() -> GameMetrics:
     return game_metrics
+
+
+@router.post("/mqtt-heartbeat")
+async def send_mqtt_heartbeat() -> JSONResponse:
+    error = mqtt_client.publish_heartbeat()
+    if error is None:
+        return JSONResponse(status_code=200, content={"message": "Heartbeat sent"})
+    return JSONResponse(status_code=500, content={"message": error})
 
 
 @router.get("/mqtt-connection-details", response_model=MqttFrontendConnectionDetails)
