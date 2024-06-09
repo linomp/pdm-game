@@ -38,6 +38,11 @@ def cleanup_session(session_id: str):
         sessions.pop(session_id)
 
 
+@repeat_every(seconds=600, wait_first=False)
+async def publish_mqtt_client_heartbeat():
+    mqtt_client.publish_heartbeat()
+
+
 @repeat_every(seconds=SESSION_CLEANUP_INTERVAL_SECONDS, wait_first=False)
 async def cleanup_inactive_sessions():
     print(f"{datetime.now()}: Cleaning up sessions...")

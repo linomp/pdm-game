@@ -9,12 +9,14 @@ from mvp.server.core.game.GameParametersDTO import GameParametersDTO
 from mvp.server.persistence.database import init_db
 from mvp.server.routers.leaderboard import router as leaderboard_router
 from mvp.server.routers.player_actions import router as player_actions_router
-from mvp.server.routers.sessions import router as sessions_router, cleanup_inactive_sessions
+from mvp.server.routers.sessions import router as sessions_router, cleanup_inactive_sessions, \
+    publish_mqtt_client_heartbeat
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await cleanup_inactive_sessions()
+    await publish_mqtt_client_heartbeat()
     yield
 
 
