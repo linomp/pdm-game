@@ -17,7 +17,12 @@ MQTT_TOPIC_PREFIX = os.environ.get("MQTT_TOPIC_PREFIX", "pdmgame/sessions")
 MQTT_QOS = int(os.environ.get("MQTT_QOS", 0))
 
 DISABLE_MQTT = MQTT_USER is None
-USE_MQTT_AUTH = MQTT_HOST is not "localhost"
+USE_MQTT_AUTH = MQTT_HOST != "localhost"
+
+print(f"{datetime.now()}: MQTT_HOST = {MQTT_HOST}")
+print(f"{datetime.now()}: MQTT_USER = {MQTT_USER}")
+print(f"{datetime.now()}: DISABLE_MQTT = {DISABLE_MQTT}")
+print(f"{datetime.now()}: USE_MQTT_AUTH = {USE_MQTT_AUTH}")
 
 
 def get_mqtt_client() -> 'MqttClientBase':
