@@ -1,9 +1,9 @@
-import pandas as pd
 from matplotlib.pyplot import figure, show
 
 from mvp.server.core.machine.MachineState import MachineState
 
-SIMULATE_MAINTENANCE = False
+SIMULATE_MAINTENANCE = True
+SAVE_HISTORY = True
 
 
 class MachineWrapperForExperiment:
@@ -64,6 +64,8 @@ if __name__ == "__main__":
     ax4.set_title("Health Percentage")
     show()
 
-    # save as dataframe
-    df = pd.DataFrame(history)
-    pd.to_pickle(df, "./history.pkl")
+    if SAVE_HISTORY:
+        import pandas as pd
+
+        df = pd.DataFrame(history)
+        pd.to_pickle(df, "./history.pkl")

@@ -51,9 +51,3 @@ for i, (series, prediction) in enumerate(zip(all_series, all_predictions)):
 plt.legend()
 plt.title("Health percentage forecast every 24 steps")
 plt.show()
-
-# store as pickle the all_series and all_predictions
-all_series = pd.Series(all_series)
-all_predictions = pd.Series(all_predictions)
-all_series.to_pickle("./all_series.pkl")
-all_predictions.to_pickle("./all_predictions.pkl")

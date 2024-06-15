@@ -1,19 +1,18 @@
-import pandas as pd
+import joblib
+import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.svm import SVR
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score
-import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR
 
 history = pd.read_pickle("./history.pkl")
 
 x = np.array(history["time"])
 y = np.array(history["health_percentage"])
 
-ax4 = (plt.figure()).add_subplot(1,1,1)
+ax4 = (plt.figure()).add_subplot(1, 1, 1)
 ax4.scatter(x, y, s=0.5)
 ax4.set_title("Machine health vs time")
 plt.show()
@@ -52,31 +51,6 @@ print(f'Testing MSE: {test_mse}')
 print(f'Training R^2: {train_r2}')
 print(f'Testing R^2: {test_r2}')
 
-
-# Plotting the results
-plt.figure(figsize=(14, 6))
-
-# # Plot for training data
-# plt.subplot(1, 2, 1)
-# plt.scatter(y_train, y_train_pred, alpha=0.5)
-# plt.plot([min(y_train), max(y_train)], [min(y_train), max(y_train)], 'r--')
-# plt.title('Training Data: True vs Predicted')
-# plt.xlabel('True Values')
-# plt.ylabel('Predicted Values')
-# plt.grid(True)
-
-# # Plot for testing data
-# plt.subplot(1, 2, 2)
-# plt.scatter(y_test, y_test_pred, alpha=0.5)
-# plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], 'r--')
-# plt.title('Testing Data: True vs Predicted')
-# plt.xlabel('True Values')
-# plt.ylabel('Predicted Values')
-# plt.grid(True)
-
-# plt.tight_layout()
-# plt.show()
-
 # Plotting unscaled feature data vs health percentage and predictions
 plt.figure(figsize=(14, 8))
 
@@ -102,3 +76,5 @@ plt.grid(True)
 
 plt.tight_layout()
 plt.show()
+
+joblib.dump(svr_model, 'svr_model.pkl')
