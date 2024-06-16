@@ -1,5 +1,19 @@
 # RUL Experiments
 
+## 16.06.2024
+
+Still with sklearn, Support Vector Regression.
+
+### Model trained with maintenace, tested on run-to-failure dataset
+
+![immagine](./img/16_06_2024_trained_with_maintenance_test_run_to_failure.png)
+![immagine](./img/rul_with_maintenance_test_with_run_to_failure.png)
+
+### Model trained with run-to-failure, tested on dataset with maintenance
+
+![immagine](./img/16_06_2024_trained_run_to_failure_test_with_maintenance.png)
+![immagine](./img/rul_run_to_failure_test_with_maintenance.png)
+
 ## 15.06.2024
 
 With sklearn, Support Vector Regression model:

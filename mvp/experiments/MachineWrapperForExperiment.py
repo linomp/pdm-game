@@ -1,3 +1,4 @@
+import pandas as pd
 from matplotlib.pyplot import figure, show
 
 from mvp.server.core.machine.MachineState import MachineState
@@ -65,7 +66,13 @@ if __name__ == "__main__":
     show()
 
     if SAVE_HISTORY:
-        import pandas as pd
-
         df = pd.DataFrame(history)
-        pd.to_pickle(df, "./history.pkl")
+
+        # add a column to the df called "rul", where the value is simply the difference between the current row index to the last row index
+        df['rul'] = df.index.max() - df.index
+        df.drop('predicted_rul', axis=1, inplace=True)
+
+        if SIMULATE_MAINTENANCE:
+            df.to_pickle("./artifacts/history_with_maintenance.pkl")
+        else:
+            pd.to_pickle(df, "./artifacts/history_run_to_failure.pkl")
