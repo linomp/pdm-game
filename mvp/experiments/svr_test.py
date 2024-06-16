@@ -10,11 +10,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
 
+feature_columns = ['time', 'temperature', 'oil_age', 'mechanical_wear']
+target_column = 'rul'
+
 
 def train(history: pd.DataFrame) -> tuple[SVR, StandardScaler]:
-    feature_columns = ['time', 'temperature', 'oil_age', 'mechanical_wear']
-    target_column = 'rul'
-
     X = history[feature_columns]
     y = history[target_column]
 
@@ -79,8 +79,6 @@ def train(history: pd.DataFrame) -> tuple[SVR, StandardScaler]:
 
 def validate(history: pd.DataFrame, svr_model: SVR, scaler: StandardScaler):
     # Define feature columns and target column
-    feature_columns = ['time', 'temperature', 'oil_age', 'mechanical_wear']
-    target_column = 'rul'
 
     X = history[feature_columns]
     y = history[target_column]
@@ -125,7 +123,7 @@ if __name__ == '__main__':
 
     # Using the model to predict the RUL for a random example
     example = history.sample(1)
-    example_scaled = scaler.transform(example[['time', 'temperature', 'oil_age', 'mechanical_wear']])
+    example_scaled = scaler.transform(example[feature_columns])
     example_pred = math.floor(model.predict(example_scaled)[0])
 
     print("Example input:")
@@ -137,7 +135,7 @@ if __name__ == '__main__':
     example.loc[:, 'temperature'] = np.finfo(np.float64).max
     # example.loc[:, 'oil_age'] = np.finfo(np.float64).max
     # example.loc[:, 'mechanical_wear'] = np.finfo(np.float64).max
-    example_scaled = scaler.transform(example[['time', 'temperature', 'oil_age', 'mechanical_wear']])
+    example_scaled = scaler.transform(example[feature_columns])
     example_pred = math.floor(model.predict(example_scaled)[0])
 
     print("Example input (corrupted):")

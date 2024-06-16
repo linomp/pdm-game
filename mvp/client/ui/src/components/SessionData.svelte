@@ -55,7 +55,7 @@
       performedMaintenanceInThisTurn.set(true);
     } catch (error: any) {
       if (error.status === 400) {
-        alert("Not enough funds to perform maintenance!");
+        alert(error.body.message);
       } else {
         console.error("Error performing maintenance:", error);
       }

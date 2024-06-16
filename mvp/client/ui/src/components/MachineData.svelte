@@ -42,7 +42,7 @@
       updateGameSession(newGameSessionDto);
     } catch (error: any) {
       if (error.status === 400) {
-        alert("Not enough funds to buy the sensor!");
+        alert(error.body.message);
       } else {
         console.error("Error buying sensor:", error);
       }
@@ -63,7 +63,7 @@
       updateGameSession(newGameSessionDto);
     } catch (error: any) {
       if (error.status === 400) {
-        alert("Not enough funds to buy the prediction model!");
+        alert(error.body.message);
       } else {
         console.error("Error buying prediction model:", error);
       }

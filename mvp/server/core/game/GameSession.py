@@ -6,9 +6,10 @@ from typing import Callable
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from mvp.server.core.analysis.rul_prediction import default_rul_prediction_fn
+from mvp.server.core.analysis.rul_prediction import default_rul_prediction_fn, svr_rul_prediction_fn
 from mvp.server.core.constants import *
 from mvp.server.core.machine.MachineState import MachineState
+from mvp.server.core.machine.OperationalParameters import OperationalParameters
 
 load_dotenv()
 
@@ -26,8 +27,7 @@ class GameSession(BaseModel):
     ended_at: datetime = None
     machine_state_history: list[tuple[int, MachineState]] = []
     state_publish_function: Callable[["GameSession"], None]
-    # TODO: Update this function in-game, to simulate a change in the model (an "upgrade" for the player)
-    rul_predictor: Callable[[int], int | None] = default_rul_prediction_fn
+    rul_predictor: Callable[[int, OperationalParameters, list[str]], int | None] = default_rul_prediction_fn
 
     @staticmethod
     def new_game_session(_id: str, _state_publish_function: Callable[["GameSession"], None]) -> "GameSession":
@@ -98,11 +98,7 @@ class GameSession(BaseModel):
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
 
-        self.machine_state.update_prediction(
-            self.current_step,
-            self.rul_predictor,
-            collected_machine_states_during_turn
-        )
+        self.update_rul_prediction()
 
         self.machine_state_history.extend(
             zip(
@@ -119,6 +115,8 @@ class GameSession(BaseModel):
 
         self.available_funds -= MAINTENANCE_COST
         self.machine_state.do_maintenance()
+        self.update_rul_prediction()
+
         return True
 
     def purchase_sensor(self, sensor: str) -> bool:
@@ -127,6 +125,8 @@ class GameSession(BaseModel):
 
         self.available_funds -= SENSOR_COST
         self.available_sensors[sensor] = True
+        self.update_rul_prediction()
+
         return True
 
     def purchase_prediction(self, prediction: str) -> bool:
@@ -135,7 +135,20 @@ class GameSession(BaseModel):
 
         self.available_funds -= PREDICTION_MODEL_COST
         self.available_predictions[prediction] = True
+        self.rul_predictor = svr_rul_prediction_fn
+        self.update_rul_prediction()
+
         return True
+
+    def update_rul_prediction(self) -> None:
+        # TODO: clean up this stuff; it feels awkward having to iterate when there is only 1 type of prediction...
+        for prediction, purchased in self.available_predictions.items():
+            if prediction == 'predicted_rul' and purchased:
+                self.machine_state.update_prediction(
+                    self.current_step,
+                    self.rul_predictor,
+                    [s for s in self.available_sensors.keys() if self.available_sensors[s]]
+                )
 
     def get_score(self) -> int:
         raw_score = self.current_step * self.available_funds

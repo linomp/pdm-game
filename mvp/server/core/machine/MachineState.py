@@ -34,9 +34,11 @@ class MachineState(BaseModel):
         self.operational_parameters.update(timestep)
         self.health_percentage = self.compute_health_percentage(timestep)
 
-    def update_prediction(self, timestep: int, rul_predictor: Callable[[int], int | None] = None,
-                          latest_states=list['MachineState']):
-        self.predicted_rul = rul_predictor(timestep)
+    def update_prediction(self, timestep: int,
+                          rul_predictor: Callable[[int, OperationalParameters, list[str]], int | None] = None,
+                          available_sensors: list[str] = None
+                          ) -> None:
+        self.predicted_rul = rul_predictor(timestep, self.operational_parameters, available_sensors)
 
     def compute_health_percentage(self, current_timestep: int) -> float:
         return self.operational_parameters.compute_health_percentage(current_timestep, self.health_percentage)
