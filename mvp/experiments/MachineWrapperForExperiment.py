@@ -3,7 +3,7 @@ from matplotlib.pyplot import figure, show
 
 from mvp.server.core.machine.MachineState import MachineState
 
-SIMULATE_MAINTENANCE = True
+SIMULATE_MAINTENANCE = False
 SAVE_HISTORY = True
 
 
@@ -73,6 +73,6 @@ if __name__ == "__main__":
         df.drop('predicted_rul', axis=1, inplace=True)
 
         if SIMULATE_MAINTENANCE:
-            df.to_pickle("./artifacts/history_with_maintenance.pkl")
+            df.to_pickle("./artifacts/validation_set_with_maintenance.pkl")
         else:
-            pd.to_pickle(df, "./artifacts/history_run_to_failure.pkl")
+            pd.to_pickle(df, "./artifacts/validation_set_run_to_failure.pkl")

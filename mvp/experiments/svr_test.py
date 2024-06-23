@@ -14,9 +14,9 @@ feature_columns = ['time', 'temperature', 'oil_age', 'mechanical_wear']
 target_column = 'rul'
 
 
-def train(history: pd.DataFrame) -> tuple[SVR, StandardScaler]:
-    X = history[feature_columns]
-    y = history[target_column]
+def train(dataset: pd.DataFrame) -> tuple[SVR, StandardScaler]:
+    X = dataset[feature_columns]
+    y = dataset[target_column]
 
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -77,30 +77,27 @@ def train(history: pd.DataFrame) -> tuple[SVR, StandardScaler]:
     return svr_model, scaler
 
 
-def validate(history: pd.DataFrame, svr_model: SVR, scaler: StandardScaler):
+def validate(dataset: pd.DataFrame, svr_model: SVR, scaler: StandardScaler):
     # Define feature columns and target column
 
-    X = history[feature_columns]
-    y = history[target_column]
-
-    # Split the data into training and testing sets
-    _, X_test, _, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X = dataset[feature_columns]
+    y_true = dataset[target_column]
 
     # Standardize the features & make predictions
-    X_test_scaled = scaler.transform(X_test)
-    y_test_pred = svr_model.predict(X_test_scaled)
+    X_scaled = scaler.transform(X)
+    y_pred = svr_model.predict(X_scaled)
 
     # Evaluate the model
-    test_mse = mean_squared_error(y_test, y_test_pred)
-    test_r2 = r2_score(y_test, y_test_pred)
+    test_mse = mean_squared_error(y_true, y_pred)
+    test_r2 = r2_score(y_true, y_pred)
 
     print(f'Testing MSE: {test_mse}')
     print(f'Testing R^2: {test_r2}')
 
     # Plotting unscaled feature data vs health percentage and predictions
     plt.figure(figsize=(14, 8))
-    plt.scatter(X_test['time'], y_test, alpha=0.5, label='True Values')
-    plt.scatter(X_test['time'], y_test_pred, alpha=0.5, label='Predicted Values')
+    plt.scatter(X['time'], y_true, alpha=0.5, label='True Values')
+    plt.scatter(X['time'], y_pred, alpha=0.5, label='Predicted Values')
     plt.title(f'Testing Data: Time vs {target_column}')
     plt.xlabel('Time')
     plt.ylabel(f'{target_column}')
@@ -111,18 +108,21 @@ def validate(history: pd.DataFrame, svr_model: SVR, scaler: StandardScaler):
 
 
 if __name__ == '__main__':
-    # history = pd.read_pickle("./artifacts/history_run_to_failure.pkl")
-    history = pd.read_pickle("./artifacts/history_with_maintenance.pkl")
+    train_test_set = pd.read_pickle("./artifacts/train_test_run_to_failure.pkl")
+    validation_set = pd.read_pickle("./artifacts/validation_set_run_to_failure.pkl")
+
+    # train_test_set = pd.read_pickle("./artifacts/train_test_with_maintenance.pkl")
+    # validation_set = pd.read_pickle("./artifacts/validation_set_with_maintenance.pkl")
 
     if os.path.exists('./artifacts/svr_model.pkl') and os.path.exists('./artifacts/svr_scaler.pkl'):
         model = joblib.load('./artifacts/svr_model.pkl')
         scaler = joblib.load('./artifacts/svr_scaler.pkl')
-        validate(history, model, scaler)
+        validate(validation_set, model, scaler)
     else:
-        model, scaler = train(history)
+        model, scaler = train(train_test_set)
 
     # Using the model to predict the RUL for a random example
-    example = history.sample(1)
+    example = train_test_set.sample(1)
     example_scaled = scaler.transform(example[feature_columns])
     example_pred = math.floor(model.predict(example_scaled)[0])
 
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     print(f'Predicted RUL: {example_pred} (error = {abs(example_pred - example["rul"].values[0])} timesteps)\n')
 
     # Predict RUL with an incomplete input (e.g. when some sensor data is missing)
-    example = history.sample(1)
+    example = train_test_set.sample(1)
     example.loc[:, 'temperature'] = np.finfo(np.float64).max
     # example.loc[:, 'oil_age'] = np.finfo(np.float64).max
     # example.loc[:, 'mechanical_wear'] = np.finfo(np.float64).max

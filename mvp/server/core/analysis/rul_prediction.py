@@ -1,5 +1,5 @@
 import math
-from typing import Optional, List
+from typing import List
 
 import joblib
 import numpy as np
@@ -16,10 +16,10 @@ def default_rul_prediction_fn(current_timestep: int, parameters: OperationalPara
 
 
 def svr_rul_prediction_fn(current_timestep: int, parameters: OperationalParameters,
-                          available_sensors: Optional[List[str]] = None) -> Optional[int]:
+                          purchased_sensors: List[str] | None = None) -> int | None:
     try:
-        if available_sensors is None:
-            available_sensors = []
+        if purchased_sensors is None:
+            purchased_sensors = []
 
         x = np.array([
             current_timestep,
@@ -28,12 +28,11 @@ def svr_rul_prediction_fn(current_timestep: int, parameters: OperationalParamete
             np.finfo(np.float64).max
         ], dtype=np.float64)
 
-        # TODO: clean up this stuff;  no explicit parameter names
-        if 'temperature' in available_sensors:
+        if 'temperature' in purchased_sensors:
             x[1] = parameters.temperature
-        if 'oil_age' in available_sensors:
+        if 'oil_age' in purchased_sensors:
             x[2] = parameters.oil_age
-        if 'mechanical_wear' in available_sensors:
+        if 'mechanical_wear' in purchased_sensors:
             x[3] = parameters.mechanical_wear
 
         x_scaled = scaler.transform([x])
