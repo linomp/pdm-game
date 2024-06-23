@@ -27,5 +27,10 @@ def map_value(value: float, from_low: float, from_high: float, to_low: float, to
         return mapped_value
 
 
-def round_from_0_to_100(value: float) -> int:
-    return min(100, max(0, round(value)))
+def constrain_from_0_to_100(value: float) -> float:
+    if value < 0:
+        return 0.
+    elif value > 100:
+        return 100.
+
+    return value
