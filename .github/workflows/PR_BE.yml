@@ -25,5 +25,4 @@ jobs:
 
       - name: Run tests
         run: |
-          cd mvp/server
-          python -m pytest tests/
+          python -m pytest  mvp/server/tests

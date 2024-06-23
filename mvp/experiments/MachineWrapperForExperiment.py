@@ -73,6 +73,6 @@ if __name__ == "__main__":
         df.drop('predicted_rul', axis=1, inplace=True)
 
         if SIMULATE_MAINTENANCE:
-            df.to_pickle("./artifacts/validation_set_with_maintenance.pkl")
+            df.to_pickle("./artifacts/train_test_with_maintenance.pkl")
         else:
-            pd.to_pickle(df, "./artifacts/validation_set_run_to_failure.pkl")
+            pd.to_pickle(df, "./artifacts/train_test_run_to_failure.pkl")
