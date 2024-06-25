@@ -25,9 +25,9 @@ def svr_rul_prediction_fn(current_timestep: int, parameters: OperationalParamete
         # Create input array with placeholder values
         x = np.array([
             [current_timestep],
-            [np.finfo(np.float64).max],
-            [np.finfo(np.float64).max],
-            [np.finfo(np.float64).max]
+            [np.finfo(np.float32).max],
+            [np.finfo(np.float32).max],
+            [np.finfo(np.float32).max]
         ], dtype=np.float32)
 
         # Update input array with available sensor values

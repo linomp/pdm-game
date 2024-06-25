@@ -30,7 +30,7 @@
     if (
       $gameSession &&
       ($gameSession?.is_game_over ||
-        (newGameSessionDto.current_step < $gameSession?.current_step ?? 0))
+        (newGameSessionDto.current_step <= $gameSession?.current_step ?? 0))
     ) {
       return;
     }
@@ -114,23 +114,23 @@
   }
 
   .title-link {
-    text-decoration: none; /* Remove underline */
-    color: inherit; /* Use the parent element's color */
-    background: none; /* Remove background */
-    border: none; /* Remove border */
-    padding: 0; /* Remove padding */
-    margin: 0; /* Remove margin */
-    font-size: inherit; /* Use the parent element's font size */
-    font-weight: inherit; /* Use the parent element's font weight */
-    font-family: inherit; /* Use the parent element's font family */
-    line-height: inherit; /* Use the parent element's line height */
-    text-align: inherit; /* Use the parent element's text alignment */
-    display: inline; /* Ensure the display property is set to inline */
-    cursor: pointer; /* Use pointer cursor to indicate it's clickable */
+    text-decoration: none;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+    line-height: inherit;
+    text-align: inherit;
+    display: inline;
+    cursor: pointer;
   }
 
   .title-link:hover {
-    text-decoration: underline; /* Add underline on hover */
-    color: blue; /* Change text color to blue on hover */
+    text-decoration: underline;
+    color: blue;
   }
 </style>

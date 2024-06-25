@@ -113,6 +113,7 @@ class GameSession(BaseModel):
         if self.available_funds < MAINTENANCE_COST:
             return False
 
+        self.current_step += 1
         self.available_funds -= MAINTENANCE_COST
         self.machine_state.do_maintenance()
         self.update_rul_prediction()
@@ -123,6 +124,7 @@ class GameSession(BaseModel):
         if self.available_funds < SENSOR_COST:
             return False
 
+        self.current_step += 1
         self.available_funds -= SENSOR_COST
         self.available_sensors[sensor] = True
         self.update_rul_prediction()
@@ -133,6 +135,7 @@ class GameSession(BaseModel):
         if self.available_funds < PREDICTION_MODEL_COST:
             return False
 
+        self.current_step += 1
         self.available_funds -= PREDICTION_MODEL_COST
         self.available_predictions[prediction] = True
         self.rul_predictor = svr_rul_prediction_fn
