@@ -109,12 +109,20 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 2em;
   }
 
   .sensors-display {
     display: flex;
-    flex-direction: row;
     flex-wrap: wrap;
     gap: 0.5rem;
+    justify-content: center; /* Center contents horizontally */
+  }
+
+  .rul-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center; /* Center contents vertically */
   }
 </style>

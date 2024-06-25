@@ -1,17 +1,12 @@
 <script lang="ts">
-  import {
-    Chart,
-    LineSeries,
-    PriceLine,
-    TimeScale,
-  } from "svelte-lightweight-charts";
-  import type { TimeSeriesPoint } from "src/shared/types";
+  import {Chart, LineSeries, PriceLine, TimeScale,} from "svelte-lightweight-charts";
+  import type {TimeSeriesPoint} from "src/shared/types";
 
   export let data: TimeSeriesPoint[];
   export let warningLevel: number;
 </script>
 
-<Chart width={300} height={250}>
+<Chart width={280} height={250}>
   <LineSeries {data}>
     <PriceLine
       title="!"
@@ -22,5 +17,5 @@
       axisLabelVisible={true}
     />
   </LineSeries>
-  <TimeScale timeVisible={true} secondsVisible={true} />
+  <TimeScale timeVisible={true} secondsVisible={true}/>
 </Chart>

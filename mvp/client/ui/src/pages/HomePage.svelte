@@ -66,7 +66,11 @@
 </script>
 
 <div class="homepage">
-  <h2 class="title">The Predictive Maintenance Game</h2>
+  <h2 class="title">
+    <a class="title-link" href="https://github.com/linomp/pdm-game" target="_blank">
+      The Predictive Maintenance Game
+    </a>
+  </h2>
   <Lobby {updateGameSession}/>
   <div class="game-area">
     <div class="basic-controls">
@@ -107,5 +111,26 @@
     display: flex;
     flex-direction: column;
     max-width: fit-content;
+  }
+
+  .title-link {
+    text-decoration: none; /* Remove underline */
+    color: inherit; /* Use the parent element's color */
+    background: none; /* Remove background */
+    border: none; /* Remove border */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+    font-size: inherit; /* Use the parent element's font size */
+    font-weight: inherit; /* Use the parent element's font weight */
+    font-family: inherit; /* Use the parent element's font family */
+    line-height: inherit; /* Use the parent element's line height */
+    text-align: inherit; /* Use the parent element's text alignment */
+    display: inline; /* Ensure the display property is set to inline */
+    cursor: pointer; /* Use pointer cursor to indicate it's clickable */
+  }
+
+  .title-link:hover {
+    text-decoration: underline; /* Add underline on hover */
+    color: blue; /* Change text color to blue on hover */
   }
 </style>
