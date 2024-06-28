@@ -87,9 +87,5 @@
       padding: 4px;
       font-size: 12px;
     }
-
-    .title {
-      font-size: 18px;
-    }
   }
 </style>
