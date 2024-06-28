@@ -1,12 +1,32 @@
 <script lang="ts">
-  import {Chart, LineSeries, PriceLine, TimeScale,} from "svelte-lightweight-charts";
+  import {onMount} from "svelte";
+  import {Chart, LineSeries, PriceLine, TimeScale} from "svelte-lightweight-charts";
   import type {TimeSeriesPoint} from "src/shared/types";
 
   export let data: TimeSeriesPoint[];
   export let warningLevel: number;
+
+  let chartWidth: number;
+  let chartHeight: number;
+
+  const setChartDimensions = () => {
+    if (window.innerWidth <= 768) {  // Mobile breakpoint
+      chartWidth = 300;
+      chartHeight = 100;
+    } else {
+      chartWidth = 280;
+      chartHeight = 250;
+    }
+  };
+
+  onMount(() => {
+    setChartDimensions();
+    window.addEventListener("resize", setChartDimensions);
+    return () => window.removeEventListener("resize", setChartDimensions);
+  });
 </script>
 
-<Chart width={280} height={250}>
+<Chart width={chartWidth} height={chartHeight}>
   <LineSeries {data}>
     <PriceLine
       title="!"
