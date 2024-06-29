@@ -85,9 +85,11 @@
       {/each}
     </div>
     <div class="rul-display">
-      {"Remaining Useful Life"}: {$gameSession?.machine_state?.predicted_rul
-      ? `${$gameSession.machine_state?.predicted_rul} steps`
-      : "???"}
+      <span> {"Remaining Useful Life"}: </span>
+      <span>{$gameSession?.machine_state?.predicted_rul
+        ? `${$gameSession.machine_state?.predicted_rul} steps`
+        : "???"}
+      </span>
       <span
         hidden={isNotUndefinedNorNull(
           $gameSession?.machine_state?.predicted_rul,
@@ -115,14 +117,15 @@
   .sensors-display {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center; /* Center contents horizontally */
+    gap: 1rem;
+    justify-content: center;
   }
 
   .rul-display {
+    margin-top: 1em;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    align-items: center; /* Center contents vertically */
+    align-items: center;
   }
 </style>

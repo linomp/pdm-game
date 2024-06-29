@@ -48,7 +48,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 1em;
+    margin: 0;
   }
 
   .title {
@@ -56,6 +56,6 @@
   }
 
   .display {
-    margin-bottom: 2em;
+    margin-bottom: 1em;
   }
 </style>

@@ -10,8 +10,8 @@
   let chartHeight: number;
 
   const setChartDimensions = () => {
-    if (window.innerWidth <= 768) {  // Mobile breakpoint
-      chartWidth = 300;
+    if (window.innerWidth <= 950) {  // Mobile breakpoint
+      chartWidth = 320;
       chartHeight = 100;
     } else {
       chartWidth = 280;

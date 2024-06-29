@@ -103,7 +103,8 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 5em;
+    justify-content: center;
+    gap: 2em;
     flex-wrap: wrap;
   }
 
