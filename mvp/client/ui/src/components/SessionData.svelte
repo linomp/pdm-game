@@ -6,6 +6,7 @@
     gameOver,
     gameSession,
     globalSettings,
+    isOnNarrowScreen,
     maintenanceButtonDisabled,
     performedMaintenanceInThisTurn,
   } from "src/stores/stores";
@@ -67,7 +68,7 @@
   <div class="session-data">
     <p>Current Step: {$gameSession?.current_step}</p>
     <p>Available Funds: {formatNumber($gameSession?.available_funds)}</p>
-    <div class="session-controls">
+    <div class={`session-controls ${$isOnNarrowScreen ? "flex-row" : "flex-col"}`}>
       <button on:mousedown={advanceToNextDay} disabled={$dayInProgress}>
         Advance to next day
       </button>
@@ -85,7 +86,14 @@
 
   .session-controls {
     display: flex;
-    flex-direction: column;
     gap: 0.75rem;
+  }
+
+  .flex-row {
+    flex-direction: row;
+  }
+
+  .flex-col {
+    flex-direction: column;
   }
 </style>
