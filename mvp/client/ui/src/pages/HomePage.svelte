@@ -10,11 +10,14 @@
     gameOverReason,
     gameSession,
     globalSettings,
+    isOnNarrowScreen,
     mqttClient,
     mqttClientUnsubscribe,
   } from "src/stores/stores";
   import type {GameSessionWithTimeSeries} from "src/shared/types";
   import type {GameSessionDTO} from "src/api/generated";
+  import {MOBILE_BREAKPOINT} from "src/shared/constants";
+  import {onMount} from "svelte";
 
   const cleanupGameSession = () => {
     gameSession.set(null);
@@ -63,6 +66,16 @@
       },
     );
   };
+
+  const updateNarrowScreenFlag = () => {
+    isOnNarrowScreen.set(window.innerWidth <= MOBILE_BREAKPOINT);
+  };
+
+  onMount(() => {
+    updateNarrowScreenFlag();
+    window.addEventListener("resize", updateNarrowScreenFlag);
+    return () => window.removeEventListener("resize", updateNarrowScreenFlag);
+  });
 </script>
 
 <div class="homepage">
@@ -95,7 +108,7 @@
   }
 
   .title {
-    margin-bottom: 1em;
+    margin-bottom: 2em;
     text-align: center;
   }
 
@@ -103,7 +116,8 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 5em;
+    justify-content: center;
+    gap: 2em;
     flex-wrap: wrap;
   }
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import {onMount} from "svelte";
-  import type {HighScoreDTO} from "../api/generated/"; // TODO: maybe wrong
+  import type {HighScoreDTO} from "../api/generated/";
   import {LeaderboardService} from "../api/generated/";
   import {formatDatetime, formatNumber} from "src/shared/utils";
 

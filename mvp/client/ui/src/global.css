@@ -4,6 +4,9 @@
 
 html {
   margin: 1em;
+
+  /*TODO: this works with everything except the chart, maybe need to adjust that separately*/
+  /*background-color: #FCFCFC;*/
 }
 
 button:disabled:hover {

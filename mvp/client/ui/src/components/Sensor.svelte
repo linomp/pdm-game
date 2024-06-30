@@ -1,7 +1,7 @@
 <script lang="ts">
   import {isUndefinedOrNull} from "src/shared/utils";
   import TimeSeriesChart from "./TimeSeriesChart.svelte";
-  import {gameSession, globalSettings} from "src/stores/stores";
+  import {gameSession, globalSettings, isOnNarrowScreen} from "src/stores/stores";
 
   export let parameter: string;
   export let value: number | null;
@@ -16,11 +16,11 @@
       .join(" ");
   };
 
-  // TODO: instead of rerendering the whole chart, update the data using a ref like in this example:
+  // TODO: instead of re-rendering the whole chart, update the data using a ref like in this example:
   // https://svelte.dev/repl/c06c05db84a0466199ddd40c6622903c?version=4.2.12
 </script>
 
-<div class="sensor">
+<div class={`sensor ${$isOnNarrowScreen ? "margin-mobile" : "margin-desktop"}`}>
   <div class="title">
     {formatParameterName(parameter)}
   </div>
@@ -48,6 +48,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+
+  .margin-mobile {
+    margin: 0;
+  }
+
+  .margin-desktop {
     margin: 1em;
   }
 
@@ -56,6 +63,6 @@
   }
 
   .display {
-    margin-bottom: 2em;
+    margin-bottom: 1em;
   }
 </style>
