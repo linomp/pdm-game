@@ -128,7 +128,5 @@
     gap: 0.5rem;
     align-items: center;
   }
-
-  /*TODO: sensors & buttons look too compact in web. increase margins conditionally or something...*/
 </style>
 
