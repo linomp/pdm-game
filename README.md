@@ -3,18 +3,18 @@
 ![immagine](https://github.com/linomp/pdm-game/assets/40581019/fe7fbee0-bf31-487b-a727-f34472d94840)
 
 
-- **Your mission**: maximize profit & machine lifespan.
-- **Your tools**: data, intuition & nerve!
-- **Your opponents**: machine degradation & limited funds!
+- **_Your mission_**: maximize profit & machine lifespan.
+- **_Your tools_**: data, intuition & nerve!
+- **_Your opponents_**: machine degradation & limited funds!
 
----
 
-**_Will you accept the challenge?_**
+### **_Will you accept the challenge?_**
 
 https://app.pdmgame.xmp.systems/
 
-<!--
-## Roadmap
+---
+
+### Dev roadmap
 - [X] Basic UI
 - [X] Basic machine degradation model
 - [X] Sensor & prediction model purchase
@@ -22,4 +22,4 @@ https://app.pdmgame.xmp.systems/
 - [X] Leaderboard
 - [X] Basic RUL prediction model
 - [ ] In-game events (e.g. production peak, score multipliers)
--->
+
