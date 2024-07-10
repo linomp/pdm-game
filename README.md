@@ -5,7 +5,7 @@
 
 - **Your mission**: maximize profit & machine lifespan.
 - **Your tools**: data, intuition & nerve!
-- **Your foes**: machine degradation & limited funds!
+- **Your opponents**: machine degradation & limited funds!
 
 ---
 
@@ -19,7 +19,7 @@ https://app.pdmgame.xmp.systems/
 - [X] Basic machine degradation model
 - [X] Sensor & prediction model purchase
 - [X] Live machine parameters visualization
-- [ ] Leaderboard
-- [ ] Basic RUL prediction model
+- [X] Leaderboard
+- [X] Basic RUL prediction model
 - [ ] In-game events (e.g. production peak, score multipliers)
 -->
