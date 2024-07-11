@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 from mvp.server.core.analysis.rul_prediction import default_rul_prediction_fn, svr_rul_prediction_fn
 from mvp.server.core.constants import *
+from mvp.server.core.game.UserMessage import UserMessage
 from mvp.server.core.machine.MachineState import MachineState
 from mvp.server.core.machine.OperationalParameters import OperationalParameters
 
@@ -28,6 +29,7 @@ class GameSession(BaseModel):
     machine_state_history: list[tuple[int, MachineState]] = []
     state_publish_function: Callable[["GameSession"], None]
     rul_predictor: Callable[[int, OperationalParameters, list[str]], int | None] = default_rul_prediction_fn
+    user_messages: dict[str, UserMessage] = {}
 
     @staticmethod
     def new_game_session(_id: str, _state_publish_function: Callable[["GameSession"], None]) -> "GameSession":
@@ -144,9 +146,18 @@ class GameSession(BaseModel):
         return True
 
     def update_rul_prediction(self) -> None:
+        self.user_messages.clear()
+
         # TODO: clean up this stuff; it feels awkward having to iterate when there is only 1 type of prediction...
         for prediction, purchased in self.available_predictions.items():
             if prediction == 'predicted_rul' and purchased:
+
+                if not all(self.available_sensors.values()):
+                    self.user_messages["rul_accuracy_warning"] = UserMessage(
+                        type="WARNING",
+                        content="Some sensor(s) are missing. RUL prediction may not be accurate!"
+                    )
+
                 self.machine_state.update_prediction(
                     self.current_step,
                     self.rul_predictor,
