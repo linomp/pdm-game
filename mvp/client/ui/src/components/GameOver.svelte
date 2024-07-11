@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { gameOver, gameOverReason, gameSession } from "src/stores/stores";
-  import { ApiError, LeaderboardService } from "src/api/generated";
+  import {gameOver, gameOverReason, gameSession} from "src/stores/stores";
+  import {ApiError, LeaderboardService} from "src/api/generated";
 
   export let cleanupGameSession: () => void;
   let nickName = "";
@@ -42,11 +42,11 @@
     <form on:submit|preventDefault={onSubmit}>
       <div class="score-field">
         <label for="score">Your score:</label>
-        <input value={$gameSession.final_score} disabled />
+        <input value={$gameSession.final_score} disabled/>
       </div>
       <div class="nickname-field">
         <label for="nickname">Nickname:</label>
-        <input bind:value={nickName} maxlength="10" />
+        <input bind:value={nickName} maxlength="10"/>
       </div>
       <button type="submit" disabled={submitDisabled}>Save Score</button>
     </form>
@@ -72,6 +72,7 @@
     border: none;
     font-weight: bold;
     color: black;
+    background: white;
   }
 
   .nickname-field > input {
