@@ -103,6 +103,13 @@
         </button>
       </span>
     </div>
+    <div class="user-messages">
+      {#each Object.entries($gameSession?.user_messages ?? {}) as [key, message]}
+        <div class="message-card {message.type}">
+          <span>{message.content}</span>
+        </div>
+      {/each}
+    </div>
   </div>
 {/if}
 
@@ -112,6 +119,7 @@
     flex-direction: column;
     align-items: center;
     margin-bottom: 2em;
+    position: relative;
   }
 
   .sensors-display {
@@ -128,5 +136,25 @@
     gap: 0.5rem;
     align-items: center;
   }
-</style>
 
+  .user-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2em;
+    align-items: center; /* Center horizontally */
+  }
+
+  .message-card {
+    border-radius: 8px;
+    padding: 1em;
+    width: 80%;
+    text-align: center;
+    border: 1px solid #ccc;
+  }
+
+  .message-card.WARNING {
+    background-color: #ffffe0; /* Light yellow */
+    color: #000000; /* Black */
+  }
+</style>

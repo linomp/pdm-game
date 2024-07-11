@@ -4,6 +4,7 @@
 /* eslint-disable */
 
 import type { MachineStateDTO } from './MachineStateDTO';
+import type { UserMessage } from './UserMessage';
 
 export type GameSessionDTO = {
     id: string;
@@ -13,4 +14,5 @@ export type GameSessionDTO = {
     is_game_over: boolean;
     game_over_reason?: (string | null);
     final_score?: (number | null);
+    user_messages?: Record<string, UserMessage>;
 };

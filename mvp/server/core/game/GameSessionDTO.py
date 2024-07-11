@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from mvp.server.core.constants import *
 from mvp.server.core.game.GameSession import GameSession
+from mvp.server.core.game.UserMessage import UserMessage
 from mvp.server.core.machine.MachineStateDTO import MachineStateDTO
 
 
@@ -15,6 +16,7 @@ class GameSessionDTO(BaseModel):
     is_game_over: bool
     game_over_reason: str | None = None
     final_score: float | None = None
+    user_messages: dict[str, UserMessage] = {}
 
     @staticmethod
     def from_session(session: GameSession) -> "GameSessionDTO":
@@ -24,7 +26,8 @@ class GameSessionDTO(BaseModel):
             available_funds=session.available_funds,
             is_game_over=session.is_game_over,
             machine_state=MachineStateDTO.from_machine_state(session.machine_state),
-            final_score=None
+            final_score=None,
+            user_messages=session.user_messages
         )
 
         if session.is_game_over:
@@ -52,4 +55,5 @@ class GameSessionDTO(BaseModel):
             machine_state=MachineStateDTO.from_dict(json.get("machine_state", {})),
             available_funds=json.get("available_funds", 0.),
             is_game_over=json.get("is_game_over", False),
+            user_messages=json.get("user_messages", {})
         )

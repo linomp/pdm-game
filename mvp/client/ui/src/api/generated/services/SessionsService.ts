@@ -65,6 +65,21 @@ sessionId: string,
     }
 
     /**
+     * Send Mqtt Heartbeat
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static sendMqttHeartbeatSessionsMqttHeartbeatPost(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/sessions/mqtt-heartbeat',
+            errors: {
+                404: `Not found`,
+            },
+        });
+    }
+
+    /**
      * Get Mqtt Connection Details
      * @param sessionId 
      * @returns MqttFrontendConnectionDetails Successful Response
