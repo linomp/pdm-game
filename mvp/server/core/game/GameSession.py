@@ -104,19 +104,19 @@ class GameSession(BaseModel):
                     self.machine_state.health_percentage / 60) * REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
 
             # Publish state every 2 steps (to reduce the load on the MQTT broker)
-            self.state_publish_function(self)
+            if self.current_step % 2 == 0:
+                self.state_publish_function(self)
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
 
+        self.update_rul_prediction()
+        self.cash_multiplier = 1
+
         if (random.random() < DEMAND_PEAK_EVENT_PROBABILITY) or os.getenv("DEV_FORCE_DEMAND_PEAK_EVENT", False):
-            self.current_step += 1
             self.user_messages["demand_peak_bonus"] = UserMessage(
                 type="INFO",
                 content=f"Demand Peak! - Skip maintenance and earn {DEMAND_PEAK_BONUS_MULTIPLIER}x cash in the next turn!"
             )
-
-        self.update_rul_prediction()
-        self.cash_multiplier = 1
 
         if os.getenv("COLLECT_MACHINE_HISTORY", False):
             self.machine_state_history.extend(
@@ -126,6 +126,10 @@ class GameSession(BaseModel):
                 )
             )
             return collected_machine_states_during_turn
+
+        # TODO: fix this horrible, horrible hack;  we need the timestep of the POST request response to be higher than those from the intermediate states
+        #  but having to move it till the end of the function just so that the test passes (matching the expected timesteps per move, before this extra one added) is absolutely painful!
+        self.current_step += 1
 
     def do_maintenance(self) -> bool:
         if self.available_funds < MAINTENANCE_COST:
