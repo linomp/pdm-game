@@ -142,15 +142,18 @@
     flex-direction: column;
     gap: 1rem;
     margin-top: 2em;
-    align-items: center; /* Center horizontally */
+    align-items: center;
+    width: 80%;
   }
 
   .message-card {
     border-radius: 8px;
     padding: 1em;
-    width: 80%;
+    width: 100%;
     text-align: center;
     border: 1px solid #ccc;
+    transition: opacity 0.3s;
+    font-size: smaller;
   }
 
   .message-card.WARNING {

@@ -100,7 +100,7 @@
   }
 
   .highlight-funds {
-    color: #00da86;
+    color: #00b971;
     font-weight: bold;
   }
 </style>

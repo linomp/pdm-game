@@ -82,7 +82,7 @@ class GameSession(BaseModel):
 
         # if there is a demand peak bonus up to this point, multiply the player cash for this turn!
         if "demand_peak_bonus" in self.user_messages:
-            self.cash_multiplier = 2
+            self.cash_multiplier = DEMAND_PEAK_BONUS_MULTIPLIER
 
         self.user_messages.pop("demand_peak_bonus", None)
 
@@ -101,22 +101,21 @@ class GameSession(BaseModel):
             # Player earns money for the production at every timestep,
             # proportional to the health of the machine (bad health = less efficient production)
             self.available_funds += self.cash_multiplier * (
-                    self.machine_state.health_percentage / 50) * REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
+                    self.machine_state.health_percentage / 60) * REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
 
             # Publish state every 2 steps (to reduce the load on the MQTT broker)
-            if self.current_step % 2 == 0:
-                self.state_publish_function(self)
+            self.state_publish_function(self)
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
 
         if (random.random() < DEMAND_PEAK_EVENT_PROBABILITY) or os.getenv("DEV_FORCE_DEMAND_PEAK_EVENT", False):
+            self.current_step += 1
             self.user_messages["demand_peak_bonus"] = UserMessage(
                 type="INFO",
-                content="Demand Peak! - Skip maintenance and earn 2x cash in the next turn!"
+                content=f"Demand Peak! - Skip maintenance and earn {DEMAND_PEAK_BONUS_MULTIPLIER}x cash in the next turn!"
             )
 
         self.update_rul_prediction()
-        self.current_step += 1
         self.cash_multiplier = 1
 
         if os.getenv("COLLECT_MACHINE_HISTORY", False):
