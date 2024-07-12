@@ -6,7 +6,6 @@
 export type UserMessage = {
     type: UserMessage.type;
     content: string;
-    seen?: boolean;
 };
 
 export namespace UserMessage {
