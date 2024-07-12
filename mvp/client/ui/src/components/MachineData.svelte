@@ -154,7 +154,12 @@
   }
 
   .message-card.WARNING {
-    background-color: #ffffe0; /* Light yellow */
-    color: #000000; /* Black */
+    background-color: #ffffe0;
+    color: #000000;
+  }
+
+  .message-card.INFO {
+    background-color: rgba(129, 248, 94, 0.86);
+    color: #000000;
   }
 </style>

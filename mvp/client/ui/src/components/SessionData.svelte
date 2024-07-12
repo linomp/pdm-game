@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {type GameSessionDTO, PlayerActionsService, SessionsService,} from "src/api/generated";
-  import {formatNumber, isNotUndefinedNorNull, isUndefinedOrNull,} from "src/shared/utils";
+  import {type GameSessionDTO, PlayerActionsService, SessionsService} from "src/api/generated";
+  import {formatNumber, isNotUndefinedNorNull, isUndefinedOrNull} from "src/shared/utils";
   import {
     dayInProgress,
     gameOver,
@@ -67,7 +67,9 @@
 {#if isNotUndefinedNorNull($gameSession) && !$gameOver}
   <div class="session-data">
     <p>Current Step: {$gameSession?.current_step}</p>
-    <p>Available Funds: {formatNumber($gameSession?.available_funds)}</p>
+    <p class:highlight-funds={($gameSession?.cash_multiplier??0) > 1}>
+      Available Funds: {formatNumber($gameSession?.available_funds)}
+    </p>
     <div class={`session-controls ${$isOnNarrowScreen ? "flex-row" : "flex-col"}`}>
       <button on:mousedown={advanceToNextDay} disabled={$dayInProgress}>
         Advance to next day
@@ -95,5 +97,10 @@
 
   .flex-col {
     flex-direction: column;
+  }
+
+  .highlight-funds {
+    color: #00da86;
+    font-weight: bold;
   }
 </style>

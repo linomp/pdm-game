@@ -17,6 +17,7 @@ class GameSessionDTO(BaseModel):
     game_over_reason: str | None = None
     final_score: float | None = None
     user_messages: dict[str, UserMessage] = {}
+    cash_multiplier: int = 1
 
     @staticmethod
     def from_session(session: GameSession) -> "GameSessionDTO":
@@ -27,7 +28,8 @@ class GameSessionDTO(BaseModel):
             is_game_over=session.is_game_over,
             machine_state=MachineStateDTO.from_machine_state(session.machine_state),
             final_score=None,
-            user_messages=session.user_messages
+            user_messages=session.user_messages,
+            cash_multiplier=session.cash_multiplier
         )
 
         if session.is_game_over:
@@ -55,5 +57,6 @@ class GameSessionDTO(BaseModel):
             machine_state=MachineStateDTO.from_dict(json.get("machine_state", {})),
             available_funds=json.get("available_funds", 0.),
             is_game_over=json.get("is_game_over", False),
-            user_messages=json.get("user_messages", {})
+            user_messages=json.get("user_messages", {}),
+            cash_multiplier=json.get("current_step", 1),
         )

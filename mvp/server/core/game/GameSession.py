@@ -1,5 +1,6 @@
 import asyncio
 import os
+import random
 from datetime import datetime
 from typing import Callable
 
@@ -9,8 +10,7 @@ from pydantic import BaseModel
 from mvp.server.core.analysis.rul_prediction import default_rul_prediction_fn, svr_rul_prediction_fn
 from mvp.server.core.constants import *
 from mvp.server.core.game.UserMessage import UserMessage
-from mvp.server.core.machine.MachineState import MachineState
-from mvp.server.core.machine.OperationalParameters import OperationalParameters
+from mvp.server.core.machine.MachineState import MachineState, OperationalParameters
 
 load_dotenv()
 
@@ -30,6 +30,7 @@ class GameSession(BaseModel):
     state_publish_function: Callable[["GameSession"], None]
     rul_predictor: Callable[[int, OperationalParameters, list[str]], int | None] = default_rul_prediction_fn
     user_messages: dict[str, UserMessage] = {}
+    cash_multiplier: int = 1
 
     @staticmethod
     def new_game_session(_id: str, _state_publish_function: Callable[["GameSession"], None]) -> "GameSession":
@@ -74,14 +75,21 @@ class GameSession(BaseModel):
                 f"{datetime.now()}: GameSession '{self.id}' - machine failed at step {self.current_step} - {self.machine_state}"
             )
 
-    async def advance_one_turn(self) -> list[MachineState]:
+    async def advance_one_turn(self) -> list[MachineState] | None:
         collected_machine_states_during_turn = []
 
         self.last_updated = datetime.now()
 
+        # if there is a demand peak bonus up to this point, multiply the player cash for this turn!
+        if "demand_peak_bonus" in self.user_messages:
+            self.cash_multiplier = 2
+
+        self.user_messages.pop("demand_peak_bonus", None)
+
         for _ in range(TIMESTEPS_PER_MOVE):
-            # collect stats
-            collected_machine_states_during_turn.append(self.machine_state)
+
+            if os.getenv("COLLECT_MACHINE_HISTORY", False):
+                collected_machine_states_during_turn.append(self.machine_state)
 
             self.update_game_over_flag()
             if self.is_game_over:
@@ -92,7 +100,8 @@ class GameSession(BaseModel):
 
             # Player earns money for the production at every timestep,
             # proportional to the health of the machine (bad health = less efficient production)
-            self.available_funds += (self.machine_state.health_percentage / 50) * REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
+            self.available_funds += self.cash_multiplier * (
+                    self.machine_state.health_percentage / 50) * REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
 
             # Publish state every 2 steps (to reduce the load on the MQTT broker)
             if self.current_step % 2 == 0:
@@ -100,20 +109,31 @@ class GameSession(BaseModel):
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
 
-        self.update_rul_prediction()
-
-        self.machine_state_history.extend(
-            zip(
-                range(self.current_step - TIMESTEPS_PER_MOVE, self.current_step),
-                collected_machine_states_during_turn
+        if (random.random() < DEMAND_PEAK_EVENT_PROBABILITY) or os.getenv("DEV_FORCE_DEMAND_PEAK_EVENT", False):
+            self.user_messages["demand_peak_bonus"] = UserMessage(
+                type="INFO",
+                content="Demand Peak! - Skip maintenance and earn 2x cash in the next turn!"
             )
-        )
 
-        return collected_machine_states_during_turn
+        self.update_rul_prediction()
+        self.current_step += 1
+        self.cash_multiplier = 1
+
+        if os.getenv("COLLECT_MACHINE_HISTORY", False):
+            self.machine_state_history.extend(
+                zip(
+                    range(self.current_step - TIMESTEPS_PER_MOVE, self.current_step),
+                    collected_machine_states_during_turn
+                )
+            )
+            return collected_machine_states_during_turn
 
     def do_maintenance(self) -> bool:
         if self.available_funds < MAINTENANCE_COST:
             return False
+
+        # if there was a demand peak bonus and player does maintenance, it gets cleared
+        self.user_messages.pop("demand_peak_bonus", None)
 
         self.current_step += 1
         self.available_funds -= MAINTENANCE_COST
@@ -146,7 +166,7 @@ class GameSession(BaseModel):
         return True
 
     def update_rul_prediction(self) -> None:
-        self.user_messages.clear()
+        self.user_messages.pop("rul_accuracy_warning", None)
 
         # TODO: clean up this stuff; it feels awkward having to iterate when there is only 1 type of prediction...
         for prediction, purchased in self.available_predictions.items():

@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 import onnxruntime as rt
 
-from mvp.server.core.machine.OperationalParameters import OperationalParameters
+from mvp.server.core.machine.MachineState import OperationalParameters
 
 # Load the SVR pipeline from ONNX file
 onnx_path = "mvp/server/core/analysis/artifacts/svr_pipeline_23_06_24.onnx"

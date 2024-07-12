@@ -15,4 +15,5 @@ export type GameSessionDTO = {
     game_over_reason?: (string | null);
     final_score?: (number | null);
     user_messages?: Record<string, UserMessage>;
+    cash_multiplier?: number;
 };
