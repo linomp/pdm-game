@@ -77,7 +77,7 @@
     </p>
     <div class={`session-controls ${$isOnNarrowScreen ? "flex-row" : "flex-col"}`}>
       <button on:mousedown={advanceToNextDay} disabled={$dayInProgress}>
-        Advance to next day
+        Advance to next day (25 steps)
       </button>
       <button on:mousedown={doMaintenance} disabled={$maintenanceButtonDisabled}>
         Perform Maintenance (${maintenanceCost})
