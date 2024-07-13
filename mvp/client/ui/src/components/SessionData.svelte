@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {type GameSessionDTO, PlayerActionsService, SessionsService,} from "src/api/generated";
-  import {formatNumber, isNotUndefinedNorNull, isUndefinedOrNull,} from "src/shared/utils";
+  import {type GameSessionDTO, PlayerActionsService, SessionsService} from "src/api/generated";
+  import {formatNumber, isNotUndefinedNorNull, isUndefinedOrNull} from "src/shared/utils";
   import {
     dayInProgress,
     gameOver,
@@ -67,7 +67,14 @@
 {#if isNotUndefinedNorNull($gameSession) && !$gameOver}
   <div class="session-data">
     <p>Current Step: {$gameSession?.current_step}</p>
-    <p>Available Funds: {formatNumber($gameSession?.available_funds)}</p>
+    <p>
+      Available Funds:
+      <span
+        class:rainbow-funds={($gameSession?.cash_multiplier??0) > 1}>{formatNumber($gameSession?.available_funds)}</span>
+      <span
+        hidden={($gameSession?.cash_multiplier??0) <= 1}>🔥 (3x !!)
+      </span>
+    </p>
     <div class={`session-controls ${$isOnNarrowScreen ? "flex-row" : "flex-col"}`}>
       <button on:mousedown={advanceToNextDay} disabled={$dayInProgress}>
         Advance to next day
@@ -81,7 +88,8 @@
 
 <style>
   .session-data {
-    margin: 1em;
+    margin-top: 1em;
+    margin-right: 1em;
   }
 
   .session-controls {
@@ -95,5 +103,23 @@
 
   .flex-col {
     flex-direction: column;
+  }
+
+  .rainbow-funds {
+    background-image: linear-gradient(to right, red, orange, #f3bd5a, green, cadetblue, dodgerblue);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: bold;
+    animation: rainbow-animation 5s linear infinite;
+  }
+
+  @keyframes rainbow-animation {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 100% 50%;
+    }
   }
 </style>

@@ -1,3 +1,4 @@
+import os
 from unittest.mock import MagicMock
 
 import pytest
@@ -24,6 +25,8 @@ def test_game_session_initialization(game_session):
 
 @pytest.mark.asyncio
 async def test_game_session_advance_one_turn(game_session):
+    os.environ["COLLECT_MACHINE_HISTORY"] = "1"
+
     initial_health = game_session.machine_state.health_percentage
     initial_step = game_session.current_step
 

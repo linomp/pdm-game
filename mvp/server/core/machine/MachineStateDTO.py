@@ -2,8 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from mvp.server.core.machine import MachineState
-from mvp.server.core.machine.OperationalParameters import OperationalParameters
+from mvp.server.core.machine.MachineState import MachineState, OperationalParameters
 
 
 class MachineStateDTO(BaseModel):

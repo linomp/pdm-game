@@ -115,7 +115,6 @@
   .game-area {
     display: flex;
     flex-direction: row;
-    align-items: center;
     justify-content: center;
     gap: 2em;
     flex-wrap: wrap;

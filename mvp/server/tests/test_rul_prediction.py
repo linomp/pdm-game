@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 
 from mvp.server.core.analysis.rul_prediction import svr_rul_prediction_fn
-from mvp.server.core.machine.OperationalParameters import OperationalParameters
+from mvp.server.core.machine.MachineState import OperationalParameters
 
 
 class TestSVRRULPredictionFn(unittest.TestCase):
