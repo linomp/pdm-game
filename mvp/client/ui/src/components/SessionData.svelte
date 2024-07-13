@@ -67,8 +67,13 @@
 {#if isNotUndefinedNorNull($gameSession) && !$gameOver}
   <div class="session-data">
     <p>Current Step: {$gameSession?.current_step}</p>
-    <p class:highlight-funds={($gameSession?.cash_multiplier??0) > 1}>
-      Available Funds: {formatNumber($gameSession?.available_funds)}
+    <p>
+      Available Funds:
+      <span
+        class:rainbow-funds={($gameSession?.cash_multiplier??0) > 1}>{formatNumber($gameSession?.available_funds)}</span>
+      <span
+        hidden={($gameSession?.cash_multiplier??0) <= 1}>🔥 (3x !!)
+      </span>
     </p>
     <div class={`session-controls ${$isOnNarrowScreen ? "flex-row" : "flex-col"}`}>
       <button on:mousedown={advanceToNextDay} disabled={$dayInProgress}>
@@ -83,7 +88,8 @@
 
 <style>
   .session-data {
-    margin: 1em;
+    margin-top: 1em;
+    margin-right: 1em;
   }
 
   .session-controls {
@@ -99,8 +105,21 @@
     flex-direction: column;
   }
 
-  .highlight-funds {
-    color: #00b971;
+  .rainbow-funds {
+    background-image: linear-gradient(to right, red, orange, #f3bd5a, green, cadetblue, dodgerblue);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     font-weight: bold;
+    animation: rainbow-animation 5s linear infinite;
+  }
+
+  @keyframes rainbow-animation {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 100% 50%;
+    }
   }
 </style>

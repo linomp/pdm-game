@@ -6,10 +6,12 @@
     gameOver,
     gameSession,
     globalSettings,
+    isOnNarrowScreen,
     predictionPurchaseButtonDisabled,
     sensorPurchaseButtonDisabled,
   } from "src/stores/stores";
   import Sensor from "src/components/Sensor.svelte";
+  import UserMessages from "src/components/UserMessages.svelte";
 
   export let updateGameSession: (newGameSessionDto: GameSessionDTO) => void;
 
@@ -73,6 +75,11 @@
 
 {#if isNotUndefinedNorNull($gameSession)}
   <div class="machine-data">
+    {#if $isOnNarrowScreen}
+      {#key 'narrow'}
+        <UserMessages messages={$gameSession?.user_messages ?? {}}/>
+      {/key}
+    {/if}
     <div class="sensors-display">
       {#each Object.entries($gameSession?.machine_state?.operational_parameters ?? {}) as [parameter, value]}
         <Sensor
@@ -85,7 +92,7 @@
       {/each}
     </div>
     <div class="rul-display">
-      <span> {"Remaining Useful Life"}: </span>
+      <span> {"Remaining Useful Life 🔮"}: </span>
       <span>{$gameSession?.machine_state?.predicted_rul
         ? `${$gameSession.machine_state?.predicted_rul} steps`
         : "???"}
@@ -103,23 +110,22 @@
         </button>
       </span>
     </div>
-    <div class="user-messages">
-      {#each Object.entries($gameSession?.user_messages ?? {}) as [key, message]}
-        <div class="message-card {message.type}">
-          <span>{message.content}</span>
-        </div>
-      {/each}
-    </div>
+    {#if !$isOnNarrowScreen}
+      {#key 'wide'}
+        <UserMessages messages={$gameSession?.user_messages ?? {}}/>
+      {/key}
+    {/if}
   </div>
 {/if}
 
 <style>
   .machine-data {
     display: flex;
-    flex-direction: column;
-    align-items: center;
     margin-bottom: 2em;
     position: relative;
+    gap: 2em;
+    align-items: center;
+    flex-direction: column;
   }
 
   .sensors-display {
@@ -130,39 +136,9 @@
   }
 
   .rul-display {
-    margin-top: 1em;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     align-items: center;
-  }
-
-  .user-messages {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 2em;
-    align-items: center;
-    width: 80%;
-  }
-
-  .message-card {
-    border-radius: 8px;
-    padding: 1em;
-    width: 100%;
-    text-align: center;
-    border: 1px solid #ccc;
-    transition: opacity 0.3s;
-    font-size: smaller;
-  }
-
-  .message-card.WARNING {
-    background-color: #ffffe0;
-    color: #000000;
-  }
-
-  .message-card.INFO {
-    background-color: rgba(129, 248, 94, 0.86);
-    color: #000000;
   }
 </style>

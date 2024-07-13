@@ -93,15 +93,13 @@ class GameSession(BaseModel):
 
             self.update_game_over_flag()
             if self.is_game_over:
-                break
+                return
 
             self.current_step += 1
             self.machine_state.update_parameters(self.current_step)
 
-            # Player earns money for the production at every timestep,
-            # proportional to the health of the machine (bad health = less efficient production)
-            self.available_funds += self.cash_multiplier * (
-                    self.machine_state.health_percentage / 60) * REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
+            # Player earns money for the production at every timestep
+            self.available_funds += self.cash_multiplier * REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
 
             # Publish state every 2 steps (to reduce the load on the MQTT broker)
             if self.current_step % 2 == 0:
@@ -112,7 +110,10 @@ class GameSession(BaseModel):
         self.update_rul_prediction()
         self.cash_multiplier = 1
 
-        if (random.random() < DEMAND_PEAK_EVENT_PROBABILITY) or os.getenv("DEV_FORCE_DEMAND_PEAK_EVENT", False):
+        # 😈 probability of bonus multiplier increases with time, when it is also most risky for the player to skip maintenance!
+        # TODO: organize this better, there are too many things mixed here...  probably won't remember what this code does in 1 week!
+        if ((random.random() / min(1, self.current_step)) < DEMAND_PEAK_EVENT_PROBABILITY) or os.getenv(
+                "DEV_FORCE_DEMAND_PEAK_EVENT", False):
             self.user_messages["demand_peak_bonus"] = UserMessage(
                 type="INFO",
                 content=f"Demand Peak! - Skip maintenance and earn {DEMAND_PEAK_BONUS_MULTIPLIER}x cash in the next turn!"
