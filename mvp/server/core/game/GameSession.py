@@ -83,10 +83,9 @@ class GameSession(BaseModel):
         # if there is a demand peak bonus up to this point, multiply the player cash for this turn!
         if "demand_peak_bonus" in self.user_messages:
             self.cash_multiplier = DEMAND_PEAK_BONUS_MULTIPLIER
+            self.user_messages.pop("demand_peak_bonus", None)
 
-        self.user_messages.pop("demand_peak_bonus", None)
-
-        for _ in range(TIMESTEPS_PER_MOVE):
+        for s in range(TIMESTEPS_PER_MOVE - 1):
 
             if os.getenv("COLLECT_MACHINE_HISTORY", False):
                 collected_machine_states_during_turn.append(self.machine_state)
@@ -99,16 +98,17 @@ class GameSession(BaseModel):
             self.machine_state.update_parameters(self.current_step)
 
             # Player earns money for the production at every timestep
-            self.available_funds += self.cash_multiplier * REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
+            self.available_funds += self.cash_multiplier * REVENUE_PER_DAY / (TIMESTEPS_PER_MOVE)
 
             # Publish state every 2 steps (to reduce the load on the MQTT broker)
-            if self.current_step % 2 == 0:
+            if s == 0 or self.current_step % 3 == 0:
                 self.state_publish_function(self)
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
 
         self.update_rul_prediction()
         self.cash_multiplier = 1
+        self.current_step += 1
 
         # 😈 probability of bonus multiplier increases with time, when it is also most risky for the player to skip maintenance!
         # TODO: organize this better, there are too many things mixed here...  probably won't remember what this code does in 1 week!
@@ -128,10 +128,6 @@ class GameSession(BaseModel):
             )
             return collected_machine_states_during_turn
 
-        # TODO: fix this horrible, horrible hack;  we need the timestep of the POST request response to be higher than those from the intermediate states
-        #  but having to move it till the end of the function just so that the test passes (matching the expected timesteps per move, before this extra one added) is absolutely painful!
-        self.current_step += 1
-
     def do_maintenance(self) -> bool:
         if self.available_funds < MAINTENANCE_COST:
             return False
@@ -139,7 +135,6 @@ class GameSession(BaseModel):
         # if there was a demand peak bonus and player does maintenance, it gets cleared
         self.user_messages.pop("demand_peak_bonus", None)
 
-        self.current_step += 1
         self.available_funds -= MAINTENANCE_COST
         self.machine_state.do_maintenance()
         self.update_rul_prediction()
@@ -150,7 +145,6 @@ class GameSession(BaseModel):
         if self.available_funds < SENSOR_COST:
             return False
 
-        self.current_step += 1
         self.available_funds -= SENSOR_COST
         self.available_sensors[sensor] = True
         self.update_rul_prediction()
@@ -161,7 +155,6 @@ class GameSession(BaseModel):
         if self.available_funds < PREDICTION_MODEL_COST:
             return False
 
-        self.current_step += 1
         self.available_funds -= PREDICTION_MODEL_COST
         self.available_predictions[prediction] = True
         self.rul_predictor = svr_rul_prediction_fn
