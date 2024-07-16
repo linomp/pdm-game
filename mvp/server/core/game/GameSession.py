@@ -100,7 +100,7 @@ class GameSession(BaseModel):
             # Player earns money for the production at every timestep
             self.available_funds += self.cash_multiplier * REVENUE_PER_DAY / (TIMESTEPS_PER_MOVE)
 
-            # Publish state every 2 steps (to reduce the load on the MQTT broker)
+            # Publish state every 3 steps (to reduce the load on the MQTT broker)
             if s == 0 or self.current_step % 3 == 0:
                 self.state_publish_function(self)
 
