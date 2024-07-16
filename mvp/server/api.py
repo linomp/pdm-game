@@ -28,6 +28,7 @@ logfire_token = os.getenv("LOGFIRE_TOKEN", None)
 if logfire_token is not None:
     logfire.configure(token=logfire_token)
     logfire.instrument_fastapi(app)
+    logfire.instrument_sqlalchemy()  # TODO: why it doesn't log the SQL query when a highscore is added?
 
 app.add_middleware(
     CORSMiddleware,
