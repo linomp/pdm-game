@@ -1,4 +1,5 @@
 import math
+import random
 from typing import List
 
 import numpy as np
@@ -25,9 +26,9 @@ def svr_rul_prediction_fn(current_timestep: int, parameters: OperationalParamete
         # Create input array with placeholder values
         x = np.array([
             [current_timestep],
-            [np.finfo(np.float32).max],
-            [np.finfo(np.float32).max],
-            [np.finfo(np.float32).max]
+            [100 * random.random()],
+            [100 * random.random()],
+            [100 * random.random()]
         ], dtype=np.float32)
 
         # Update input array with available sensor values

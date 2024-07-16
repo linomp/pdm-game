@@ -19,21 +19,13 @@
   import {MOBILE_BREAKPOINT} from "src/shared/constants";
   import {onMount} from "svelte";
 
-  const cleanupGameSession = () => {
-    gameSession.set(null);
-    gameOver.set(false);
-    gameOverReason.set(null);
-    mqttClient.update(() => null!);
-    mqttClientUnsubscribe.update(() => null!);
-  };
-
   const updateGameSession = async (newGameSessionDto: GameSessionDTO) => {
     // TODO: this is a workaround to prevent the game from updating the game session if it receives an outdated one
-    //        e.g. if an MQTT message arrives after the last POST request is resolved
+    //       e.g. if an MQTT message arrives after the last POST request is resolved
     if (
       $gameSession &&
       ($gameSession?.is_game_over ||
-        (newGameSessionDto.current_step <= $gameSession?.current_step ?? 0))
+        (newGameSessionDto.current_step < $gameSession?.current_step ?? 0))
     ) {
       return;
     }
@@ -65,6 +57,14 @@
         };
       },
     );
+  };
+
+  const cleanupGameSession = () => {
+    gameSession.set(null);
+    gameOver.set(false);
+    gameOverReason.set(null);
+    mqttClient.update(() => null!);
+    mqttClientUnsubscribe.update(() => null!);
   };
 
   const updateNarrowScreenFlag = () => {
