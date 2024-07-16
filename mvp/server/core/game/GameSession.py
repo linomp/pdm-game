@@ -100,10 +100,9 @@ class GameSession(BaseModel):
             # Player earns money for the production at every timestep
             self.available_funds += self.cash_multiplier * REVENUE_PER_DAY / (TIMESTEPS_PER_MOVE)
 
-            # TODO: bring back this code; currently left out only to see if mqtt client is the bottleneck
-            # Publish state every 2 steps (to reduce the load on the MQTT broker)
-            # if s == 0 or self.current_step % 3 == 0:
-            #     self.state_publish_function(self)
+            # Publish state every 3 steps (to reduce the load on the MQTT broker)
+            if s == 0 or self.current_step % 3 == 0:
+                self.state_publish_function(self)
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
 

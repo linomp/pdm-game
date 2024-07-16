@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+import logfire
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,6 +22,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+logfire.configure()
+logfire.instrument_fastapi(app)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
