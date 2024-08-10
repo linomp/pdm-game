@@ -9,16 +9,3 @@
 ### **_Will you accept the challenge?_**
 
 https://app.pdmgame.xmp.systems/
-
----
-
-### Dev roadmap
-
-- [X] Basic UI
-- [X] Basic machine degradation model
-- [X] Sensor & prediction model purchase
-- [X] Live machine parameters visualization
-- [X] Leaderboard
-- [X] Basic RUL prediction model
-- [X] In-game events (e.g. production peak, score multipliers)
-
