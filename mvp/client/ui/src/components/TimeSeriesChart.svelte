@@ -7,25 +7,25 @@
     TIME_SERIES_MOBILE_HEIGHT,
     TIME_SERIES_MOBILE_WIDTH
   } from "src/shared/constants";
-  import {isOnNarrowScreen} from "src/stores/stores";
+  import {isOnNarrowScreen} from "src/shared/stores";
 
   export let data: TimeSeriesPoint[];
-  export let warningLevel: number;
+    export let warningLevel: number;
 </script>
 
 <Chart
-  width={$isOnNarrowScreen ? TIME_SERIES_MOBILE_WIDTH :  TIME_SERIES_DESKTOP_WIDTH}
-  height={$isOnNarrowScreen ? TIME_SERIES_MOBILE_HEIGHT :  TIME_SERIES_DESKTOP_HEIGHT}
+        width={$isOnNarrowScreen ? TIME_SERIES_MOBILE_WIDTH :  TIME_SERIES_DESKTOP_WIDTH}
+        height={$isOnNarrowScreen ? TIME_SERIES_MOBILE_HEIGHT :  TIME_SERIES_DESKTOP_HEIGHT}
 >
-  <LineSeries {data}>
-    <PriceLine
-      title="!"
-      price={warningLevel}
-      color={undefined}
-      lineWidth={undefined}
-      lineStyle={undefined}
-      axisLabelVisible={true}
-    />
-  </LineSeries>
-  <TimeScale timeVisible={true} secondsVisible={true}/>
+    <LineSeries {data}>
+        <PriceLine
+                title="!"
+                price={warningLevel}
+                color={undefined}
+                lineWidth={undefined}
+                lineStyle={undefined}
+                axisLabelVisible={true}
+        />
+    </LineSeries>
+    <TimeScale timeVisible={true} secondsVisible={true}/>
 </Chart>

@@ -1,16 +1,16 @@
-import type { GameSessionDTO } from 'src/api/generated';
-import type { TimeSeriesPoint } from './types';
-import { getUpdatedTimeseries } from './utils';
-import type { UTCTimestamp } from 'lightweight-charts';
+import type {GameSessionDTO} from 'src/shared/api';
+import type {TimeSeriesPoint} from './types';
+import {getUpdatedTimeseries} from './utils';
+import type {UTCTimestamp} from 'lightweight-charts';
 
 const previousTimeSeries: { [key: string]: TimeSeriesPoint[] } = {
     temperature: [
-        { time: 1 as UTCTimestamp, value: 20 },
-        { time: 2 as UTCTimestamp, value: 30 }
+        {time: 1 as UTCTimestamp, value: 20},
+        {time: 2 as UTCTimestamp, value: 30}
     ],
     oil_age: [
-        { time: 1 as UTCTimestamp, value: 2.5 },
-        { time: 2 as UTCTimestamp, value: 3.0 }
+        {time: 1 as UTCTimestamp, value: 2.5},
+        {time: 2 as UTCTimestamp, value: 3.0}
     ],
     mechanical_wear: []
 };
@@ -35,15 +35,15 @@ describe('getUpdatedTimeseries', () => {
         const updatedTimeseries = getUpdatedTimeseries(newGameSessionDTO, previousTimeSeries);
 
         expect(updatedTimeseries.temperature).toEqual([
-            { time: expect.any(Number), value: 20 },
-            { time: expect.any(Number), value: 30 },
-            { time: expect.any(Number), value: 40 }
+            {time: expect.any(Number), value: 20},
+            {time: expect.any(Number), value: 30},
+            {time: expect.any(Number), value: 40}
         ]);
 
         expect(updatedTimeseries.oil_age).toEqual([
-            { time: expect.any(Number), value: 2.5 },
-            { time: expect.any(Number), value: 3.0 },
-            { time: expect.any(Number), value: 3.5 }
+            {time: expect.any(Number), value: 2.5},
+            {time: expect.any(Number), value: 3.0},
+            {time: expect.any(Number), value: 3.5}
         ]);
 
         expect(updatedTimeseries.mechanical_wear).toEqual([]);
