@@ -1,5 +1,5 @@
 import {writable} from 'svelte/store';
-import type {GameParametersDTO} from 'src/api/generated';
+import type {GameParametersDTO} from 'src/shared/api';
 import type {GameSessionWithTimeSeries} from 'src/shared/types';
 import type {MqttClient} from 'mqtt';
 
