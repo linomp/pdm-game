@@ -1,5 +1,7 @@
-# The Predictive Maintenance Game
+[![MVP Backend](https://github.com/linomp/pdm-game/actions/workflows/PR_BE.yml/badge.svg)](https://github.com/linomp/pdm-game/actions/workflows/PR_BE.yml)
+[![MVP Frontend](https://github.com/linomp/pdm-game/actions/workflows/PR_FE.yml/badge.svg)](https://github.com/linomp/pdm-game/actions/workflows/PR_FE.yml)
 
+# The Predictive Maintenance Game
 ![immagine](./mvp/media/13_07_2024_trim.PNG)
 
 - **_Your mission_**: maximize profit & machine lifespan.
