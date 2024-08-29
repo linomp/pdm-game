@@ -6,15 +6,13 @@ from fastapi.responses import JSONResponse
 from fastapi_utilities import repeat_every
 
 from mvp.server.core.constants import SESSION_CLEANUP_INTERVAL_SECONDS
-from mvp.server.core.game.GameMetrics import GameMetrics
 from mvp.server.core.game.GameSession import GameSession
 from mvp.server.core.game.GameSessionDTO import GameSessionDTO
 from mvp.server.messaging.MqttFrontendConnectionDetails import MqttFrontendConnectionDetails
-from mvp.server.messaging.mqtt_client import get_mqtt_client
+from mvp.server.messaging.mqtt_client import get_mqtt_client, MqttClientBase
 
 sessions: dict[str, GameSession] = {}
-game_metrics = GameMetrics()
-mqtt_client = get_mqtt_client()
+# mqtt_client = get_mqtt_client()
 
 router = APIRouter(
     prefix="/sessions",
@@ -40,7 +38,7 @@ def cleanup_session(session_id: str):
 
 
 @repeat_every(seconds=600, wait_first=False)
-async def publish_mqtt_client_heartbeat():
+async def publish_mqtt_client_heartbeat(mqtt_client: MqttClientBase = Depends(get_mqtt_client)):
     mqtt_client.publish_heartbeat()
 
 
@@ -58,8 +56,6 @@ async def cleanup_inactive_sessions():
 
     for session_id, is_abandoned in sessions_to_drop:
         sessions.pop(session_id)
-        if is_abandoned:
-            game_metrics.update_on_game_abandoned(len(sessions))
 
 
 @router.get("/", response_model=GameSessionDTO)
@@ -68,7 +64,7 @@ async def get_session(session: GameSession = Depends(get_session_dependency)) ->
 
 
 @router.post("/", response_model=GameSessionDTO)
-async def create_session() -> GameSessionDTO:
+async def create_session(mqtt_client: MqttClientBase = Depends(get_mqtt_client)) -> GameSessionDTO:
     new_session_id = uuid.uuid4().hex
 
     if new_session_id not in sessions:
@@ -78,18 +74,11 @@ async def create_session() -> GameSessionDTO:
         session = GameSession.new_game_session(_id=new_session_id, _state_publish_function=publishing_func)
         sessions[new_session_id] = session
 
-        game_metrics.update_on_game_started(len(sessions))
-
     return GameSessionDTO.from_session(sessions[new_session_id])
 
 
-@router.get("/metrics", response_model=GameMetrics)
-async def get_metrics() -> GameMetrics:
-    return game_metrics
-
-
 @router.post("/mqtt-heartbeat")
-async def send_mqtt_heartbeat() -> JSONResponse:
+async def send_mqtt_heartbeat(mqtt_client: MqttClientBase = Depends(get_mqtt_client)) -> JSONResponse:
     error = mqtt_client.publish_heartbeat()
     if error is None:
         return JSONResponse(status_code=200, content={"message": "Heartbeat sent"})
@@ -109,8 +98,5 @@ async def get_mqtt_connection_details(session_id: str) -> MqttFrontendConnection
 @router.put("/turns", response_model=GameSessionDTO)
 async def advance(session: GameSession = Depends(get_session_dependency)) -> GameSessionDTO:
     await session.advance_one_turn()
-
-    if session.is_game_over:
-        game_metrics.update_on_game_ended(session.get_total_duration())
 
     return GameSessionDTO.from_session(session)

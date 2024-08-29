@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from mvp.server.core.machine.MachineState import MachineState, OperationalParameters
+from mvp.server.core.game.MachineState import MachineState, OperationalParameters
 
 
 class MachineStateDTO(BaseModel):

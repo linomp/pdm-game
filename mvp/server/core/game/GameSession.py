@@ -9,10 +9,15 @@ from pydantic import BaseModel
 
 from mvp.server.core.analysis.rul_prediction import default_rul_prediction_fn, svr_rul_prediction_fn
 from mvp.server.core.constants import *
+from mvp.server.core.game.MachineState import MachineState, OperationalParameters, get_purchasable_sensors, \
+    get_purchasable_predictions
 from mvp.server.core.game.UserMessage import UserMessage
-from mvp.server.core.machine.MachineState import MachineState, OperationalParameters
 
 load_dotenv()
+
+FORCE_DEMAND_PEAK_EVENT = os.getenv("DEV_FORCE_DEMAND_PEAK_EVENT", False)
+FORCE_QUICK_FINISH = os.getenv("DEV_FORCE_QUICK_FINISH", False)
+COLLECT_MACHINE_HISTORY = os.getenv("COLLECT_MACHINE_HISTORY", False)
 
 
 class GameSession(BaseModel):
@@ -42,9 +47,9 @@ class GameSession(BaseModel):
             started_at=datetime.now(),
             state_publish_function=_state_publish_function
         )
-        session.available_sensors = {sensor: False for sensor in session.machine_state.get_purchasable_sensors()}
+        session.available_sensors = {sensor: False for sensor in get_purchasable_sensors()}
         session.available_predictions = {prediction: False for prediction in
-                                         session.machine_state.get_purchasable_predictions()}
+                                         get_purchasable_predictions()}
         session.last_updated = datetime.now()
 
         return session
@@ -64,9 +69,8 @@ class GameSession(BaseModel):
     def update_game_over_flag(self) -> None:
         self.is_game_over = False
 
-        if os.getenv("DEV_FORCE_QUICK_FINISH", False):
-            if self.current_step >= 30:
-                self.machine_state.health_percentage = -1
+        if FORCE_QUICK_FINISH and self.current_step >= TIMESTEPS_PER_MOVE:
+            self.machine_state.health_percentage = -1
 
         if self.machine_state.is_broken():
             self.is_game_over = True
@@ -75,7 +79,7 @@ class GameSession(BaseModel):
                 f"{datetime.now()}: GameSession '{self.id}' - machine failed at step {self.current_step} - {self.machine_state}"
             )
 
-    async def advance_one_turn(self) -> list[MachineState] | None:
+    async def advance_one_turn(self) -> tuple[MachineState, list[MachineState]]:
         collected_machine_states_during_turn = []
 
         self.last_updated = datetime.now()
@@ -87,7 +91,7 @@ class GameSession(BaseModel):
 
         for s in range(TIMESTEPS_PER_MOVE - 1):
 
-            if os.getenv("COLLECT_MACHINE_HISTORY", False):
+            if COLLECT_MACHINE_HISTORY:
                 collected_machine_states_during_turn.append(self.machine_state)
 
             self.update_game_over_flag()
@@ -101,7 +105,7 @@ class GameSession(BaseModel):
             self.available_funds += self.cash_multiplier * REVENUE_PER_DAY / (TIMESTEPS_PER_MOVE)
 
             # Publish state every 3 steps (to reduce the load on the MQTT broker)
-            if s == 0 or self.current_step % 3 == 0:
+            if s == 0 or self.current_step % 4 == 0:
                 self.state_publish_function(self)
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
@@ -112,21 +116,22 @@ class GameSession(BaseModel):
 
         # 😈 probability of bonus multiplier increases with time, when it is also most risky for the player to skip maintenance!
         # TODO: organize this better, there are too many things mixed here...  probably won't remember what this code does in 1 week!
-        if ((random.random() / min(1, self.current_step)) < DEMAND_PEAK_EVENT_PROBABILITY) or os.getenv(
-                "DEV_FORCE_DEMAND_PEAK_EVENT", False):
+        r = 100 * random.random() / (0.5 * self.current_step)
+        if (r < DEMAND_PEAK_EVENT_PROBABILITY) or FORCE_DEMAND_PEAK_EVENT:
             self.user_messages["demand_peak_bonus"] = UserMessage(
                 type="INFO",
                 content=f"Demand Peak! - Skip maintenance and earn {DEMAND_PEAK_BONUS_MULTIPLIER}x cash in the next turn!"
             )
 
-        if os.getenv("COLLECT_MACHINE_HISTORY", False):
+        if COLLECT_MACHINE_HISTORY:
             self.machine_state_history.extend(
                 zip(
                     range(self.current_step - TIMESTEPS_PER_MOVE, self.current_step),
                     collected_machine_states_during_turn
                 )
             )
-            return collected_machine_states_during_turn
+
+        return self.machine_state, collected_machine_states_during_turn
 
     def do_maintenance(self) -> bool:
         if self.available_funds < MAINTENANCE_COST:
@@ -165,7 +170,6 @@ class GameSession(BaseModel):
     def update_rul_prediction(self) -> None:
         self.user_messages.pop("rul_accuracy_warning", None)
 
-        # TODO: clean up this stuff; it feels awkward having to iterate when there is only 1 type of prediction...
         for prediction, purchased in self.available_predictions.items():
             if prediction == 'predicted_rul' and purchased:
 
@@ -183,4 +187,4 @@ class GameSession(BaseModel):
 
     def get_score(self) -> int:
         raw_score = self.current_step * self.available_funds
-        return round(raw_score / 100)
+        return round(raw_score / 70)

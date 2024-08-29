@@ -7,7 +7,6 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
-export type { GameMetrics } from './models/GameMetrics';
 export type { GameParametersDTO } from './models/GameParametersDTO';
 export type { GameSessionDTO } from './models/GameSessionDTO';
 export type { HighScoreDTO } from './models/HighScoreDTO';
