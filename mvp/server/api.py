@@ -1,3 +1,4 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 
@@ -8,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
 
 from mvp.server.core.game.GameParametersDTO import GameParametersDTO
+from mvp.server.logging_config import logging_config
 from mvp.server.persistence.database import init_db
 from mvp.server.routers.leaderboard import router as leaderboard_router
 from mvp.server.routers.player_actions import router as player_actions_router
@@ -21,6 +23,8 @@ async def lifespan(app: FastAPI):
     await publish_mqtt_client_heartbeat()
     yield
 
+
+logging.config.dictConfig(logging_config)
 
 app = FastAPI(lifespan=lifespan)
 

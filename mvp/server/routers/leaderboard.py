@@ -31,10 +31,15 @@ async def post_score(request: ScoreCreateRequest, session: GameSession = Depends
     if session.is_game_over is False:
         raise HTTPException(status_code=400, detail="Game is not over yet")
 
+    # TODO clean up this hack made just for load test...
+    score = session.get_score()
+    if request.nickname == "LOCUST":
+        score = 0
+
     db.add(
         HighScoreModel(
             nickname=request.nickname,
-            score=session.get_score(),
+            score=score,
             level_reached=session.current_step,
             cash_balance=session.available_funds,
             timestamp=datetime.now()

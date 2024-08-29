@@ -6,6 +6,7 @@ from typing import Callable
 
 from dotenv import load_dotenv
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
 from mvp.server.core.analysis.rul_prediction import default_rul_prediction_fn, svr_rul_prediction_fn
 from mvp.server.core.constants import *
@@ -96,17 +97,17 @@ class GameSession(BaseModel):
 
             self.update_game_over_flag()
             if self.is_game_over:
-                return
+                return self.machine_state, collected_machine_states_during_turn
 
             self.current_step += 1
             self.machine_state.update_parameters(self.current_step)
 
             # Player earns money for the production at every timestep
-            self.available_funds += self.cash_multiplier * REVENUE_PER_DAY / (TIMESTEPS_PER_MOVE)
+            self.available_funds += self.cash_multiplier * REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
 
             # Publish state every 3 steps (to reduce the load on the MQTT broker)
             if s == 0 or self.current_step % 4 == 0:
-                self.state_publish_function(self)
+                await run_in_threadpool(lambda: self.state_publish_function(self))
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
 
