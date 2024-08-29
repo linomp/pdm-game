@@ -4,8 +4,8 @@ from pydantic import BaseModel
 
 from mvp.server.core.constants import *
 from mvp.server.core.game.GameSession import GameSession
+from mvp.server.core.game.MachineStateDTO import MachineStateDTO
 from mvp.server.core.game.UserMessage import UserMessage
-from mvp.server.core.machine.MachineStateDTO import MachineStateDTO
 
 
 class GameSessionDTO(BaseModel):

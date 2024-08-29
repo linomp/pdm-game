@@ -1,11 +1,9 @@
-import os
 from unittest.mock import MagicMock
 
 import pytest
 
 from mvp.server.core.constants import TIMESTEPS_PER_MOVE
 from mvp.server.core.game.GameSession import GameSession
-from mvp.server.core.machine.MachineState import MachineState
 
 
 @pytest.fixture
@@ -25,24 +23,19 @@ def test_game_session_initialization(game_session):
 
 @pytest.mark.asyncio
 async def test_game_session_advance_one_turn(game_session):
-    os.environ["COLLECT_MACHINE_HISTORY"] = "1"
-
     initial_health = game_session.machine_state.health_percentage
     initial_step = game_session.current_step
 
     total_turns_to_simulate = 5
-    collected_stats = []
+    collected_states = []
     for i in range(total_turns_to_simulate):
-        collected_stats.extend(await game_session.advance_one_turn())
+        last_state, _ = await game_session.advance_one_turn()
+        collected_states.append(last_state)
 
-    assert len(collected_stats) == total_turns_to_simulate * (TIMESTEPS_PER_MOVE - 1)
+    assert len(collected_states) == total_turns_to_simulate
     assert game_session.current_step == initial_step + total_turns_to_simulate * TIMESTEPS_PER_MOVE
 
-    assert len(game_session.machine_state_history) == total_turns_to_simulate * (TIMESTEPS_PER_MOVE - 1)
-    for i in range(TIMESTEPS_PER_MOVE - 1):
-        assert game_session.machine_state_history[i][0] == i
-        assert isinstance(game_session.machine_state_history[i][1], MachineState)
-
+    # noinspection PyUnresolvedReferences
     assert game_session.state_publish_function.call_count >= total_turns_to_simulate
 
     final_health = game_session.machine_state.health_percentage

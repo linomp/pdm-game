@@ -2,7 +2,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { GameMetrics } from '../models/GameMetrics';
 import type { GameSessionDTO } from '../models/GameSessionDTO';
 import type { MqttFrontendConnectionDetails } from '../models/MqttFrontendConnectionDetails';
 
@@ -43,21 +42,6 @@ sessionId: string,
         return __request(OpenAPI, {
             method: 'POST',
             url: '/sessions/',
-            errors: {
-                404: `Not found`,
-            },
-        });
-    }
-
-    /**
-     * Get Metrics
-     * @returns GameMetrics Successful Response
-     * @throws ApiError
-     */
-    public static getMetricsSessionsMetricsGet(): CancelablePromise<GameMetrics> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/sessions/metrics',
             errors: {
                 404: `Not found`,
             },

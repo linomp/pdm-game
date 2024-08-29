@@ -1,7 +1,7 @@
 import pandas as pd
 from matplotlib.pyplot import figure, show
 
-from mvp.server.core.machine.MachineState import MachineState
+from mvp.server.core.game.MachineState import MachineState
 
 SIMULATE_MAINTENANCE = False
 SAVE_HISTORY = True

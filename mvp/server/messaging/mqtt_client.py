@@ -29,8 +29,9 @@ print(f"{datetime.now()}: USE_MQTT_AUTH = {USE_MQTT_AUTH}")
 
 def get_mqtt_client() -> 'MqttClientBase':
     if DISABLE_MQTT:
-        return MqttClientBase()
-    return MqttClient()
+        yield MqttClientBase()
+    else:
+        yield MqttClient()
 
 
 def on_connect(client, userdata, flags, rc, properties=None):
