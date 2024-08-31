@@ -19,11 +19,9 @@ const newGameSessionDTO: GameSessionDTO = {
     id: "1",
     current_step: 1,
     machine_state: {
-        operational_parameters: {
-            temperature: 40,
-            oil_age: 3.5,
-            mechanical_wear: null
-        },
+        temperature: 40,
+        oil_age: 3.5,
+        mechanical_wear: null,
         predicted_rul: null
     },
     available_funds: 1000,
@@ -52,11 +50,9 @@ describe('getUpdatedTimeseries', () => {
     it('does not update the time series when values are undefined or null', () => {
         const updatedTimeseries = getUpdatedTimeseries({
             ...newGameSessionDTO, machine_state: {
-                operational_parameters: {
-                    temperature: null,
-                    oil_age: null,
-                    mechanical_wear: null
-                },
+                temperature: null,
+                oil_age: null,
+                mechanical_wear: null,
                 predicted_rul: null
             }
         }, previousTimeSeries);

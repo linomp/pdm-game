@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { OperationalParameters } from './OperationalParameters';
-
-export type MachineStateDTO = {
-    operational_parameters: OperationalParameters;
+export type MachineDTO = {
+    temperature: (number | null);
+    oil_age: (number | null);
+    mechanical_wear: (number | null);
     predicted_rul: (number | null);
 };

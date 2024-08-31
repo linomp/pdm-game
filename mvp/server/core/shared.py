@@ -1,3 +1,3 @@
-from mvp.server.core.game.GameSession import GameSession
+from mvp.server.core.GameSession import GameSession
 
 sessions: dict[str, GameSession] = {}

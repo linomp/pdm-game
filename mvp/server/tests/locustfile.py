@@ -20,9 +20,9 @@ class ApiUser(HttpUser):
             with self.client.post("/sessions/", catch_response=True) as response:
                 try:
                     self.session_id = response.json()["id"]
-                except Exception:
+                except:
                     response.failure("Failed to create session")
-                    print(str(response.content))
+                    print(f"Failed to create session: {response}")
                     return
 
         # Advance the turn
@@ -31,18 +31,18 @@ class ApiUser(HttpUser):
                 json_response = response.json()
                 if "is_game_over" in json_response and json_response["is_game_over"]:
                     self.is_game_over = True
-                    print(f"Reached game over for session {self.session_id}")
                     self.client.post(f"/leaderboard/score?session_id={self.session_id}",
                                      json={"nickname": "testLocust"}, catch_response=False)
+                    print(f"Reached game over for session {self.session_id}")
                     response.success()
                     self.stop()
                 elif "id" in json_response and "current_step" in json_response:
                     response.success()
                 else:
                     raise Exception
-            except Exception as e:
+            except:
                 response.failure("Failed to advance turn")
-                print(f"{str(response.content)} {e}")
+                print(f"Failed to advance turn: {response}")
 
 
 if __name__ == "__main__":

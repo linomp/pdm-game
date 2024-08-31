@@ -81,7 +81,7 @@
             {/key}
         {/if}
         <div class="sensors-display">
-            {#each Object.entries($gameSession?.machine_state?.operational_parameters ?? {}) as [parameter, value]}
+            {#each Object.entries($gameSession?.machine_state ?? {}).filter(([p, v]) => p !== 'predicted_rul') as [parameter, value]}
                 <Sensor
                         sensorCost={$globalSettings.sensor_cost}
                         sensorPurchaseButtonDisabled={$sensorPurchaseButtonDisabled}

@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi_utilities import repeat_every
 
+from mvp.server.core.GameSession import GameSession
+from mvp.server.core.GameSessionDTO import GameSessionDTO
 from mvp.server.core.constants import SESSION_CLEANUP_INTERVAL_SECONDS
-from mvp.server.core.game.GameSession import GameSession
-from mvp.server.core.game.GameSessionDTO import GameSessionDTO
 from mvp.server.core.shared import sessions
 from mvp.server.messaging.MqttFrontendConnectionDetails import MqttFrontendConnectionDetails
 from mvp.server.messaging.mqtt_client import get_mqtt_client, MqttClientBase

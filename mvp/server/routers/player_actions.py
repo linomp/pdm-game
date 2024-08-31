@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
-from mvp.server.core.game.GameSession import GameSession
-from mvp.server.core.game.GameSessionDTO import GameSessionDTO
+from mvp.server.core.GameSession import GameSession
+from mvp.server.core.GameSessionDTO import GameSessionDTO
 from mvp.server.routers.sessions import get_session_dependency
 
 router = APIRouter(
