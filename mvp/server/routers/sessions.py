@@ -27,7 +27,7 @@ def get_session_dependency(session_id: str) -> GameSession:
     return session
 
 
-def cleanup_session(session_id: str):
+def cleanup_game_session(session_id: str):
     session = sessions.get(session_id)
     if session is not None:
         print(f"{datetime.now()}: Session '{session_id}' will be dropped")
