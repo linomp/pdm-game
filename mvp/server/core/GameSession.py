@@ -176,7 +176,7 @@ class GameSession(BaseModel):
 
     def get_score(self) -> int:
         raw_score = self.current_step * self.available_funds
-        return round(raw_score / 70)
+        return round(raw_score / 100)
 
     def is_abandoned(self) -> bool:
         if self.ended_at is not None:
