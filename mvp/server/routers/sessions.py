@@ -5,8 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi_utilities import repeat_every
 
-from mvp.server.core.GameSession import GameSession
-from mvp.server.core.GameSessionDTO import GameSessionDTO
+from mvp.server.core.GameSession import GameSession, GameSessionDTO
 from mvp.server.core.constants import SESSION_CLEANUP_INTERVAL_SECONDS
 from mvp.server.core.shared import sessions
 from mvp.server.messaging.MqttFrontendConnectionDetails import MqttFrontendConnectionDetails
@@ -66,10 +65,8 @@ async def create_session(mqtt_client: MqttClientBase = Depends(get_mqtt_client))
     new_session_id = uuid.uuid4().hex
 
     if new_session_id not in sessions:
-        def publishing_func(game_session: GameSession) -> None:
-            mqtt_client.publish_session_state(game_session.id, GameSessionDTO.from_session(game_session))
-
-        session = GameSession.new_game_session(_id=new_session_id, _state_publish_function=publishing_func)
+        session = GameSession.new_game_session(_id=new_session_id,
+                                               _state_publish_function=mqtt_client.publish_session_state)
         sessions[new_session_id] = session
 
     return GameSessionDTO.from_session(sessions[new_session_id])

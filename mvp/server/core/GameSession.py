@@ -2,7 +2,7 @@ import asyncio
 import os
 import random
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Any
 
 import numpy as np
 from dotenv import load_dotenv
@@ -12,6 +12,7 @@ from starlette.concurrency import run_in_threadpool
 from mvp.server.analysis.rul_prediction import default_rul_prediction_fn, svr_rul_prediction_fn
 from mvp.server.core.Machine import Machine, get_purchasable_sensors, \
     get_purchasable_predictions
+from mvp.server.core.MachineDTO import MachineDTO
 from mvp.server.core.UserMessage import UserMessage
 from mvp.server.core.constants import *
 
@@ -34,13 +35,13 @@ class GameSession(BaseModel):
     started_at: datetime = None
     ended_at: datetime = None
     machine_state_history: list[tuple[int, Machine]] = []
-    state_publish_function: Callable[["GameSession"], None]
+    state_publish_function: Callable[["GameSessionDTO"], None]
     rul_predictor: Callable[[np.array], int | None] = default_rul_prediction_fn
     user_messages: dict[str, UserMessage] = {}
     cash_multiplier: int = 1
 
     @staticmethod
-    def new_game_session(_id: str, _state_publish_function: Callable[["GameSession"], None]) -> "GameSession":
+    def new_game_session(_id: str, _state_publish_function: Callable[["GameSessionDTO"], None]) -> "GameSession":
         session = GameSession(
             id=_id,
             current_step=0,
@@ -82,7 +83,9 @@ class GameSession(BaseModel):
 
             # Publish state every 3 steps (to reduce the load on the MQTT broker)
             if s == 0 or self.current_step % 3 == 0:
-                asyncio.ensure_future(run_in_threadpool(lambda: self.state_publish_function(self)))
+                asyncio.ensure_future(
+                    run_in_threadpool(self.state_publish_function, GameSessionDTO.from_session(self))
+                )
 
             await asyncio.sleep(GAME_TICK_INTERVAL)
 
@@ -180,3 +183,57 @@ class GameSession(BaseModel):
             return False
 
         return (datetime.now() - self.last_updated).total_seconds() >= IDLE_SESSION_TTL_SECONDS
+
+
+class GameSessionDTO(BaseModel):
+    id: str
+    current_step: int
+    machine_state: MachineDTO
+    available_funds: float
+    is_game_over: bool
+    game_over_reason: str | None = None
+    final_score: float | None = None
+    user_messages: dict[str, UserMessage] = {}
+    cash_multiplier: int = 1
+
+    @staticmethod
+    def from_session(session: GameSession) -> "GameSessionDTO":
+        dto = GameSessionDTO(
+            id=session.id,
+            current_step=session.current_step,
+            available_funds=session.available_funds,
+            is_game_over=session.is_game_over,
+            machine_state=MachineDTO.from_machine(session.machine_state),
+            final_score=None,
+            user_messages=session.user_messages,
+            cash_multiplier=session.cash_multiplier
+        )
+
+        if session.is_game_over:
+            dto.game_over_reason = GAME_OVER_MESSAGE_MACHINE_BREAKDOWN if session.machine_state.is_broken() else GAME_OVER_MESSAGE_NO_MONEY
+            dto.final_score = session.get_score()
+
+        # Filter out sensor data & predictions that the player has not purchased
+        dto.machine_state = MachineDTO.from_machine(session.machine_state)
+
+        for sensor, purchased in session.available_sensors.items():
+            if not purchased:
+                dto.machine_state.hide_sensor_data(sensor)
+
+        for prediction, purchased in session.available_predictions.items():
+            if not purchased:
+                dto.machine_state.hide_prediction(prediction)
+
+        return dto
+
+    @staticmethod
+    def from_dict(json: dict[str, Any]) -> "GameSessionDTO":
+        return GameSessionDTO(
+            id=json.get("id", ""),
+            current_step=json.get("current_step", 0),
+            machine_state=MachineDTO.from_dict(json.get("machine_state", {})),
+            available_funds=json.get("available_funds", 0.),
+            is_game_over=json.get("is_game_over", False),
+            user_messages=json.get("user_messages", {}),
+            cash_multiplier=json.get("current_step", 1),
+        )
