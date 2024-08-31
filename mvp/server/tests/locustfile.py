@@ -24,7 +24,6 @@ class ApiUser(HttpUser):
                     response.success()
                 else:
                     response.failure(f"Failed loading leaderboard: {response.status_code}")
-                    self.stop()
 
             with self.client.post("/sessions/", catch_response=True) as response:
                 if response.status_code == 200:
@@ -32,9 +31,6 @@ class ApiUser(HttpUser):
                     response.success()
                 else:
                     response.failure(f"Failed loading leaderboard: {response.status_code}")
-                    self.stop()
-
-            return
 
         with self.client.put(f"/sessions/turns?session_id={self.session_id}", catch_response=True) as response:
             try:
@@ -46,7 +42,7 @@ class ApiUser(HttpUser):
                                      json={"nickname": "LOCUST"}, catch_response=False)
                     response.success()
                     print(f"Game Over for {self.session_id}")
-                    self.stop()
+                    return
                 elif ("id" in json_response) and ("current_step" in json_response):
                     funds = json_response["available_funds"]
                     self.purchase_sensors(funds)
@@ -70,7 +66,6 @@ class ApiUser(HttpUser):
                         response.success()
                     else:
                         response.failure(f"failed {sensor} purchase for {self.session_id}")
-                        self.stop()
 
     def purchase_predictions(self, funds):
         for prediction, purchased in self.predictions_to_purchase.items():
@@ -85,7 +80,6 @@ class ApiUser(HttpUser):
                         response.success()
                     else:
                         response.failure(f"failed {prediction} purchase for {self.session_id}")
-                        self.stop()
 
 
 if __name__ == "__main__":
