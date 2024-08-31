@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   mvp-api:
     build:
@@ -19,6 +17,15 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:80"
+    networks:
+      - my-network
+    restart: always
+
+  hivemq-broker:
+    image: hivemq/hivemq-ce
+    ports:
+      - "8883:1883"
+      - "8884:8000"
     networks:
       - my-network
     restart: always
