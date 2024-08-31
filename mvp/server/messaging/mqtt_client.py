@@ -5,7 +5,7 @@ import paho.mqtt.client as paho
 from dotenv import load_dotenv
 from paho import mqtt
 
-from mvp.server.core.game import GameSessionDTO
+from mvp.server.core import GameSessionDTO
 
 load_dotenv()
 

@@ -14,13 +14,12 @@ export const formatNumber = (number: number | undefined | null) => {
     return number?.toFixed(2);
 };
 
-
 export const getUpdatedTimeseries = (newGameSessionDto: GameSessionDTO, previousTimeSeries: {
     [key: string]: TimeSeriesPoint[]
 }): { [key: string]: TimeSeriesPoint[] } => {
     const newTimestamp = (Date.now() / 1000) as UTCTimestamp;
 
-    for (const [parameterName, newValue] of Object.entries(newGameSessionDto.machine_state.operational_parameters)) {
+    for (const [parameterName, newValue] of Object.entries(newGameSessionDto.machine_state)) {
 
         if (isUndefinedOrNull(previousTimeSeries[parameterName])) {
             previousTimeSeries[parameterName] = [];

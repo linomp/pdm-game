@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
 
-from mvp.server.core.game.GameParametersDTO import GameParametersDTO
+from mvp.server.core.GameParametersDTO import GameParametersDTO
 from mvp.server.persistence.database import init_db
 from mvp.server.routers.leaderboard import router as leaderboard_router
 from mvp.server.routers.player_actions import router as player_actions_router

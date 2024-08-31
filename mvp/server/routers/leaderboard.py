@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from mvp.server.core.game.GameSession import GameSession
-from mvp.server.core.leaderboard.HighScoreDTO import HighScoreDTO
-from mvp.server.core.leaderboard.HighScoreModel import HighScoreModel
-from mvp.server.core.leaderboard.ScoreCreateRequest import ScoreCreateRequest
+from mvp.server.core.GameSession import GameSession
+from mvp.server.core.HighScoreDTO import HighScoreDTO
+from mvp.server.core.ScoreCreateRequest import ScoreCreateRequest
 from mvp.server.persistence.database import get_db
+from mvp.server.persistence.models.HighScoreModel import HighScoreModel
 from mvp.server.routers.sessions import get_session_dependency, cleanup_session
 
 router = APIRouter(
@@ -31,10 +31,15 @@ async def post_score(request: ScoreCreateRequest, session: GameSession = Depends
     if session.is_game_over is False:
         raise HTTPException(status_code=400, detail="Game is not over yet")
 
+    # TODO 74: clean up this hack made just for load test...
+    score = session.get_score()
+    if request.nickname == "LOCUST":
+        score = 0
+
     db.add(
         HighScoreModel(
             nickname=request.nickname,
-            score=session.get_score(),
+            score=score,
             level_reached=session.current_step,
             cash_balance=session.available_funds,
             timestamp=datetime.now()

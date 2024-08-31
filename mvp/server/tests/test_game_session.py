@@ -2,8 +2,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from mvp.server.core.GameSession import GameSession
 from mvp.server.core.constants import TIMESTEPS_PER_MOVE
-from mvp.server.core.game.GameSession import GameSession
 
 
 @pytest.fixture
@@ -18,7 +18,6 @@ def test_game_session_initialization(game_session):
     assert game_session.id == "test_session"
     assert game_session.current_step == 0
     assert game_session.machine_state is not None
-    assert game_session.machine_state.operational_parameters is not None
 
 
 @pytest.mark.asyncio

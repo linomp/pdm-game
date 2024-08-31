@@ -2,16 +2,16 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from mvp.server.core.GameSession import GameSession
+from mvp.server.core.MachineDTO import MachineDTO
+from mvp.server.core.UserMessage import UserMessage
 from mvp.server.core.constants import *
-from mvp.server.core.game.GameSession import GameSession
-from mvp.server.core.game.MachineStateDTO import MachineStateDTO
-from mvp.server.core.game.UserMessage import UserMessage
 
 
 class GameSessionDTO(BaseModel):
     id: str
     current_step: int
-    machine_state: MachineStateDTO
+    machine_state: MachineDTO
     available_funds: float
     is_game_over: bool
     game_over_reason: str | None = None
@@ -26,7 +26,7 @@ class GameSessionDTO(BaseModel):
             current_step=session.current_step,
             available_funds=session.available_funds,
             is_game_over=session.is_game_over,
-            machine_state=MachineStateDTO.from_machine_state(session.machine_state),
+            machine_state=MachineDTO.from_machine(session.machine_state),
             final_score=None,
             user_messages=session.user_messages,
             cash_multiplier=session.cash_multiplier
@@ -37,7 +37,7 @@ class GameSessionDTO(BaseModel):
             dto.final_score = session.get_score()
 
         # Filter out sensor data & predictions that the player has not purchased
-        dto.machine_state = MachineStateDTO.from_machine_state(session.machine_state)
+        dto.machine_state = MachineDTO.from_machine(session.machine_state)
 
         for sensor, purchased in session.available_sensors.items():
             if not purchased:
@@ -54,7 +54,7 @@ class GameSessionDTO(BaseModel):
         return GameSessionDTO(
             id=json.get("id", ""),
             current_step=json.get("current_step", 0),
-            machine_state=MachineStateDTO.from_dict(json.get("machine_state", {})),
+            machine_state=MachineDTO.from_dict(json.get("machine_state", {})),
             available_funds=json.get("available_funds", 0.),
             is_game_over=json.get("is_game_over", False),
             user_messages=json.get("user_messages", {}),

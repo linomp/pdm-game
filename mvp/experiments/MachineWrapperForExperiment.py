@@ -1,7 +1,7 @@
 import pandas as pd
 from matplotlib.pyplot import figure, show
 
-from mvp.server.core.game.MachineState import MachineState
+from mvp.server.core.Machine import Machine
 
 SIMULATE_MAINTENANCE = False
 SAVE_HISTORY = True
@@ -9,12 +9,12 @@ SAVE_HISTORY = True
 
 class MachineWrapperForExperiment:
     current_step: int = 0
-    machine_state: MachineState
+    machine_state: Machine
     machine_state_history: dict[str, list]
 
     def __init__(self):
         self.current_step = 0
-        self.machine_state = MachineState.new_machine_state()
+        self.machine_state = Machine.new_machine()
         self.machine_state_history = {
             "time": [],
             "temperature": [],
@@ -27,9 +27,9 @@ class MachineWrapperForExperiment:
 
     def _record_state(self):
         self.machine_state_history["time"].append(self.current_step)
-        self.machine_state_history["temperature"].append(self.machine_state.operational_parameters.temperature)
-        self.machine_state_history["oil_age"].append(self.machine_state.operational_parameters.oil_age)
-        self.machine_state_history["mechanical_wear"].append(self.machine_state.operational_parameters.mechanical_wear)
+        self.machine_state_history["temperature"].append(self.machine_state.temperature)
+        self.machine_state_history["oil_age"].append(self.machine_state.oil_age)
+        self.machine_state_history["mechanical_wear"].append(self.machine_state.mechanical_wear)
         self.machine_state_history["health_percentage"].append(self.machine_state.health_percentage)
         self.machine_state_history["predicted_rul"].append(self.machine_state.predicted_rul)
 

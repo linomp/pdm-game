@@ -3,13 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MachineStateDTO } from './MachineStateDTO';
+import type { MachineDTO } from './MachineDTO';
 import type { UserMessage } from './UserMessage';
 
 export type GameSessionDTO = {
     id: string;
     current_step: number;
-    machine_state: MachineStateDTO;
+    machine_state: MachineDTO;
     available_funds: number;
     is_game_over: boolean;
     game_over_reason?: (string | null);

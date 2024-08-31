@@ -95,7 +95,7 @@ def test_purchase_sensor(session_id):
 
         assert response.status_code == 200
         assert response.json()["available_funds"] == available_funds - SENSOR_COST
-        assert response.json()["machine_state"]["operational_parameters"][sensor] is not None
+        assert response.json()["machine_state"][sensor] is not None
 
         available_funds = response.json()["available_funds"]
 
