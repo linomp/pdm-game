@@ -5,7 +5,7 @@ import paho.mqtt.client as paho
 from dotenv import load_dotenv
 from paho import mqtt
 
-from mvp.server.core import GameSessionDTO
+from mvp.server.core.GameSession import GameSessionDTO
 
 load_dotenv()
 
@@ -48,7 +48,7 @@ def on_connect(client, userdata, flags, rc, properties=None):
 
 
 class MqttClientBase:
-    def publish_session_state(self, client_uid: str, session: GameSessionDTO):
+    def publish_session_state(self, session: GameSessionDTO):
         pass
 
     def publish_heartbeat(self):
@@ -83,9 +83,9 @@ class MqttClient(MqttClientBase):
 
         self.__client__ = client
 
-    def publish_session_state(self, client_uid: str, session: GameSessionDTO):
+    def publish_session_state(self, session: GameSessionDTO):
         self.__client__.publish(
-            f"{MQTT_TOPIC_PREFIX}/{client_uid}", payload=bytes(session.json(), "utf-8"),
+            f"{MQTT_TOPIC_PREFIX}/{session.id}", payload=bytes(session.json(), "utf-8"),
             qos=MQTT_QOS
         )
 
