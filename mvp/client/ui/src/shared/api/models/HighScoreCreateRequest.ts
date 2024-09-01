@@ -3,6 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ScoreCreateRequest = {
+export type HighScoreCreateRequest = {
     nickname: string;
 };

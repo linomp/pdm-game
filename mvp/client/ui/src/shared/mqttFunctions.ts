@@ -1,7 +1,7 @@
 import mqtt from "mqtt";
-import type {GameSessionDTO, MqttFrontendConnectionDetails} from "src/shared/api";
+import type {GameSessionDTO, MqttFrontendConnectionDetailsDTO} from "src/shared/api";
 
-const buildUrlAndOpts = (connectionDetails: MqttFrontendConnectionDetails): [string, mqtt.IClientOptions] => {
+const buildUrlAndOpts = (connectionDetails: MqttFrontendConnectionDetailsDTO): [string, mqtt.IClientOptions] => {
     const brokerUrl = connectionDetails.host != "localhost" ? `wss://${connectionDetails.host}:${connectionDetails.port}/mqtt` :
         `ws://${connectionDetails.host}:${connectionDetails.port}/mqtt`;
 
@@ -15,7 +15,7 @@ const buildUrlAndOpts = (connectionDetails: MqttFrontendConnectionDetails): [str
 }
 
 export const getClient = async (
-    connectionDetails: MqttFrontendConnectionDetails,
+    connectionDetails: MqttFrontendConnectionDetailsDTO,
     messageHandler: (
         topic: string,
         message: Buffer,

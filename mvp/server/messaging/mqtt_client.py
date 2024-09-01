@@ -9,8 +9,9 @@ from mvp.server.core.GameSession import GameSessionDTO
 
 load_dotenv()
 
-MQTT_HOST = os.environ.get("MQTT_HOST", "localhost")
-MQTT_PORT = int(os.environ.get("MQTT_PORT", 1883))
+DEFAULT_HOST = os.environ.get("DEV_MQTT_HOST", "localhost")
+MQTT_HOST = os.environ.get("MQTT_HOST", DEFAULT_HOST)
+MQTT_PORT = int(os.environ.get("MQTT_PORT", 8883))
 MQTT_USER = os.environ.get("MQTT_USER")
 MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD")
 MQTT_TOPIC_PREFIX = os.environ.get("MQTT_TOPIC_PREFIX", "pdmgame/sessions")
@@ -18,7 +19,7 @@ MQTT_QOS = int(os.environ.get("MQTT_QOS", 0))
 MQTT_HEARTBEAT_TOPIC = os.environ.get("MQTT_HEARTBEAT_TOPIC", "heartbeat")
 
 DISABLE_MQTT = MQTT_USER is None
-USE_MQTT_AUTH = MQTT_HOST != "localhost"
+USE_MQTT_AUTH = MQTT_HOST != DEFAULT_HOST
 
 print(f"{datetime.now()}: MQTT_HOST = {MQTT_HOST}")
 print(f"{datetime.now()}: MQTT_USER = {MQTT_USER}")
@@ -29,9 +30,9 @@ print(f"{datetime.now()}: USE_MQTT_AUTH = {USE_MQTT_AUTH}")
 
 def get_mqtt_client() -> 'MqttClientBase':
     if DISABLE_MQTT:
-        yield MqttClientBase()
+        yield MqttClientBase.get_instance()
     else:
-        yield MqttClient()
+        yield MqttClient.get_instance()
 
 
 def on_connect(client, userdata, flags, rc, properties=None):
@@ -48,6 +49,14 @@ def on_connect(client, userdata, flags, rc, properties=None):
 
 
 class MqttClientBase:
+    instance: "MqttClientBase" = None
+
+    @staticmethod
+    def get_instance() -> "MqttClientBase":
+        if MqttClientBase.instance is None:
+            MqttClientBase.instance = MqttClientBase()
+        return MqttClientBase.instance
+
     def publish_session_state(self, session: GameSessionDTO):
         pass
 
@@ -60,6 +69,12 @@ class MqttClientBase:
 
 class MqttClient(MqttClientBase):
     __client__: paho.Client = None
+
+    @staticmethod
+    def get_instance() -> "MqttClientBase":
+        if MqttClient.instance is None:
+            MqttClient.instance = MqttClient()
+        return MqttClient.instance
 
     def __init__(self):
         client = paho.Client(
@@ -81,6 +96,8 @@ class MqttClient(MqttClientBase):
         client.connect(MQTT_HOST, MQTT_PORT)
         client.loop_start()
 
+        print(f"{datetime.now()}: here!!!")
+
         self.__client__ = client
 
     def publish_session_state(self, session: GameSessionDTO):
@@ -100,3 +117,13 @@ class MqttClient(MqttClientBase):
             print(f"{datetime.now()}: Mqtt Client failed to publish heartbeat: {e}")
             self.__init__()
             return str(e)
+
+
+def init_instance():
+    if DISABLE_MQTT:
+        MqttClientBase.get_instance()
+    else:
+        MqttClient.get_instance()
+
+
+init_instance()

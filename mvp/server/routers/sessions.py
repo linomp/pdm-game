@@ -8,7 +8,7 @@ from fastapi_utilities import repeat_every
 from mvp.server.core.GameSession import GameSession, GameSessionDTO
 from mvp.server.core.constants import SESSION_CLEANUP_INTERVAL_SECONDS
 from mvp.server.core.shared import sessions
-from mvp.server.messaging.MqttFrontendConnectionDetails import MqttFrontendConnectionDetails
+from mvp.server.messaging.MqttFrontendConnectionDetailsDTO import MqttFrontendConnectionDetailsDTO
 from mvp.server.messaging.mqtt_client import get_mqtt_client, MqttClientBase
 
 router = APIRouter(
@@ -80,14 +80,14 @@ async def send_mqtt_heartbeat(mqtt_client: MqttClientBase = Depends(get_mqtt_cli
     return JSONResponse(status_code=500, content={"message": error})
 
 
-@router.get("/mqtt-connection-details", response_model=MqttFrontendConnectionDetails)
-async def get_mqtt_connection_details(session_id: str) -> MqttFrontendConnectionDetails:
+@router.get("/mqtt-connection-details", response_model=MqttFrontendConnectionDetailsDTO)
+async def get_mqtt_connection_details(session_id: str) -> MqttFrontendConnectionDetailsDTO:
     session = sessions.get(session_id)
 
     if session.is_abandoned() or session.is_game_over:
         raise HTTPException(status_code=412, detail="Session has already been terminated")
 
-    return MqttFrontendConnectionDetails(session_id)
+    return MqttFrontendConnectionDetailsDTO(session_id)
 
 
 @router.put("/turns", response_model=GameSessionDTO)

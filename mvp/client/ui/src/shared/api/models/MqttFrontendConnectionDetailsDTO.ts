@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type MqttFrontendConnectionDetails = {
+export type MqttFrontendConnectionDetailsDTO = {
     host: string;
     port: number;
     username: string;

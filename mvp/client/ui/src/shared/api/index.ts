@@ -9,11 +9,11 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { GameParametersDTO } from './models/GameParametersDTO';
 export type { GameSessionDTO } from './models/GameSessionDTO';
+export type { HighScoreCreateRequest } from './models/HighScoreCreateRequest';
 export type { HighScoreDTO } from './models/HighScoreDTO';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { MachineDTO } from './models/MachineDTO';
-export type { MqttFrontendConnectionDetails } from './models/MqttFrontendConnectionDetails';
-export type { ScoreCreateRequest } from './models/ScoreCreateRequest';
+export type { MqttFrontendConnectionDetailsDTO } from './models/MqttFrontendConnectionDetailsDTO';
 export { UserMessage } from './models/UserMessage';
 export type { ValidationError } from './models/ValidationError';
 
