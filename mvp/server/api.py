@@ -32,7 +32,7 @@ if logfire_token is not None:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://app.pdmgame.xmp.systems", "http://localhost:5173", "http://localhost:8080"],
     allow_methods=["*"],
     allow_headers=["*"],
 )

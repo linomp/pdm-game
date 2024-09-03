@@ -2,8 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { HighScoreCreateRequest } from '../models/HighScoreCreateRequest';
 import type { HighScoreDTO } from '../models/HighScoreDTO';
-import type { ScoreCreateRequest } from '../models/ScoreCreateRequest';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -35,7 +35,7 @@ export class LeaderboardService {
      */
     public static postScoreLeaderboardScorePost(
 sessionId: string,
-requestBody: ScoreCreateRequest,
+requestBody: HighScoreCreateRequest,
 ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',

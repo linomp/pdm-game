@@ -20,7 +20,12 @@ jobs:
         run: |
           cd mvp/client/ui
           npm install
-      
+
+      - name: Svelte Check
+        run: |
+          cd mvp/client/ui
+          npm run check
+
       - name: Run  tests
         run: |
           cd mvp/client/ui

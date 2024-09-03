@@ -5,11 +5,11 @@ services:
       - "8883:1883"
       - "8884:8000"
     networks:
-      - my-network
+      - my-network-dev
     restart: always
 
 networks:
-  my-network:
+  my-network-dev:
 
 # docker compose -f dev.yaml up -d
 # docker compose -f dev.yaml down -v

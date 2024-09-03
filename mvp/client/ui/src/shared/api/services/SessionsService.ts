@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { GameSessionDTO } from '../models/GameSessionDTO';
-import type { MqttFrontendConnectionDetails } from '../models/MqttFrontendConnectionDetails';
+import type { MqttFrontendConnectionDetailsDTO } from '../models/MqttFrontendConnectionDetailsDTO';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -66,12 +66,12 @@ sessionId: string,
     /**
      * Get Mqtt Connection Details
      * @param sessionId 
-     * @returns MqttFrontendConnectionDetails Successful Response
+     * @returns MqttFrontendConnectionDetailsDTO Successful Response
      * @throws ApiError
      */
     public static getMqttConnectionDetailsSessionsMqttConnectionDetailsGet(
 sessionId: string,
-): CancelablePromise<MqttFrontendConnectionDetails> {
+): CancelablePromise<MqttFrontendConnectionDetailsDTO> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/sessions/mqtt-connection-details',
