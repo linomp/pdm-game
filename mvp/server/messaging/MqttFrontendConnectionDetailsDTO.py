@@ -5,7 +5,8 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-MQTT_HOST = os.environ.get("MQTT_HOST", "localhost")
+DEFAULT_HOST = os.environ.get("DEV_FE_MQTT_HOST", "localhost")
+MQTT_HOST = os.environ.get("MQTT_HOST", DEFAULT_HOST)
 MQTT_WSS_PORT = int(os.environ.get("MQTT_WSS_PORT", 8884))
 MQTT_FE_USER = os.environ.get("MQTT_FE_USER")
 MQTT_FE_PASSWORD = os.environ.get("MQTT_FE_PASSWORD")

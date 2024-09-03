@@ -96,8 +96,6 @@ class MqttClient(MqttClientBase):
         client.connect(MQTT_HOST, MQTT_PORT)
         client.loop_start()
 
-        print(f"{datetime.now()}: here!!!")
-
         self.__client__ = client
 
     def publish_session_state(self, session: GameSessionDTO):

@@ -10,6 +10,11 @@ services:
     restart: always
     volumes:
       - ./mvp/data:/code/mvp/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      DEV_MQTT_HOST: "host.docker.internal"
+      DEV_FE_MQTT_HOST: "165.227.107.127"
 
   mvp-client:
     build:
@@ -17,6 +22,15 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:80"
+    networks:
+      - my-network
+    restart: always
+
+  hivemq-broker:
+    image: hivemq/hivemq-ce
+    ports:
+      - "8883:1883"
+      - "8884:8000"
     networks:
       - my-network
     restart: always
