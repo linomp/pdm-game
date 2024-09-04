@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     networks:
-      - my-network
+      - pdm-game-mvp
     restart: always
     volumes:
       - ./mvp/data:/code/mvp/data
@@ -18,8 +18,8 @@ services:
     ports:
       - "8080:80"
     networks:
-      - my-network
+      - pdm-game-mvp
     restart: always
 
 networks:
-  my-network:
+  pdm-game-mvp:

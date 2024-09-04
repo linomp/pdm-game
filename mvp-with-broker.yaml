@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     networks:
-      - my-network
+      - mvp-with-broker
     restart: always
     volumes:
       - ./mvp/data:/code/mvp/data
@@ -23,7 +23,7 @@ services:
     ports:
       - "8080:80"
     networks:
-      - my-network
+      - mvp-with-broker
     restart: always
 
   hivemq-broker:
@@ -32,8 +32,8 @@ services:
       - "8883:1883"
       - "8884:8000"
     networks:
-      - my-network
+      - mvp-with-broker
     restart: always
 
 networks:
-  my-network:
+  mvp-with-broker:
