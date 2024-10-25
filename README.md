@@ -11,3 +11,15 @@
 ### **_Will you accept the challenge?_**
 
 https://app.pdmgame.xmp.systems/
+
+---
+
+## News
+ The game was featured in the 1st edition of the MQTT Innovation Awards by HiveMQ!
+ 
+ Read the full blogpost [here](https://www.hivemq.com/news/hivemq-honors-iot-excellence-with-inaugural-mqtt-innovation-awards/).
+
+ <img src="https://github.com/user-attachments/assets/d4a6c8bf-3262-4870-bfcd-a211b422ea22" width="20%"/>
+ 
+ <img src="https://github.com/user-attachments/assets/e940c980-a5de-4f6d-9ebc-2c164df4483f" width="40%"/>
+ 
