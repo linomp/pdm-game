@@ -81,8 +81,8 @@ class GameSession(BaseModel):
             self.machine_state.update_parameters(self.current_step)
             self.available_funds += self.cash_multiplier * REVENUE_PER_DAY / TIMESTEPS_PER_MOVE
 
-            # Publish state every 3 steps (to reduce the load on the MQTT broker)
-            if s == 0 or self.current_step % 3 == 0:
+            # Publish state every N steps (to reduce the load on the MQTT broker)
+            if s == 0 or self.current_step % 2 == 0:
                 asyncio.ensure_future(
                     run_in_threadpool(self.state_publish_function, GameSessionDTO.from_session(self))
                 )

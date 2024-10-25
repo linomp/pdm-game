@@ -72,7 +72,7 @@ class Machine(BaseModel):
             )
         )
 
-        raw_value -= random.random() * (0.005 * raw_value)
+        raw_value -= random.random() * (0.05 * raw_value)
 
         return constrain_from_0_to_100(raw_value)
 

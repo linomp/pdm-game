@@ -21,7 +21,7 @@ router = APIRouter(
 @router.get("/", response_model=list[HighScoreDTO])
 async def get_leaderboard(db: Session = Depends(get_db)):
     try:
-        result = db.query(HighScoreModel).order_by(desc(HighScoreModel.score)).limit(10).all()
+        result = db.query(HighScoreModel).order_by(desc(HighScoreModel.score)).limit(5).all()
 
         return result
 
