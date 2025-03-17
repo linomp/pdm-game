@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {getUpdatedTimeseries,} from "src/shared/utils";
+    import { getUpdatedTimeseries, isUndefinedOrNull } from "src/shared/utils";
     import GameOver from "src/components/GameOver.svelte";
     import MachineAnimation from "src/components/MachineAnimation.svelte";
     import SessionData from "src/components/SessionData.svelte";
@@ -14,10 +14,11 @@
         mqttClient,
         mqttClientUnsubscribe,
     } from "src/shared/stores";
-    import type {GameSessionWithTimeSeries} from "src/shared/types";
-    import type {GameSessionDTO} from "src/shared/api";
-    import {MOBILE_BREAKPOINT} from "src/shared/constants";
-    import {onMount} from "svelte";
+    import type { GameSessionWithTimeSeries } from "src/shared/types";
+    import type { GameSessionDTO } from "src/shared/api";
+    import { MOBILE_BREAKPOINT } from "src/shared/constants";
+    import { onMount } from "svelte";
+    import License from "./License.svelte";
 
     const updateGameSession = async (newGameSessionDto: GameSessionDTO) => {
         // TODO: this is a workaround to prevent the game from updating the game session if it receives an outdated one
@@ -25,7 +26,8 @@
         if (
             $gameSession &&
             ($gameSession?.is_game_over ||
-                (newGameSessionDto.current_step < $gameSession?.current_step ?? 0))
+                (newGameSessionDto.current_step < $gameSession?.current_step ??
+                    0))
         ) {
             return;
         }
@@ -35,7 +37,10 @@
 
         if (newGameSessionDto.is_game_over) {
             if (import.meta.env.VITE_DEBUG) {
-                console.log("Game over. Last known GameSessionDTO:", newGameSessionDto);
+                console.log(
+                    "Game over. Last known GameSessionDTO:",
+                    newGameSessionDto,
+                );
             }
 
             $mqttClientUnsubscribe?.();
@@ -74,30 +79,38 @@
     onMount(() => {
         updateNarrowScreenFlag();
         window.addEventListener("resize", updateNarrowScreenFlag);
-        return () => window.removeEventListener("resize", updateNarrowScreenFlag);
+        return () =>
+            window.removeEventListener("resize", updateNarrowScreenFlag);
     });
 </script>
 
 <div class="homepage">
     <h2 class="title">
-        <a class="title-link" href="https://github.com/linomp/pdm-game" target="_blank">
+        <a
+            class="title-link"
+            href="https://github.com/linomp/pdm-game"
+            target="_blank"
+        >
             The Predictive Maintenance Game
         </a>
     </h2>
-    <Lobby {updateGameSession}/>
+    <Lobby {updateGameSession} />
     <div class="game-area">
         <div class="basic-controls">
-            <MachineAnimation/>
-            <GameOver {cleanupGameSession}/>
+            <MachineAnimation />
+            <GameOver {cleanupGameSession} />
             <SessionData
-                    maintenanceCost={$globalSettings.maintenance_cost}
-                    {updateGameSession}
+                maintenanceCost={$globalSettings.maintenance_cost}
+                {updateGameSession}
             />
         </div>
         <div class="monitoring-controls">
-            <MachineData {updateGameSession}/>
+            <MachineData {updateGameSession} />
         </div>
     </div>
+    {#if isUndefinedOrNull($gameSession)}
+        <License />
+    {/if}
 </div>
 
 <style>
